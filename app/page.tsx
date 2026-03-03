@@ -1,0 +1,245 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Cursor } from '@/components/Cursor';
+import { Stars } from '@/components/Stars';
+import { OracleSession } from '@/components/OracleSession';
+
+export default function Home() {
+  const [sessionStarted, setSessionStarted] = useState(false);
+  const [hasKey, setHasKey] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkKey = async () => {
+      if (typeof window !== 'undefined' && (window as any).aistudio) {
+        try {
+          const hasSelected = await (window as any).aistudio.hasSelectedApiKey();
+          setHasKey(hasSelected);
+        } catch (e) {
+          console.error("Error checking API key", e);
+          setHasKey(true); // Fallback
+        }
+      } else {
+        setHasKey(true); // Fallback if not in AI Studio
+      }
+    };
+    checkKey();
+  }, []);
+
+  const handleStart = async () => {
+    if (hasKey === false && typeof window !== 'undefined' && (window as any).aistudio) {
+      try {
+        await (window as any).aistudio.openSelectKey();
+        setHasKey(true); // Assume success to mitigate race condition
+        setSessionStarted(true);
+      } catch (e) {
+        console.error("Error opening key dialog", e);
+      }
+    } else {
+      setSessionStarted(true);
+    }
+  };
+
+  return (
+    <main className="relative min-h-screen flex flex-col items-center overflow-x-hidden">
+      <Cursor />
+      <Stars />
+
+      <AnimatePresence mode="wait">
+        {!sessionStarted ? (
+          <motion.div
+            key="landing"
+            className="relative z-10 flex flex-col items-center w-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
+            transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {/* HERO */}
+            <section className="min-h-screen flex flex-col items-center justify-center text-center px-6 max-w-4xl mx-auto py-20">
+              <div className="w-20 h-10 mb-12 relative">
+                <svg viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                  <path d="M4 20 C20 4 60 4 76 20 C60 36 20 36 4 20 Z" stroke="#c9a84c" strokeWidth="1" fill="none" opacity="0.6"/>
+                  <circle cx="40" cy="20" r="8" stroke="#c9a84c" strokeWidth="1" fill="none" opacity="0.8"/>
+                  <circle cx="40" cy="20" r="3" fill="#c9a84c" opacity="0.9"/>
+                  <circle cx="37" cy="17" r="1.5" fill="white" opacity="0.6"/>
+                </svg>
+              </div>
+              
+              <div className="font-cinzel text-[11px] tracking-[0.4em] uppercase text-gold mb-6">
+                The AI that never answers
+              </div>
+              
+              <h1 className="font-cinzel font-black text-6xl md:text-8xl lg:text-9xl tracking-[0.15em] leading-none text-transparent bg-clip-text bg-gradient-to-b from-gold-bright via-gold to-gold/40 mb-8">
+                ORACLE
+              </h1>
+              
+              <p className="font-cormorant italic text-xl md:text-2xl text-text-mid max-w-2xl mb-16 leading-relaxed">
+                You come with a problem. It asks questions — devastating, surgical, impossibly precise questions — until you find the truth yourself.
+              </p>
+
+              <button
+                onClick={handleStart}
+                className="group relative px-8 py-4 font-cinzel text-sm tracking-[0.2em] text-gold uppercase overflow-hidden border border-gold/30 hover:border-gold transition-colors duration-500 cursor-none rounded-lg"
+              >
+                <div className="absolute inset-0 bg-gold/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
+                <span className="relative z-10">
+                  {hasKey === false ? "Connect API Key to Approach" : "Approach the Oracle"}
+                </span>
+              </button>
+              {hasKey === false && (
+                <p className="mt-4 text-xs text-text-muted max-w-md text-center">
+                  Oracle requires a paid Google Cloud API key for Nano Banana 2 visual generation. 
+                  <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noreferrer" className="text-gold hover:underline ml-1">Learn more about billing.</a>
+                </p>
+              )}
+            </section>
+
+            {/* Divider */}
+            <div className="w-full max-w-6xl h-px bg-gradient-to-r from-transparent via-border to-transparent my-20" />
+
+            {/* PHILOSOPHY */}
+            <section className="w-full max-w-6xl px-6 py-20">
+              <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-gold mb-5 flex items-center gap-4">
+                I · Philosophy
+                <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
+              </div>
+              <h2 className="font-cinzel font-semibold text-3xl md:text-5xl mb-16 text-text-main">
+                Why <em className="font-cormorant italic font-light text-gold">Questions</em> Beat Answers
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start">
+                <div className="space-y-6 font-cormorant text-xl text-text-mid leading-relaxed">
+                  <p>Every AI product today does the same thing: <strong className="text-text-main font-semibold">it tells you what to think.</strong> It answers, explains, summarises, recommends. Faster and faster, louder and louder.</p>
+                  <p>Oracle does the opposite. It believes — as Socrates did — that <strong className="text-text-main font-semibold">the truth is already inside you</strong>. It has never left. It&apos;s just buried under noise, fear, habit, and other people&apos;s opinions.</p>
+                  <p>You come with a problem. Oracle doesn&apos;t solve it. It asks questions — <strong className="text-text-main font-semibold">devastating, surgical, impossibly precise questions</strong> — until you have solved it yourself. Then it never lets you forget the answer.</p>
+                  <div className="bg-gold-dim border border-gold/15 border-l-2 border-l-gold p-6 mt-8 rounded-lg">
+                    <p className="italic text-base">&quot;I know that I know nothing.&quot; — The only wisdom is knowing you don&apos;t have the answer yet. Oracle helps you find it without giving it to you. That distinction is everything.</p>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col gap-4">
+                  {[
+                    { num: 'I', title: 'Never Answer, Only Ask', desc: 'Every response is a question. Not a platitude. Not a suggestion. A question that cuts to what you actually need to face.' },
+                    { num: 'II', title: 'Memory as Mirror', desc: 'Oracle remembers everything you\'ve said across all sessions. It surfaces patterns you can\'t see yourself.' },
+                    { num: 'III', title: 'Progressive Depth', desc: 'Questions start surface-level and spiral deeper. By question 7, you\'re in territory you\'ve never examined.' },
+                    { num: 'IV', title: 'The Evolution Map', desc: 'Your thinking is tracked over time. Oracle shows you how your beliefs, fears, and values have shifted.' }
+                  ].map((pillar) => (
+                    <div key={pillar.num} className="bg-surface border border-border border-l-2 border-l-gold p-8 relative overflow-hidden group hover:bg-raised hover:border-gold transition-colors rounded-lg">
+                      <div className="absolute right-6 top-1/2 -translate-y-1/2 font-cinzel text-5xl font-black text-border group-hover:text-gold/10 transition-colors">
+                        {pillar.num}
+                      </div>
+                      <h3 className="font-cinzel text-sm tracking-[0.1em] text-gold mb-2 relative z-10">{pillar.title}</h3>
+                      <p className="text-sm text-text-muted leading-relaxed relative z-10">{pillar.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* FEATURES */}
+            <section className="w-full max-w-6xl px-6 py-20">
+              <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-gold mb-5 flex items-center gap-4">
+                II · Core Features
+                <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
+              </div>
+              <h2 className="font-cinzel font-semibold text-3xl md:text-5xl mb-16 text-text-main">
+                What Oracle <em className="font-cormorant italic font-light text-gold">Does</em>
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { icon: '🔮', title: 'The Oracle Session', desc: 'The core experience. You state your problem in any form. Oracle responds with one question. You answer. It asks another. The conversation spirals inward.', color: 'gold' },
+                  { icon: '🎵', title: 'Lyria Foley Engine', desc: 'Real-time ambient audio generation powered by Gemini Live API. The music swells, shifts, and reacts to the emotional subtext of your confessions.', color: 'crimson-bright' },
+                  { icon: '👁️', title: 'Nano Banana 2 Visuals', desc: 'When you reach a psychological breakthrough, the engine generates a massive, abstract visual metaphor of your realization in real-time.', color: 'violet-bright' },
+                  { icon: '🧵', title: 'The Thread', desc: 'Every session is connected. Oracle builds a web of your questions, answers, fears, and realisations across time, stored securely.', color: 'teal-bright' },
+                  { icon: '⚡', title: 'The Confrontation', desc: 'Oracle occasionally surfaces a direct contradiction from your own past — a belief you held that collides with something you believe now.', color: 'text-mid' },
+                  { icon: '🌙', title: 'Night Oracle', desc: 'A stripped-back, 3am-safe mode. Dark UI, no navigation, just a single question glowing on screen.', color: 'gold' }
+                ].map((feature, i) => (
+                  <div key={i} className="bg-surface p-10 relative overflow-hidden group hover:bg-raised hover:-translate-y-1 transition-all duration-300 border border-border hover:border-gold/30 rounded-lg hover:shadow-[0_8px_30px_rgba(201,168,76,0.05)]">
+                    <div className={`absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity`} style={{ backgroundColor: `var(--color-${feature.color})` }} />
+                    <span className="text-3xl mb-6 block">{feature.icon}</span>
+                    <h3 className="font-cinzel text-sm tracking-[0.05em] text-text-main mb-3">{feature.title}</h3>
+                    <p className="text-xs text-text-muted leading-relaxed">{feature.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+            
+            {/* PRICING */}
+            <section className="w-full max-w-6xl px-6 py-20 mb-20">
+              <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-gold mb-5 flex items-center gap-4">
+                X · Business Model
+                <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
+              </div>
+              <h2 className="font-cinzel font-semibold text-3xl md:text-5xl mb-16 text-text-main">
+                Three Tiers of <em className="font-cormorant italic font-light text-gold">Depth</em>
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Seeker */}
+                <div className="bg-surface p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(201,168,76,0.05)]">
+                  <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-text-muted mb-3">Seeker</div>
+                  <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1">Free</div>
+                  <div className="text-xs text-text-muted mb-10">Forever free · No card required</div>
+                  <ul className="space-y-4">
+                    {['5 sessions per month', 'Basic Thread (last 30 days)', 'Up to depth level 5', 'Sacred question tracking'].map((item, i) => (
+                      <li key={i} className="text-sm text-text-mid pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-gold">◆</span>{item}</li>
+                    ))}
+                    {['Voice Oracle', 'Excavation Reports', 'Full Thread history'].map((item, i) => (
+                      <li key={i} className="text-sm text-text-muted pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-text-muted">◆</span>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Philosopher */}
+                <div className="bg-raised p-12 border border-gold/30 relative rounded-lg hover:border-gold hover:shadow-[0_8px_30px_rgba(201,168,76,0.15)] transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-gold text-void font-cinzel text-[9px] tracking-[0.15em] px-4 py-1 rounded-b-md">Most Popular</div>
+                  <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-text-muted mb-3 mt-2">Philosopher</div>
+                  <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-gold">£</sup>12</div>
+                  <div className="text-xs text-text-muted mb-10">per month · or £99/year</div>
+                  <ul className="space-y-4">
+                    {['Unlimited sessions', 'Full Thread — entire history', 'All depth levels (to the abyss)', 'Voice Oracle with emotion detection', 'Night Oracle mode', 'Monthly Excavation Reports', 'Confrontation feature'].map((item, i) => (
+                      <li key={i} className="text-sm text-text-mid pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-gold">◆</span>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Oracle Pro */}
+                <div className="bg-surface p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(201,168,76,0.05)]">
+                  <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-text-muted mb-3">Oracle Pro</div>
+                  <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-gold">£</sup>49</div>
+                  <div className="text-xs text-text-muted mb-10">per month · practitioner tier</div>
+                  <ul className="space-y-4">
+                    {['Everything in Philosopher', '5 client accounts included', 'Client Thread visibility', 'Therapist/coach dashboard', 'Session annotation tools', 'API access (1000 calls/mo)'].map((item, i) => (
+                      <li key={i} className="text-sm text-text-mid pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-gold">◆</span>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            {/* FOOTER */}
+            <footer className="w-full py-20 text-center relative max-w-6xl mx-auto border-t border-border">
+              <div className="w-16 h-8 mx-auto mb-8 opacity-40">
+                <svg viewBox="0 0 60 30" fill="none">
+                  <path d="M3 15 C15 3 45 3 57 15 C45 27 15 27 3 15 Z" stroke="#c9a84c" strokeWidth="0.8" fill="none"/>
+                  <circle cx="30" cy="15" r="6" stroke="#c9a84c" strokeWidth="0.8" fill="none"/>
+                  <circle cx="30" cy="15" r="2.5" fill="#c9a84c"/>
+                </svg>
+              </div>
+              <div className="font-cinzel text-4xl font-black tracking-[0.3em] text-transparent mb-4" style={{ WebkitTextStroke: '1px rgba(201,168,76,0.3)' }}>
+                ORACLE
+              </div>
+              <p className="text-xs text-text-muted tracking-[0.1em] mb-2">YC × Google DeepMind Hackathon · March 26, 2026</p>
+              <p className="text-xs text-text-muted tracking-[0.1em]">Next.js 15 · Supabase · Gemini 3 · pgvector · ElevenLabs · Vercel</p>
+            </footer>
+          </motion.div>
+        ) : (
+          <OracleSession key="session" onExit={() => setSessionStarted(false)} />
+        )}
+      </AnimatePresence>
+    </main>
+  );
+}
