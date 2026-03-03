@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
-import { getAdminFirestore } from './firebase-admin';
+import { getAdminFirestore, isAdminConfigured, getAdminError } from './firebase-admin';
 
 // Re-export for convenience
 export { getAdminFirestore };
@@ -31,19 +31,44 @@ export async function verifyAuth(req: Request): Promise<AuthResult | NextRespons
     );
   }
 
+  // Check if Firebase Admin is properly configured BEFORE trying to verify
+  if (!isAdminConfigured()) {
+    const adminError = getAdminError();
+    console.error('❌ Firebase Admin not configured:', adminError);
+    return NextResponse.json(
+      {
+        error: 'Server authentication is misconfigured. Check FIREBASE_SERVICE_ACCOUNT_KEY.',
+        detail: process.env.NODE_ENV === 'development' ? adminError : undefined,
+      },
+      { status: 500 }
+    );
+  }
+
   const idToken = authHeader.slice(7);
 
   try {
-    // getAuth() uses the default admin app initialized in firebase-admin.ts
     const decoded = await getAuth().verifyIdToken(idToken);
     return {
       userId: decoded.uid,
       email: decoded.email,
     };
-  } catch (error) {
-    console.error('Token verification failed:', error);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('Token verification failed:', msg);
+
+    // Distinguish between different failure types
+    if (msg.includes('CERTIFICATE_VERIFY_FAILED') || msg.includes('credential')) {
+      return NextResponse.json(
+        {
+          error: 'Server credential error. The service account key may be invalid.',
+          detail: process.env.NODE_ENV === 'development' ? msg : undefined,
+        },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Invalid or expired authentication token' },
+      { error: 'Invalid or expired authentication token. Please sign in again.' },
       { status: 401 }
     );
   }
