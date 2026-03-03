@@ -2,15 +2,14 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { checkoutRateLimit } from '@/lib/rate-limit';
 import { verifyAuth } from '@/lib/auth-middleware';
-import { getServerEnv } from '@/lib/env';
+import { getStripeEnv } from '@/lib/env';
 import { createLogger } from '@/lib/logger';
 
 let stripeClient: Stripe | null = null;
 
-function getStripe(): Stripe {
+function getStripe(secretKey: string): Stripe {
   if (!stripeClient) {
-    const env = getServerEnv();
-    stripeClient = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion });
+    stripeClient = new Stripe(secretKey, { apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion });
   }
   return stripeClient;
 }
@@ -19,6 +18,17 @@ export async function POST(req: Request) {
   const log = createLogger({ route: '/api/checkout', correlationId: crypto.randomUUID() });
 
   try {
+    // ── Validate Stripe is configured ──────────────────────────
+    let stripeEnv;
+    try {
+      stripeEnv = getStripeEnv();
+    } catch {
+      return NextResponse.json(
+        { error: 'Payments are not currently available. Please try again later.' },
+        { status: 503 }
+      );
+    }
+
     // ── Auth verification ──────────────────────────────────────
     const authResult = await verifyAuth(req);
     if (authResult instanceof NextResponse) return authResult;
@@ -37,12 +47,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing tier' }, { status: 400 });
     }
 
-    const env = getServerEnv();
     let priceId = '';
     if (tier === 'philosopher') {
-      priceId = env.STRIPE_PRICE_ID_PHILOSOPHER;
+      priceId = stripeEnv.STRIPE_PRICE_ID_PHILOSOPHER;
     } else if (tier === 'pro') {
-      priceId = env.STRIPE_PRICE_ID_PRO;
+      priceId = stripeEnv.STRIPE_PRICE_ID_PRO;
     } else {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 });
     }
@@ -51,7 +60,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Payment not configured for this tier. Please contact support.' }, { status: 503 });
     }
 
-    const stripe = getStripe();
+    const stripe = getStripe(stripeEnv.STRIPE_SECRET_KEY);
     
     const origin = req.headers.get('origin') || 'http://localhost:3000';
 

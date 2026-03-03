@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 // ── Server-side environment variables ──────────────────────────────
+// Core vars that ALL API routes need
 const serverSchema = z.object({
   // Firebase public (also available server-side)
   NEXT_PUBLIC_FIREBASE_API_KEY: z.string().min(1, 'NEXT_PUBLIC_FIREBASE_API_KEY is required'),
@@ -13,11 +14,11 @@ const serverSchema = z.object({
   // Firebase Admin
   FIREBASE_SERVICE_ACCOUNT_KEY: z.string().optional(),
 
-  // Stripe
-  STRIPE_SECRET_KEY: z.string().min(1, 'STRIPE_SECRET_KEY is required'),
-  STRIPE_WEBHOOK_SECRET: z.string().min(1, 'STRIPE_WEBHOOK_SECRET is required'),
-  STRIPE_PRICE_ID_PHILOSOPHER: z.string().min(1, 'STRIPE_PRICE_ID_PHILOSOPHER is required'),
-  STRIPE_PRICE_ID_PRO: z.string().min(1, 'STRIPE_PRICE_ID_PRO is required'),
+  // Stripe — optional at server-env level; routes that need them validate individually
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_PRICE_ID_PHILOSOPHER: z.string().optional(),
+  STRIPE_PRICE_ID_PRO: z.string().optional(),
 
   // AI (server-only — no NEXT_PUBLIC_ prefix)
   GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
@@ -55,6 +56,40 @@ export function getServerEnv(): ServerEnv {
   }
   _serverEnv = parsed.data;
   return _serverEnv;
+}
+
+// ── Stripe environment variables ───────────────────────────────────
+// Validated separately so missing Stripe config doesn't break non-Stripe routes
+const stripeSchema = z.object({
+  STRIPE_SECRET_KEY: z.string().min(1, 'STRIPE_SECRET_KEY is required'),
+  STRIPE_WEBHOOK_SECRET: z.string().min(1, 'STRIPE_WEBHOOK_SECRET is required'),
+  STRIPE_PRICE_ID_PHILOSOPHER: z.string().min(1, 'STRIPE_PRICE_ID_PHILOSOPHER is required'),
+  STRIPE_PRICE_ID_PRO: z.string().min(1, 'STRIPE_PRICE_ID_PRO is required'),
+});
+
+export type StripeEnv = z.infer<typeof stripeSchema>;
+
+let _stripeEnv: StripeEnv | null = null;
+
+/**
+ * Parse and cache Stripe-specific environment variables.
+ * Only call this from Stripe-related routes (checkout, billing, webhooks).
+ */
+export function getStripeEnv(): StripeEnv {
+  if (_stripeEnv) return _stripeEnv;
+
+  const parsed = stripeSchema.safeParse(process.env);
+  if (!parsed.success) {
+    const errors = parsed.error.flatten().fieldErrors;
+    const missing = Object.keys(errors).join(', ');
+    console.error('❌ Missing Stripe environment variables:', errors);
+    throw new Error(
+      `Stripe is not fully configured. Missing: ${missing}. ` +
+      'Payments are disabled until these are set in Vercel Environment Variables.'
+    );
+  }
+  _stripeEnv = parsed.data;
+  return _stripeEnv;
 }
 
 // ── Client-side environment variables ──────────────────────────────

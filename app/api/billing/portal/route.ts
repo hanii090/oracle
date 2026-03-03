@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { verifyAuth, getAdminFirestore } from '@/lib/auth-middleware';
-import { getServerEnv } from '@/lib/env';
+import { getStripeEnv } from '@/lib/env';
 import { createLogger } from '@/lib/logger';
 
 /**
@@ -11,10 +11,9 @@ import { createLogger } from '@/lib/logger';
 
 let stripeClient: Stripe | null = null;
 
-function getStripe(): Stripe {
+function getStripe(secretKey: string): Stripe {
   if (!stripeClient) {
-    const env = getServerEnv();
-    stripeClient = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion });
+    stripeClient = new Stripe(secretKey, { apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion });
   }
   return stripeClient;
 }
@@ -23,6 +22,17 @@ export async function POST(req: Request) {
   const log = createLogger({ route: '/api/billing/portal', correlationId: crypto.randomUUID() });
 
   try {
+    // ── Validate Stripe is configured ──────────────────────────
+    let stripeEnv;
+    try {
+      stripeEnv = getStripeEnv();
+    } catch {
+      return NextResponse.json(
+        { error: 'Billing portal is not currently available. Please try again later.' },
+        { status: 503 }
+      );
+    }
+
     // ── Auth verification ──────────────────────────────────────
     const authResult = await verifyAuth(req);
     if (authResult instanceof NextResponse) return authResult;
@@ -47,7 +57,7 @@ export async function POST(req: Request) {
     }
 
     const origin = req.headers.get('origin') || 'http://localhost:3000';
-    const stripe = getStripe();
+    const stripe = getStripe(stripeEnv.STRIPE_SECRET_KEY);
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,

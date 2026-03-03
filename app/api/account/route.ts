@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { verifyAuth, getAdminFirestore } from '@/lib/auth-middleware';
-import { getServerEnv } from '@/lib/env';
+import { getStripeEnv } from '@/lib/env';
 import { createLogger } from '@/lib/logger';
 
 /**
@@ -14,10 +14,14 @@ import { createLogger } from '@/lib/logger';
 
 let stripeClient: Stripe | null = null;
 
-function getStripe(): Stripe {
+function getStripe(): Stripe | null {
   if (!stripeClient) {
-    const env = getServerEnv();
-    stripeClient = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion });
+    try {
+      const env = getStripeEnv();
+      stripeClient = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion });
+    } catch {
+      return null;
+    }
   }
   return stripeClient;
 }
@@ -50,6 +54,7 @@ export async function GET(req: Request) {
     if (userData.stripeCustomerId) {
       try {
         const stripe = getStripe();
+        if (!stripe) throw new Error('Stripe not configured');
         const subscriptions = await stripe.subscriptions.list({
           customer: userData.stripeCustomerId as string,
           status: 'active',
@@ -95,6 +100,7 @@ export async function GET(req: Request) {
     // No Stripe customer — check if there's a recent checkout session for this user
     try {
       const stripe = getStripe();
+      if (!stripe) throw new Error('Stripe not configured');
       const sessions = await stripe.checkout.sessions.list({
         limit: 5,
       });
@@ -161,6 +167,7 @@ export async function DELETE(req: Request) {
       if (userData.stripeSubscriptionId) {
         try {
           const stripe = getStripe();
+          if (!stripe) throw new Error('Stripe not configured');
           await stripe.subscriptions.cancel(userData.stripeSubscriptionId);
           log.info('Stripe subscription cancelled', { userId, subscriptionId: userData.stripeSubscriptionId });
         } catch (e) {
