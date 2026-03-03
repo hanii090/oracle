@@ -10,6 +10,7 @@ import { useAuth, Tier, SessionSummary } from '@/hooks/useAuth';
 // Extracted landing components
 import { HeroSection } from '@/components/landing/HeroSection';
 import { SessionHistory } from '@/components/landing/SessionHistory';
+import { EvolutionMap } from '@/components/landing/EvolutionMap';
 import { PhilosophySection } from '@/components/landing/PhilosophySection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { PricingSection } from '@/components/landing/PricingSection';
@@ -209,6 +210,17 @@ function HomeContent() {
             {/* Previous Sessions */}
             {user && (
               <SessionHistory
+                sessions={sessions}
+                onViewSession={(session) => {
+                  setViewingSession(session);
+                  setSessionStarted(true);
+                }}
+              />
+            )}
+
+            {/* Evolution Map — session constellation & belief tracking */}
+            {user && sessions.length >= 2 && (
+              <EvolutionMap
                 sessions={sessions}
                 onViewSession={(session) => {
                   setViewingSession(session);

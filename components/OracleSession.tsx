@@ -6,6 +6,7 @@ import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { useLyriaFoley } from "@/hooks/useLyriaFoley";
 import { useAuth, SessionMessage } from "@/hooks/useAuth";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 // Extracted components (#8 — break monolith into focused components)
 import { SessionHeader } from "@/components/session/SessionHeader";
@@ -17,6 +18,13 @@ import { DepthLimitModal } from "@/components/session/DepthLimitModal";
 import { BreakthroughVisual } from "@/components/session/BreakthroughVisual";
 import { VoiceOracle } from "@/components/VoiceOracle";
 import { SessionExport } from "@/components/SessionExport";
+
+// New onboarding / UX components
+import { WelcomeModal } from "@/components/session/WelcomeModal";
+import { HelpPanel } from "@/components/session/HelpPanel";
+import { NightBanner } from "@/components/session/NightBanner";
+import { ShareCard } from "@/components/session/ShareCard";
+import { DepthToast } from "@/components/session/DepthToast";
 
 export function OracleSession({ onExit, viewSession }: { onExit: () => void; viewSession?: { messages: SessionMessage[]; maxDepth: number; createdAt: string } | null }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -31,17 +39,31 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
   const [showDepthLimit, setShowDepthLimit] = useState(false);
   const [nightMode, setNightMode] = useState(false);
   const [lastOracleText, setLastOracleText] = useState<string | undefined>();
+  const [showShareCard, setShowShareCard] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { steerMusic, triggerBreakthrough } = useLyriaFoley(true);
   const { user: authUser, profile, saveSession, loadSessions, getIdToken } = useAuth();
+  const {
+    showWelcome,
+    showNightBanner,
+    showHelp,
+    streak,
+    dismissWelcome,
+    showNightExplanation,
+    dismissNightBanner,
+    toggleHelp,
+    dismissHelp,
+    recordSession,
+  } = useOnboarding();
 
   // #22 Night Oracle auto-detection (midnight–5am)
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour >= 0 && hour < 5) {
       setNightMode(true);
+      showNightExplanation();
     }
-  }, []);
+  }, [showNightExplanation]);
 
   // Handle viewing a past session (read-only mode)
   useEffect(() => {
@@ -110,15 +132,22 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
     if (currentMessages.filter(m => m.role === "user").length > 0) {
       await saveSession(currentMessages, depth);
       await loadSessions();
+      recordSession();
+      // Show share card if they went deep enough
+      if (depth >= 3) {
+        setShowShareCard(true);
+        return; // Don't exit yet, let them share first
+      }
     }
     onExit();
-  }, [messages, depth, saveSession, loadSessions, onExit]);
+  }, [messages, depth, saveSession, loadSessions, onExit, recordSession]);
 
   const handleReset = useCallback(async () => {
     const currentMessages = messages.filter(m => !(m.role === "oracle" && m.content === "What truth are you avoiding today?"));
     if (currentMessages.filter(m => m.role === "user").length > 0) {
       await saveSession(currentMessages, depth);
       await loadSessions();
+      recordSession();
     }
 
     const greeting = "What truth are you avoiding today?";
@@ -136,7 +165,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
       }
     }
     localStorage.removeItem("oracle_thread");
-  }, [messages, depth, saveSession, loadSessions, userId]);
+  }, [messages, depth, saveSession, loadSessions, userId, recordSession]);
 
   // #4 FIX: All AI calls now go through the server-side proxy.
   // No API keys are exposed to the client.
@@ -297,9 +326,15 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
           nightMode={nightMode}
           isViewingPast={!!viewSession}
           viewSessionDate={viewSession?.createdAt}
-          onToggleNight={() => setNightMode(!nightMode)}
+          streak={streak.currentStreak}
+          tier={profile?.tier || 'free'}
+          onToggleNight={() => {
+            setNightMode(!nightMode);
+            if (!nightMode) showNightExplanation();
+          }}
           onRestart={() => setShowResetConfirm(true)}
           onExit={viewSession ? onExit : handleExit}
+          onHelp={toggleHelp}
         />
 
         {/* Feature Status + Session Tools */}
@@ -309,6 +344,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
               pastThreadLength={pastThread.length}
               depth={depth}
               isBreakthrough={isBreakthrough}
+              tier={profile?.tier || 'free'}
             />
             <div className="flex items-center gap-2">
               <VoiceOracle
@@ -374,6 +410,18 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
           setShowDepthLimit(false);
           onExit();
         }}
+      />
+
+      {/* Onboarding & UX overlays */}
+      <WelcomeModal show={showWelcome && !viewSession} onDismiss={dismissWelcome} />
+      <HelpPanel show={showHelp} onClose={dismissHelp} />
+      <NightBanner show={showNightBanner} onDismiss={dismissNightBanner} />
+      <DepthToast depth={depth} tier={profile?.tier || 'free'} />
+      <ShareCard
+        show={showShareCard}
+        depth={depth}
+        messageCount={messages.length}
+        onClose={() => { setShowShareCard(false); onExit(); }}
       />
     </motion.div>
   );
