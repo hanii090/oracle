@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { auth, db } from "@/lib/firebase";
 import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
-import { doc, getDoc, setDoc, collection, getDocs, addDoc, query, orderBy, limit } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, getDocs, addDoc, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 
 export type Tier = "free" | "philosopher" | "pro";
 
@@ -57,47 +57,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!auth) {
       return;
     }
+    let unsubProfile: (() => void) | null = null;
+
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
+      // Clean up previous profile listener
+      if (unsubProfile) {
+        unsubProfile();
+        unsubProfile = null;
+      }
+
       if (u) {
-        let loadedProfile: UserProfile | null = null;
         if (db) {
           try {
             const docRef = doc(db, "users", u.uid);
             const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-              loadedProfile = docSnap.data() as UserProfile;
-            } else {
-              loadedProfile = { tier: "free", sessionsThisMonth: 0, lastSessionDate: null };
-              await setDoc(docRef, loadedProfile);
+            if (!docSnap.exists()) {
+              const defaultProfile: UserProfile = { tier: "free", sessionsThisMonth: 0, lastSessionDate: null };
+              await setDoc(docRef, defaultProfile);
             }
-          } catch (error: any) {
+
+            // #11 Real-time profile listener — picks up webhook changes immediately
+            unsubProfile = onSnapshot(docRef, (snap) => {
+              if (snap.exists()) {
+                const p = snap.data() as UserProfile;
+                setProfile(p);
+                localStorage.setItem(`oracle_profile_${u.uid}`, JSON.stringify(p));
+              }
+            }, (error) => {
+              console.error("Profile snapshot error:", error);
+            });
+          } catch (error: unknown) {
             console.error("Firestore error loading profile:", error);
             const localProfile = localStorage.getItem(`oracle_profile_${u.uid}`);
             if (localProfile) {
-              loadedProfile = JSON.parse(localProfile);
+              setProfile(JSON.parse(localProfile));
             } else {
-              loadedProfile = { tier: "free", sessionsThisMonth: 0, lastSessionDate: null };
+              setProfile({ tier: "free", sessionsThisMonth: 0, lastSessionDate: null });
             }
           }
         } else {
           const localProfile = localStorage.getItem(`oracle_profile_${u.uid}`);
           if (localProfile) {
-            loadedProfile = JSON.parse(localProfile);
+            setProfile(JSON.parse(localProfile));
           } else {
-            loadedProfile = { tier: "free", sessionsThisMonth: 0, lastSessionDate: null };
+            setProfile({ tier: "free", sessionsThisMonth: 0, lastSessionDate: null });
           }
-        }
-        setProfile(loadedProfile);
-        if (loadedProfile) {
-          localStorage.setItem(`oracle_profile_${u.uid}`, JSON.stringify(loadedProfile));
         }
       } else {
         setProfile(null);
       }
       setLoading(false);
     });
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (unsubProfile) unsubProfile();
+    };
   }, []);
 
   const signIn = async () => {

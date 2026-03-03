@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { checkoutRateLimit } from '@/lib/rate-limit';
 
 let stripeClient: Stripe | null = null;
 
@@ -16,6 +17,13 @@ function getStripe(): Stripe {
 
 export async function POST(req: Request) {
   try {
+    // Rate limiting (#5)
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rateCheck = checkoutRateLimit(ip);
+    if (!rateCheck.success) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
     const { tier, userId } = await req.json();
 
     if (!tier || !userId) {
@@ -24,11 +32,15 @@ export async function POST(req: Request) {
 
     let priceId = '';
     if (tier === 'philosopher') {
-      priceId = process.env.STRIPE_PRICE_ID_PHILOSOPHER || 'price_philosopher_placeholder';
+      priceId = process.env.STRIPE_PRICE_ID_PHILOSOPHER || '';
     } else if (tier === 'pro') {
-      priceId = process.env.STRIPE_PRICE_ID_PRO || 'price_pro_placeholder';
+      priceId = process.env.STRIPE_PRICE_ID_PRO || '';
     } else {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 });
+    }
+
+    if (!priceId) {
+      return NextResponse.json({ error: 'Payment not configured for this tier. Please contact support.' }, { status: 503 });
     }
 
     const stripe = getStripe();
@@ -46,7 +58,7 @@ export async function POST(req: Request) {
         },
       ],
       mode: 'subscription',
-      success_url: `${origin}/?success=true&tier=${tier}`,
+      success_url: `${origin}/?success=true`,
       cancel_url: `${origin}/?canceled=true`,
       client_reference_id: userId,
     });
