@@ -1,11 +1,27 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { auth, db } from "@/lib/firebase";
 import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, getDocs, addDoc, query, orderBy, limit } from "firebase/firestore";
 
 export type Tier = "free" | "philosopher" | "pro";
+
+export type SessionMessage = {
+  id: string;
+  role: "user" | "oracle";
+  content: string;
+  depth: number;
+};
+
+export interface SessionSummary {
+  id: string;
+  createdAt: string;
+  messageCount: number;
+  maxDepth: number;
+  preview: string;
+  messages: SessionMessage[];
+}
 
 interface UserProfile {
   tier: Tier;
@@ -18,11 +34,14 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   authError: string | null;
+  sessions: SessionSummary[];
   signIn: () => Promise<void>;
   logOut: () => Promise<void>;
   upgradeTier: (tier: Tier) => Promise<void>;
   incrementSession: () => Promise<boolean>;
   clearAuthError: () => void;
+  saveSession: (messages: SessionMessage[], maxDepth: number) => Promise<void>;
+  loadSessions: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -32,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(!!auth);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<SessionSummary[]>([]);
 
   useEffect(() => {
     if (!auth) {
@@ -80,6 +100,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      loadSessions();
+    } else {
+      setSessions([]);
+    }
+  }, [user, loadSessions]);
+
   const signIn = async () => {
     if (!auth) return;
     setAuthError(null);
@@ -103,9 +131,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth);
   };
 
-  const upgradeTier = async (tier: Tier) => {
-    if (!user || !profile) return;
-    const newProfile = { ...profile, tier };
+  const upgradeTier = useCallback(async (tier: Tier) => {
+    if (!user) return;
+    const currentProfile = profile || { tier: "free" as Tier, sessionsThisMonth: 0, lastSessionDate: null };
+    const newProfile = { ...currentProfile, tier };
     setProfile(newProfile);
     localStorage.setItem(`oracle_profile_${user.uid}`, JSON.stringify(newProfile));
     if (db) {
@@ -115,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("Firestore save error", e);
       }
     }
-  };
+  }, [user, profile]);
 
   const incrementSession = async (): Promise<boolean> => {
     if (!user || !profile) return false;
@@ -154,10 +183,80 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
+  const loadSessions = useCallback(async () => {
+    if (!user) return;
+    let loaded: SessionSummary[] = [];
+
+    if (db) {
+      try {
+        const sessionsRef = collection(db, "users", user.uid, "sessions");
+        const q = query(sessionsRef, orderBy("createdAt", "desc"), limit(50));
+        const snapshot = await getDocs(q);
+        loaded = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as SessionSummary));
+      } catch (e) {
+        console.error("Firestore sessions load error", e);
+      }
+    }
+
+    if (loaded.length === 0) {
+      const localSessions = localStorage.getItem(`oracle_sessions_${user.uid}`);
+      if (localSessions) {
+        try {
+          loaded = JSON.parse(localSessions);
+        } catch (e) {
+          console.error("localStorage sessions parse error", e);
+        }
+      }
+    }
+
+    setSessions(loaded);
+  }, [user]);
+
+  const saveSession = useCallback(async (messages: SessionMessage[], maxDepth: number) => {
+    if (!user) return;
+
+    const userMessages = messages.filter(m => m.role === "user");
+    if (userMessages.length === 0) return;
+
+    const session: SessionSummary = {
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      messageCount: messages.length,
+      maxDepth,
+      preview: userMessages[0]?.content.slice(0, 120) || "...",
+      messages,
+    };
+
+    // Save to Firestore
+    if (db) {
+      try {
+        await addDoc(collection(db, "users", user.uid, "sessions"), {
+          ...session,
+        });
+      } catch (e) {
+        console.error("Firestore session save error", e);
+      }
+    }
+
+    // Always save to localStorage as fallback
+    const existingSessions = localStorage.getItem(`oracle_sessions_${user.uid}`);
+    let allSessions: SessionSummary[] = [];
+    if (existingSessions) {
+      try {
+        allSessions = JSON.parse(existingSessions);
+      } catch (e) { /* ignore */ }
+    }
+    allSessions.unshift(session);
+    allSessions = allSessions.slice(0, 50);
+    localStorage.setItem(`oracle_sessions_${user.uid}`, JSON.stringify(allSessions));
+
+    setSessions(allSessions);
+  }, [user]);
+
   const clearAuthError = () => setAuthError(null);
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, authError, signIn, logOut, upgradeTier, incrementSession, clearAuthError }}>
+    <AuthContext.Provider value={{ user, profile, loading, authError, sessions, signIn, logOut, upgradeTier, incrementSession, clearAuthError, saveSession, loadSessions }}>
       {children}
     </AuthContext.Provider>
   );

@@ -6,7 +6,7 @@ import { GoogleGenAI } from "@google/genai";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { useLyriaFoley } from "@/hooks/useLyriaFoley";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, SessionMessage } from "@/hooks/useAuth";
 
 type Message = {
   id: string;
@@ -15,7 +15,7 @@ type Message = {
   depth: number;
 };
 
-export function OracleSession({ onExit }: { onExit: () => void }) {
+export function OracleSession({ onExit, viewSession }: { onExit: () => void; viewSession?: { messages: SessionMessage[]; maxDepth: number; createdAt: string } | null }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -28,12 +28,21 @@ export function OracleSession({ onExit }: { onExit: () => void }) {
   const [showDepthLimit, setShowDepthLimit] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { steerMusic, triggerBreakthrough } = useLyriaFoley(true);
-  const { profile } = useAuth();
+  const { user: authUser, profile, saveSession } = useAuth();
+
+  // Handle viewing a past session (read-only mode)
+  useEffect(() => {
+    if (viewSession) {
+      setMessages(viewSession.messages as Message[]);
+      setDepth(viewSession.maxDepth);
+    }
+  }, [viewSession]);
 
   useEffect(() => {
-    let uid = localStorage.getItem("oracle_user_id");
-    if (!uid) {
-      uid = crypto.randomUUID();
+    if (viewSession) return; // Skip init when viewing a past session
+
+    const uid = authUser?.uid || localStorage.getItem("oracle_user_id") || crypto.randomUUID();
+    if (!authUser) {
       localStorage.setItem("oracle_user_id", uid);
     }
     setUserId(uid);
@@ -88,6 +97,12 @@ export function OracleSession({ onExit }: { onExit: () => void }) {
   }, [messages]);
 
   const handleReset = async () => {
+    // Archive current session to history before resetting
+    const allMessages = [...pastThread, ...messages.filter(m => m.role === "user" || (m.role === "oracle" && m.content !== "What truth are you avoiding today?"))];
+    if (allMessages.filter(m => m.role === "user").length > 0) {
+      await saveSession(allMessages, depth);
+    }
+
     setMessages([{ id: crypto.randomUUID(), role: "oracle", content: "What truth are you avoiding today?", depth: 1 }]);
     setPastThread([]);
     setDepth(1);
@@ -355,20 +370,25 @@ Message: "${input}"`;
       <div className="relative z-10 flex flex-col h-full w-full">
         <div className="flex justify-between items-center mb-12 border-b border-border pb-6">
         <div className="font-cinzel text-gold tracking-[0.3em] text-sm uppercase">
-          Depth Level {depth}
+          {viewSession
+            ? `Session — ${new Date(viewSession.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+            : `Depth Level ${depth}`
+          }
         </div>
         <div className="flex items-center gap-6">
-          <button
-            onClick={() => setShowResetConfirm(true)}
-            className="text-text-muted hover:text-gold transition-colors font-courier text-xs tracking-widest uppercase cursor-none"
-          >
-            Restart
-          </button>
+          {!viewSession && (
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              className="text-text-muted hover:text-gold transition-colors font-courier text-xs tracking-widest uppercase cursor-none"
+            >
+              Restart
+            </button>
+          )}
           <button
             onClick={onExit}
             className="text-text-muted hover:text-gold transition-colors font-courier text-xs tracking-widest uppercase cursor-none"
           >
-            Depart
+            {viewSession ? 'Back' : 'Depart'}
           </button>
         </div>
       </div>
@@ -432,34 +452,40 @@ Message: "${input}"`;
         <div ref={messagesEndRef} />
       </div>
 
-        <form onSubmit={handleSubmit} className="relative mt-auto group">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSubmit(e);
-            }
-          }}
-          placeholder="Speak your truth..."
-          className="w-full bg-surface border border-border focus:border-gold/50 focus:ring-1 focus:ring-gold/30 rounded-lg p-6 text-text-main font-cormorant text-lg resize-none outline-none transition-all duration-300 cursor-none disabled:opacity-50 disabled:cursor-not-allowed"
-          rows={3}
-          disabled={isLoading}
-        />
-        <div className="absolute bottom-4 right-4 flex items-center gap-4">
-          <span className="text-text-muted text-xs font-courier opacity-0 group-focus-within:opacity-100 transition-opacity duration-300">
-            Press Enter
-          </span>
-          <button
-            type="submit"
-            disabled={isLoading || !input.trim()}
-            className="w-8 h-8 flex items-center justify-center border border-gold/30 text-gold hover:bg-gold hover:text-void transition-all duration-300 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gold disabled:border-border cursor-none disabled:cursor-not-allowed rounded-lg"
-          >
-            ↑
-          </button>
-        </div>
-        </form>
+        {viewSession ? (
+          <div className="mt-auto pt-6 border-t border-border text-center">
+            <p className="font-courier text-xs text-text-muted tracking-widest uppercase">Archived session · Read only</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="relative mt-auto group">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+              }
+            }}
+            placeholder="Speak your truth..."
+            className="w-full bg-surface border border-border focus:border-gold/50 focus:ring-1 focus:ring-gold/30 rounded-lg p-6 text-text-main font-cormorant text-lg resize-none outline-none transition-all duration-300 cursor-none disabled:opacity-50 disabled:cursor-not-allowed"
+            rows={3}
+            disabled={isLoading}
+          />
+          <div className="absolute bottom-4 right-4 flex items-center gap-4">
+            <span className="text-text-muted text-xs font-courier opacity-0 group-focus-within:opacity-100 transition-opacity duration-300">
+              Press Enter
+            </span>
+            <button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="w-8 h-8 flex items-center justify-center border border-gold/30 text-gold hover:bg-gold hover:text-void transition-all duration-300 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gold disabled:border-border cursor-none disabled:cursor-not-allowed rounded-lg"
+            >
+              ↑
+            </button>
+          </div>
+          </form>
+        )}
       </div>
 
       <AnimatePresence>

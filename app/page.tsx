@@ -6,28 +6,31 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Cursor } from '@/components/Cursor';
 import { Stars } from '@/components/Stars';
 import { OracleSession } from '@/components/OracleSession';
-import { useAuth, Tier } from '@/hooks/useAuth';
+import { useAuth, Tier, SessionSummary } from '@/hooks/useAuth';
 
 import { Suspense } from 'react';
 
 function HomeContent() {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [hasKey, setHasKey] = useState<boolean | null>(null);
-  const { user, profile, loading, authError, signIn, logOut, upgradeTier, incrementSession, clearAuthError } = useAuth();
+  const { user, profile, loading, authError, sessions, signIn, logOut, upgradeTier, incrementSession, clearAuthError, loadSessions } = useAuth();
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [viewingSession, setViewingSession] = useState<SessionSummary | null>(null);
+  const [upgradeProcessed, setUpgradeProcessed] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
-    if (user && searchParams.get('success') === 'true') {
+    if (user && !loading && !upgradeProcessed && searchParams.get('success') === 'true') {
       const tier = searchParams.get('tier') as Tier;
       if (tier) {
+        setUpgradeProcessed(true);
         upgradeTier(tier).then(() => {
           router.replace('/');
         });
       }
     }
-  }, [user, searchParams, router, upgradeTier]);
+  }, [user, loading, upgradeProcessed, searchParams, router, upgradeTier]);
 
   useEffect(() => {
     const checkKey = async () => {
@@ -184,6 +187,43 @@ function HomeContent() {
                 </p>
               )}
             </section>
+
+            {/* PREVIOUS SESSIONS */}
+            {user && sessions.length > 0 && (
+              <section className="w-full max-w-4xl px-6 mt-4 mb-8 relative z-10">
+                <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-gold mb-5 flex items-center gap-4">
+                  Your Past Sessions
+                  <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
+                </div>
+                <div className="space-y-3 max-h-[400px] overflow-y-auto scrollbar-hide">
+                  {sessions.map((session) => (
+                    <button
+                      key={session.id}
+                      onClick={() => {
+                        setViewingSession(session);
+                        setSessionStarted(true);
+                      }}
+                      className="w-full text-left bg-surface border border-border hover:border-gold/30 p-5 rounded-lg transition-all duration-300 hover:bg-raised group cursor-none"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="font-cinzel text-xs text-gold tracking-widest">
+                          Depth {session.maxDepth}
+                        </div>
+                        <div className="font-courier text-[10px] text-text-muted">
+                          {new Date(session.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </div>
+                      </div>
+                      <p className="font-cormorant italic text-text-mid text-base truncate">
+                        &ldquo;{session.preview}&rdquo;
+                      </p>
+                      <div className="font-courier text-[10px] text-text-muted mt-2">
+                        {session.messageCount} exchanges
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Divider */}
             <div className="w-full max-w-6xl h-px bg-gradient-to-r from-transparent via-border to-transparent my-20" />
@@ -371,7 +411,7 @@ function HomeContent() {
             </motion.footer>
           </motion.div>
         ) : (
-          <OracleSession key="session" onExit={() => setSessionStarted(false)} />
+          <OracleSession key="session" onExit={() => { setSessionStarted(false); setViewingSession(null); }} viewSession={viewingSession} />
         )}
       </AnimatePresence>
 
