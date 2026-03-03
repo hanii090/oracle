@@ -8,14 +8,27 @@ import { isAdminConfigured, getAdminError } from '@/lib/firebase-admin';
 export async function GET() {
   const checks: Record<string, { ok: boolean; detail?: string }> = {};
 
-  // Firebase Admin
+  // Firebase Admin — deep diagnostic
   const adminOk = isAdminConfigured();
-  checks['firebase-admin'] = {
-    ok: adminOk,
-    detail: adminOk
-      ? 'Initialized'
-      : getAdminError() || 'FIREBASE_SERVICE_ACCOUNT_KEY is not set',
-  };
+  const rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  let adminDetail = '';
+  if (adminOk) {
+    adminDetail = 'Initialized successfully';
+  } else if (!rawKey) {
+    adminDetail = 'FIREBASE_SERVICE_ACCOUNT_KEY is completely empty / not set';
+  } else {
+    const trimmed = rawKey.trim();
+    const firstChar = trimmed[0];
+    const lastChar = trimmed[trimmed.length - 1];
+    adminDetail =
+      `${getAdminError() || 'Unknown error'}. ` +
+      `Key length: ${trimmed.length} chars, starts with: "${firstChar}", ends with: "${lastChar}". ` +
+      (firstChar === '{' ? 'Looks like raw JSON.' :
+       firstChar === '"' || firstChar === "'" ? 'WARNING: Starts with a quote — likely wrapped in extra quotes.' :
+       /^[A-Za-z0-9+/]/.test(firstChar) ? 'Looks like base64.' :
+       'Unrecognized format.');
+  }
+  checks['firebase-admin'] = { ok: adminOk, detail: adminDetail };
 
   // Firebase Client (NEXT_PUBLIC_ vars)
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
@@ -54,6 +67,9 @@ export async function GET() {
       status: allOk ? 'healthy' : 'unhealthy',
       timestamp: new Date().toISOString(),
       checks,
+      help: !checks['firebase-admin'].ok
+        ? 'Run: base64 -i your-service-account-key.json | pbcopy — then paste into Vercel env var FIREBASE_SERVICE_ACCOUNT_KEY and redeploy.'
+        : undefined,
     },
     { status: allOk ? 200 : 503 }
   );
