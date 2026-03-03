@@ -23,6 +23,14 @@ const serverSchema = z.object({
   GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
   ANTHROPIC_API_KEY: z.string().optional(),
   TOGETHER_API_KEY: z.string().optional(),
+
+  // Rate limiting (optional — falls back to in-memory)
+  UPSTASH_REDIS_REST_URL: z.string().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+
+  // App
+  NEXT_PUBLIC_APP_URL: z.string().optional(),
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverSchema>;

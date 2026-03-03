@@ -1,27 +1,22 @@
 import { NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { sessionRateLimit } from '@/lib/rate-limit';
-import { z } from 'zod';
+import { verifyAuth } from '@/lib/auth-middleware';
+import { createLogger } from '@/lib/logger';
 
 /**
  * Server-side session validation — enforces session limits that can't be bypassed.
  * POST /api/validate-session
  */
 
-const requestSchema = z.object({
-  userId: z.string().min(1),
-});
-
 export async function POST(req: Request) {
+  const log = createLogger({ route: '/api/validate-session', correlationId: crypto.randomUUID() });
+
   try {
-    const body = await req.json();
-    const parsed = requestSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
-    }
-
-    const { userId } = parsed.data;
+    // ── Auth verification ──────────────────────────────────────
+    const authResult = await verifyAuth(req);
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
 
     // Rate limit
     const rl = sessionRateLimit(userId);
@@ -93,7 +88,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ canStart: true, profile: newProfile });
   } catch (error) {
-    console.error('Session validation error:', error);
+    log.error('Session validation error', {}, error);
     return NextResponse.json(
       { error: 'Failed to validate session' },
       { status: 500 }

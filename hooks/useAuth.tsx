@@ -37,11 +37,12 @@ interface AuthContextType {
   sessions: SessionSummary[];
   signIn: () => Promise<void>;
   logOut: () => Promise<void>;
-  upgradeTier: (tier: Tier) => Promise<void>;
+  getIdToken: () => Promise<string | null>;
   incrementSession: () => Promise<boolean>;
   clearAuthError: () => void;
   saveSession: (messages: SessionMessage[], maxDepth: number) => Promise<void>;
   loadSessions: () => Promise<void>;
+  verifySubscription: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -138,20 +139,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth);
   };
 
-  const upgradeTier = useCallback(async (tier: Tier) => {
-    if (!user) return;
-    const currentProfile = profile || { tier: "free" as Tier, sessionsThisMonth: 0, lastSessionDate: null };
-    const newProfile = { ...currentProfile, tier };
-    setProfile(newProfile);
-    localStorage.setItem(`oracle_profile_${user.uid}`, JSON.stringify(newProfile));
-    if (db) {
-      try {
-        await setDoc(doc(db, "users", user.uid), newProfile, { merge: true });
-      } catch (e) {
-        console.error("Firestore save error", e);
-      }
+  const getIdToken = useCallback(async (): Promise<string | null> => {
+    if (!user) return null;
+    try {
+      return await user.getIdToken();
+    } catch (e) {
+      console.error('Failed to get ID token:', e);
+      return null;
     }
-  }, [user, profile]);
+  }, [user]);
 
   const incrementSession = async (): Promise<boolean> => {
     if (!user || !profile) return false;
@@ -266,10 +262,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSessions(allSessions);
   }, [user]);
 
+  const verifySubscription = useCallback(async (): Promise<string | null> => {
+    if (!user) return null;
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/account', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.synced && data.tier) {
+          // Force update local profile immediately
+          setProfile(prev => prev ? { ...prev, tier: data.tier } : { tier: data.tier, sessionsThisMonth: 0, lastSessionDate: null });
+          return data.tier;
+        }
+        return data.tier || null;
+      }
+    } catch (e) {
+      console.error('Subscription verification failed:', e);
+    }
+    return null;
+  }, [user]);
+
   const clearAuthError = () => setAuthError(null);
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, authError, sessions, signIn, logOut, upgradeTier, incrementSession, clearAuthError, saveSession, loadSessions }}>
+    <AuthContext.Provider value={{ user, profile, loading, authError, sessions, signIn, logOut, getIdToken, incrementSession, clearAuthError, saveSession, loadSessions, verifySubscription }}>
       {children}
     </AuthContext.Provider>
   );

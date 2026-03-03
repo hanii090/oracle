@@ -33,7 +33,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
   const [lastOracleText, setLastOracleText] = useState<string | undefined>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { steerMusic, triggerBreakthrough } = useLyriaFoley(true);
-  const { user: authUser, profile, saveSession, loadSessions } = useAuth();
+  const { user: authUser, profile, saveSession, loadSessions, getIdToken } = useAuth();
 
   // #22 Night Oracle auto-detection (midnight–5am)
   useEffect(() => {
@@ -164,9 +164,13 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
       const newDepth = depth + 1;
 
       // POST to server-side AI proxy (#4 — no client-side API keys)
+      const token = await getIdToken();
       const res = await fetch("/api/oracle", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           message: input,
           conversationHistory: [...messages, userMsg].map((m) => ({
@@ -180,7 +184,6 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
           depth: newDepth,
           nightMode,
           tier: profile?.tier || "free",
-          userId: authUser?.uid,
         }),
       });
 
@@ -192,6 +195,19 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
       const data = await res.json();
       const question = data.question || "What are you hiding from yourself?";
       const emotionData = data.emotionData || {};
+
+      // Handle crisis response — show resources instead of continuing the session
+      if (data.crisisResources) {
+        const crisisMsg: Message = {
+          id: crypto.randomUUID(),
+          role: "oracle",
+          content: question + "\n\n" + data.crisisResources.join("\n"),
+          depth,
+        };
+        setMessages((prev) => [...prev, crisisMsg]);
+        setIsLoading(false);
+        return;
+      }
 
       // Steer Lyria music with emotion weights
       if (emotionData.lyriaEmotionWeights) {
@@ -254,7 +270,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, depth, profile, messages, pastThread, nightMode, steerMusic, triggerBreakthrough, userId, authUser?.uid]);
+  }, [input, isLoading, depth, profile, messages, pastThread, nightMode, steerMusic, triggerBreakthrough, userId, getIdToken]);
 
   // Voice transcript handler
   const handleVoiceTranscript = useCallback((text: string) => {
@@ -265,7 +281,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
 
   return (
     <motion.div
-      className={`relative z-10 w-full ${nightMode ? "max-w-xl" : "max-w-3xl"} h-screen flex flex-col ${nightMode ? "py-6 px-4" : "py-12 px-6"} transition-all duration-1000 mx-auto ${isBreakthrough ? "bg-void/50" : ""} ${nightMode ? "bg-[#020104]" : ""}`}
+      className={`relative z-10 w-full ${nightMode ? "max-w-xl" : "max-w-3xl"} h-[100dvh] flex flex-col ${nightMode ? "py-6 px-4" : "py-12 px-6"} transition-all duration-1000 mx-auto ${isBreakthrough ? "bg-void/50" : ""} ${nightMode ? "bg-[#020104]" : ""}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -275,7 +291,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
     >
       <BreakthroughVisual imageUrl={currentVisual} isActive={isBreakthrough} />
 
-      <div className="relative z-10 flex flex-col h-full w-full">
+      <div className="relative z-10 flex flex-col h-full w-full min-h-0">
         <SessionHeader
           depth={depth}
           nightMode={nightMode}
@@ -307,7 +323,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
 
         {/* Message area */}
         <div
-          className={`flex-1 overflow-y-auto mb-8 pr-4 space-y-8 scrollbar-hide ${nightMode ? "flex flex-col justify-center" : ""}`}
+          className={`flex-1 min-h-0 overflow-y-auto mb-8 pr-4 space-y-8 ${nightMode ? "flex flex-col justify-center" : ""}`}
           role="log"
           aria-label="Conversation history"
           aria-live="polite"

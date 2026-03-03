@@ -25,7 +25,7 @@ const OracleSession = lazy(() =>
 function HomeContent() {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [hasKey, setHasKey] = useState<boolean | null>(null);
-  const { user, profile, loading, authError, sessions, signIn, logOut, upgradeTier, incrementSession, clearAuthError, loadSessions } = useAuth();
+  const { user, profile, loading, authError, sessions, signIn, logOut, getIdToken, incrementSession, clearAuthError, loadSessions, verifySubscription } = useAuth();
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [viewingSession, setViewingSession] = useState<SessionSummary | null>(null);
   const upgradeProcessedRef = useRef(false);
@@ -33,19 +33,47 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  const [upgradePending, setUpgradePending] = useState(false);
+
   // #1 FIX: Don't trust URL params for tier upgrades.
   // The webhook handles the actual upgrade server-side.
-  // We only show a "processing" message on success redirect.
+  // We verify subscription status directly with Stripe as a safety net.
   useEffect(() => {
     if (!upgradeProcessedRef.current && searchParams.get('success') === 'true') {
       upgradeProcessedRef.current = true;
-      // Reload profile to pick up webhook-applied changes
+
       if (user && !loading) {
-        loadSessions();
+        setUpgradePending(true);
+
+        // Poll for tier update — webhook may take a few seconds
+        const verifyUpgrade = async () => {
+          let attempts = 0;
+          const maxAttempts = 8;
+
+          while (attempts < maxAttempts) {
+            attempts++;
+            const tier = await verifySubscription();
+            if (tier && tier !== 'free') {
+              setUpgradePending(false);
+              await loadSessions();
+              router.replace('/');
+              return;
+            }
+            // Wait with increasing delay: 2s, 3s, 4s...
+            await new Promise(r => setTimeout(r, 1000 + attempts * 1000));
+          }
+
+          // If we get here, tier didn't update — force a final sync
+          await verifySubscription();
+          await loadSessions();
+          setUpgradePending(false);
+          router.replace('/');
+        };
+
+        verifyUpgrade();
       }
-      router.replace('/');
     }
-  }, [user, loading, searchParams, router, loadSessions]);
+  }, [user, loading, searchParams, router, loadSessions, verifySubscription]);
 
   useEffect(() => {
     const checkKey = async () => {
@@ -73,10 +101,13 @@ function HomeContent() {
     // #10 FIX: Validate session server-side, with client-side fallback
     let sessionAllowed = false;
     try {
+      const token = await getIdToken();
       const res = await fetch('/api/validate-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.uid }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
 
       if (res.ok) {
@@ -119,10 +150,14 @@ function HomeContent() {
     if (tier === 'free') return;
     
     try {
+      const token = await getIdToken();
       const res = await fetch('/api/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier, userId: user.uid }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ tier }),
       });
       const data = await res.json();
       if (data.url) {
@@ -140,6 +175,16 @@ function HomeContent() {
     <main className="relative min-h-screen flex flex-col items-center overflow-x-hidden" id="main-content">
       <Cursor />
       <Stars />
+
+      {/* Upgrade processing banner */}
+      {upgradePending && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gold/10 border-b border-gold/30 py-3 px-6 text-center">
+          <div className="flex items-center justify-center gap-3">
+            <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+            <span className="font-cinzel text-gold text-sm tracking-widest">Verifying your upgrade...</span>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         {!sessionStarted ? (

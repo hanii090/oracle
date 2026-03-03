@@ -24,8 +24,67 @@ const courier = Courier_Prime({
 });
 
 export const metadata: Metadata = {
-  title: "ORACLE",
-  description: "The AI that never answers.",
+  title: {
+    default: "ORACLE — The AI That Never Answers",
+    template: "%s | ORACLE",
+  },
+  description:
+    "Oracle is a Socratic AI that never gives answers — only questions. Dive into the abyss of self-discovery through relentless, piercing inquiry.",
+  keywords: [
+    "AI",
+    "Socratic questioning",
+    "self-discovery",
+    "philosophy",
+    "deep questions",
+    "introspection",
+    "oracle",
+    "AI therapy",
+    "self-reflection",
+  ],
+  authors: [{ name: "Oracle" }],
+  creator: "Oracle",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "https://oracle-app.com"
+  ),
+  openGraph: {
+    type: "website",
+    locale: "en_GB",
+    siteName: "ORACLE",
+    title: "ORACLE — The AI That Never Answers",
+    description:
+      "A Socratic AI that responds only with questions. No answers. No advice. Just the truth you're avoiding.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ORACLE — The AI That Never Answers",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ORACLE — The AI That Never Answers",
+    description:
+      "A Socratic AI that responds only with questions. Dive into the abyss.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

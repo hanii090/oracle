@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { oracleRateLimit } from '@/lib/rate-limit';
 import { withRetry, withFallback } from '@/lib/retry';
+import { verifyAuth } from '@/lib/auth-middleware';
+import { detectCrisis, sanitizeMessage } from '@/lib/safety';
+import { getServerEnv } from '@/lib/env';
+import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
 
 /**
@@ -22,7 +26,6 @@ const requestSchema = z.object({
   depth: z.number().int().min(1).max(100),
   nightMode: z.boolean(),
   tier: z.enum(['free', 'philosopher', 'pro']),
-  userId: z.string().optional(),
 });
 
 function buildSystemPrompt(depth: number, threadContext: string, nightMode: boolean): string {
@@ -188,7 +191,16 @@ async function callTogether(systemPrompt: string, conversation: string) {
 }
 
 export async function POST(req: Request) {
+  const log = createLogger({ route: '/api/oracle', correlationId: crypto.randomUUID() });
+
   try {
+    // ── Auth verification ──────────────────────────────────────
+    const authResult = await verifyAuth(req);
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
+
+    log.info('Oracle request received', { userId });
+
     const body = await req.json();
     const parsed = requestSchema.safeParse(body);
 
@@ -199,17 +211,34 @@ export async function POST(req: Request) {
       );
     }
 
-    const { message, conversationHistory, threadContext, depth, nightMode, tier, userId } = parsed.data;
+    const { message, conversationHistory, threadContext, depth, nightMode, tier } = parsed.data;
 
-    // Rate limiting — use userId if available, otherwise fall back to IP
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const rl = oracleRateLimit(userId || ip);
+    // ── Crisis detection ───────────────────────────────────────
+    const crisis = detectCrisis(message);
+    if (crisis) {
+      log.warn('Crisis content detected', { userId, severity: crisis.severity, category: crisis.category });
+      return NextResponse.json({
+        question: crisis.safeResponse,
+        emotionData: { crisis: true, severity: crisis.severity },
+        visual: null,
+        crisisResources: crisis.resources,
+      });
+    }
+
+    // ── Sanitize user input against prompt injection ───────────
+    const sanitizedMessage = sanitizeMessage(message);
+
+    // ── Rate limiting ──────────────────────────────────────────
+    const rl = oracleRateLimit(userId);
     if (!rl.success) {
       return NextResponse.json(
         { error: 'Rate limited. Please slow down.', resetAt: rl.resetAt },
         { status: 429 }
       );
     }
+
+    // ── Validate env ───────────────────────────────────────────
+    const env = getServerEnv();
 
     // Enforce depth limits for free tier
     if (tier === 'free' && depth > 5) {
@@ -221,15 +250,15 @@ export async function POST(req: Request) {
 
     // Build prompts
     const threadStr = threadContext.length > 0
-      ? threadContext.slice(-10).map(m => `${m.role}: ${m.content}`).join('\n')
+      ? threadContext.slice(-10).map(m => `${m.role}: ${sanitizeMessage(m.content)}`).join('\n')
       : 'No past sessions.';
 
-    const currentConvo = [...conversationHistory, { role: 'user', content: message }]
-      .map(m => `${m.role}: ${m.content}`)
+    const currentConvo = [...conversationHistory, { role: 'user', content: sanitizedMessage }]
+      .map(m => `${m.role}: ${sanitizeMessage(m.content)}`)
       .join('\n');
 
     const systemPrompt = buildSystemPrompt(depth, threadStr, nightMode);
-    const emotionPrompt = buildEmotionPrompt(message);
+    const emotionPrompt = buildEmotionPrompt(sanitizedMessage);
 
     // Try providers with fallback
     const result = await withFallback([
@@ -255,7 +284,7 @@ export async function POST(req: Request) {
       visual: result.visual,
     });
   } catch (error) {
-    console.error('Oracle API error:', error);
+    log.error('Oracle API error', {}, error);
     return NextResponse.json(
       { error: 'All AI providers failed. Please try again.' },
       { status: 500 }

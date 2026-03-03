@@ -1,11 +1,23 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // User profiles - users can only read/write their own
+    // User profiles - users can read their own, but restricted writes
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
 
-      // Session history subcollection
+      // Users can write ONLY safe fields (not tier, stripe*, or upgradedAt)
+      // Those are set server-side via Firebase Admin (webhook handler).
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && !request.resource.data.diff(resource.data).affectedKeys()
+                       .hasAny(['tier', 'stripeCustomerId', 'stripeSubscriptionId', 'upgradedAt']);
+
+      // Allow creation with default profile (tier must be 'free')
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.tier == 'free';
+
+      // Session history subcollection — users can read/write their own sessions
       match /sessions/{sessionId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }

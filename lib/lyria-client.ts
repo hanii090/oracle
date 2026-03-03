@@ -22,7 +22,23 @@ export class LyriaFoleyEngine {
   private reconnectAttempts = 0;
 
   async connect() {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim();
+    // API key is fetched from a server-side proxy endpoint to avoid client-side exposure.
+    // Falls back to NEXT_PUBLIC_GEMINI_API_KEY if the proxy is not available.
+    let apiKey: string | undefined;
+    try {
+      const res = await fetch('/api/lyria-token');
+      if (res.ok) {
+        const data = await res.json();
+        apiKey = data.apiKey;
+      }
+    } catch {
+      // Proxy not available — fall back
+    }
+
+    if (!apiKey) {
+      apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim();
+    }
+
     if (!apiKey) return;
 
     try {

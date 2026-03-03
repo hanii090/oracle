@@ -1,22 +1,29 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { checkoutRateLimit } from '@/lib/rate-limit';
+import { verifyAuth } from '@/lib/auth-middleware';
+import { getServerEnv } from '@/lib/env';
+import { createLogger } from '@/lib/logger';
 
 let stripeClient: Stripe | null = null;
 
 function getStripe(): Stripe {
   if (!stripeClient) {
-    const key = process.env.STRIPE_SECRET_KEY;
-    if (!key) {
-      throw new Error('STRIPE_SECRET_KEY environment variable is required');
-    }
-    stripeClient = new Stripe(key, { apiVersion: '2026-02-25.clover' });
+    const env = getServerEnv();
+    stripeClient = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion });
   }
   return stripeClient;
 }
 
 export async function POST(req: Request) {
+  const log = createLogger({ route: '/api/checkout', correlationId: crypto.randomUUID() });
+
   try {
+    // ── Auth verification ──────────────────────────────────────
+    const authResult = await verifyAuth(req);
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
+
     // Rate limiting (#5)
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rateCheck = checkoutRateLimit(ip);
@@ -24,17 +31,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
     }
 
-    const { tier, userId } = await req.json();
+    const { tier } = await req.json();
 
-    if (!tier || !userId) {
-      return NextResponse.json({ error: 'Missing tier or userId' }, { status: 400 });
+    if (!tier) {
+      return NextResponse.json({ error: 'Missing tier' }, { status: 400 });
     }
 
+    const env = getServerEnv();
     let priceId = '';
     if (tier === 'philosopher') {
-      priceId = process.env.STRIPE_PRICE_ID_PHILOSOPHER || '';
+      priceId = env.STRIPE_PRICE_ID_PHILOSOPHER;
     } else if (tier === 'pro') {
-      priceId = process.env.STRIPE_PRICE_ID_PRO || '';
+      priceId = env.STRIPE_PRICE_ID_PRO;
     } else {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 });
     }
@@ -45,8 +53,6 @@ export async function POST(req: Request) {
 
     const stripe = getStripe();
     
-    // In a real app, you'd use the actual APP_URL.
-    // We'll pass it from the client to be safe.
     const origin = req.headers.get('origin') || 'http://localhost:3000';
 
     const session = await stripe.checkout.sessions.create({
@@ -63,9 +69,11 @@ export async function POST(req: Request) {
       client_reference_id: userId,
     });
 
+    log.info('Checkout session created', { userId, tier, sessionId: session.id });
+
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
-    console.error('Stripe Checkout error:', err);
+    log.error('Stripe Checkout error', {}, err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

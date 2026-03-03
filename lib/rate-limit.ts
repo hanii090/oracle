@@ -1,7 +1,24 @@
 /**
- * Simple in-memory rate limiter.
- * For production, replace with Redis-backed solution (e.g. @upstash/ratelimit).
+ * Rate limiter with Upstash Redis support and in-memory fallback.
+ *
+ * Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN env vars to enable Redis.
+ * Otherwise, falls back to the in-memory implementation (suitable for single-instance).
  */
+
+export interface RateLimitConfig {
+  /** Max requests allowed in the window */
+  maxRequests: number;
+  /** Window size in milliseconds */
+  windowMs: number;
+}
+
+export interface RateLimitResult {
+  success: boolean;
+  remaining: number;
+  resetAt: number;
+}
+
+// ── In-memory store (fallback) ─────────────────────────────────────
 
 interface RateLimitEntry {
   count: number;
@@ -20,41 +37,89 @@ if (typeof setInterval !== 'undefined') {
   }, 60_000);
 }
 
-export interface RateLimitConfig {
-  /** Max requests allowed in the window */
-  maxRequests: number;
-  /** Window size in milliseconds */
-  windowMs: number;
-}
-
-export interface RateLimitResult {
-  success: boolean;
-  remaining: number;
-  resetAt: number;
-}
-
-/**
- * Check and consume a rate limit token for the given key.
- */
-export function rateLimit(key: string, config: RateLimitConfig): RateLimitResult {
+function inMemoryRateLimit(key: string, config: RateLimitConfig): RateLimitResult {
   const now = Date.now();
   const entry = store.get(key);
 
-  // No entry or window expired — create fresh
   if (!entry || now > entry.resetAt) {
     const resetAt = now + config.windowMs;
     store.set(key, { count: 1, resetAt });
     return { success: true, remaining: config.maxRequests - 1, resetAt };
   }
 
-  // Within window
   if (entry.count < config.maxRequests) {
     entry.count++;
     return { success: true, remaining: config.maxRequests - entry.count, resetAt: entry.resetAt };
   }
 
-  // Rate limited
   return { success: false, remaining: 0, resetAt: entry.resetAt };
+}
+
+// ── Redis-backed rate limiter (Upstash) ────────────────────────────
+
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const useRedis = !!(UPSTASH_URL && UPSTASH_TOKEN);
+
+async function redisRateLimit(key: string, config: RateLimitConfig): Promise<RateLimitResult> {
+  const windowSec = Math.ceil(config.windowMs / 1000);
+  const redisKey = `ratelimit:${key}`;
+
+  try {
+    // Use Upstash REST API — INCR + EXPIRE atomic pipeline
+    const pipelineRes = await fetch(`${UPSTASH_URL}/pipeline`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${UPSTASH_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify([
+        ['INCR', redisKey],
+        ['EXPIRE', redisKey, windowSec.toString()],
+      ]),
+    });
+
+    if (!pipelineRes.ok) {
+      throw new Error(`Upstash returned ${pipelineRes.status}`);
+    }
+
+    const results = await pipelineRes.json() as Array<{ result: number }>;
+    const currentCount = results[0]?.result ?? 1;
+    const resetAt = Date.now() + config.windowMs;
+
+    if (currentCount > config.maxRequests) {
+      return { success: false, remaining: 0, resetAt };
+    }
+
+    return {
+      success: true,
+      remaining: config.maxRequests - currentCount,
+      resetAt,
+    };
+  } catch (e) {
+    console.warn('[rate-limit] Redis error, falling back to in-memory:', e instanceof Error ? e.message : e);
+    return inMemoryRateLimit(key, config);
+  }
+}
+
+/**
+ * Check and consume a rate limit token for the given key.
+ * Uses Redis when configured, in-memory otherwise.
+ */
+export function rateLimit(key: string, config: RateLimitConfig): RateLimitResult {
+  // For async Redis, we need a sync wrapper — use in-memory for now
+  // and call rateLimitAsync for routes that can await.
+  return inMemoryRateLimit(key, config);
+}
+
+/**
+ * Async rate limiter — uses Redis when available.
+ */
+export async function rateLimitAsync(key: string, config: RateLimitConfig): Promise<RateLimitResult> {
+  if (useRedis) {
+    return redisRateLimit(key, config);
+  }
+  return inMemoryRateLimit(key, config);
 }
 
 // ── Pre-configured limiters ────────────────────────────────────────
@@ -73,3 +138,17 @@ export function oracleRateLimit(userId: string): RateLimitResult {
 export function sessionRateLimit(userId: string): RateLimitResult {
   return rateLimit(`session:${userId}`, { maxRequests: 10, windowMs: 60_000 });
 }
+
+/** Async versions — use Redis when available */
+export async function oracleRateLimitAsync(userId: string): Promise<RateLimitResult> {
+  return rateLimitAsync(`oracle:${userId}`, { maxRequests: 20, windowMs: 60_000 });
+}
+
+export async function checkoutRateLimitAsync(ip: string): Promise<RateLimitResult> {
+  return rateLimitAsync(`checkout:${ip}`, { maxRequests: 5, windowMs: 60_000 });
+}
+
+export async function sessionRateLimitAsync(userId: string): Promise<RateLimitResult> {
+  return rateLimitAsync(`session:${userId}`, { maxRequests: 10, windowMs: 60_000 });
+}
+

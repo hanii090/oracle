@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { createLogger } from '@/lib/logger';
 
 /**
  * Stripe Webhook Handler
  * Verifies payment server-side — the ONLY trusted path for tier upgrades.
  */
+
+const log = createLogger({ route: '/api/webhooks/stripe' });
 
 let stripe: Stripe | null = null;
 
@@ -27,7 +30,7 @@ function tierFromPriceId(priceId: string): 'philosopher' | 'pro' | null {
 export async function POST(req: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.error('STRIPE_WEBHOOK_SECRET not configured');
+    log.error('STRIPE_WEBHOOK_SECRET not configured');
     return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 });
   }
 
@@ -44,7 +47,7 @@ export async function POST(req: Request) {
     event = getStripe().webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('Webhook signature verification failed:', message);
+    log.error('Webhook signature verification failed', { message });
     return NextResponse.json({ error: `Webhook Error: ${message}` }, { status: 400 });
   }
 
@@ -55,14 +58,14 @@ export async function POST(req: Request) {
       const userId = session.client_reference_id;
 
       if (!userId) {
-        console.error('No client_reference_id in checkout session');
+        log.error('No client_reference_id in checkout session');
         break;
       }
 
       // Get the subscription to find the price ID
       const subscriptionId = session.subscription as string;
       if (!subscriptionId) {
-        console.error('No subscription in checkout session');
+        log.error('No subscription in checkout session');
         break;
       }
 
@@ -71,13 +74,13 @@ export async function POST(req: Request) {
         const priceId = subscription.items.data[0]?.price?.id;
 
         if (!priceId) {
-          console.error('No price ID found in subscription');
+          log.error('No price ID found in subscription');
           break;
         }
 
         const tier = tierFromPriceId(priceId);
         if (!tier) {
-          console.error('Unknown price ID:', priceId);
+          log.error('Unknown price ID', { priceId });
           break;
         }
 
@@ -93,9 +96,9 @@ export async function POST(req: Request) {
           { merge: true }
         );
 
-        console.log(`✅ User ${userId} upgraded to ${tier}`);
+        log.info('User upgraded', { userId, tier });
       } catch (e) {
-        console.error('Error processing checkout.session.completed:', e);
+        log.error('Error processing checkout.session.completed', {}, e);
       }
       break;
     }
@@ -120,7 +123,7 @@ export async function POST(req: Request) {
           if (status === 'canceled' || status === 'unpaid' || event.type === 'customer.subscription.deleted') {
             // Downgrade to free
             await userDoc.ref.set({ tier: 'free', stripeSubscriptionId: null }, { merge: true });
-            console.log(`⬇️ User ${userDoc.id} downgraded to free`);
+            log.info('User downgraded to free', { userId: userDoc.id });
           } else if (status === 'active') {
             // Verify tier matches current price
             const priceId = subscription.items.data[0]?.price?.id;
@@ -131,7 +134,7 @@ export async function POST(req: Request) {
           }
         }
       } catch (e) {
-        console.error('Error processing subscription event:', e);
+        log.error('Error processing subscription event', {}, e);
       }
       break;
     }
