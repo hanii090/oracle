@@ -17,10 +17,12 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  authError: string | null;
   signIn: () => Promise<void>;
   logOut: () => Promise<void>;
   upgradeTier: (tier: Tier) => Promise<void>;
   incrementSession: () => Promise<boolean>;
+  clearAuthError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -28,11 +30,11 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!auth);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!auth) {
-      setLoading(false);
       return;
     }
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
@@ -57,11 +59,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async () => {
     if (!auth) return;
+    setAuthError(null);
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Sign in error", error);
+      if (error.code === 'auth/configuration-not-found') {
+        setAuthError("Google Sign-In is not enabled. Please enable it in the Firebase Console under Authentication > Sign-in method.");
+      } else if (error.code === 'auth/unauthorized-domain') {
+        setAuthError("This domain is not authorized for OAuth operations. Please add it to the authorized domains list in the Firebase Console under Authentication > Settings > Authorized domains.");
+      } else {
+        setAuthError(error.message || "Failed to sign in.");
+      }
     }
   };
 
@@ -106,8 +116,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
+  const clearAuthError = () => setAuthError(null);
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, logOut, upgradeTier, incrementSession }}>
+    <AuthContext.Provider value={{ user, profile, loading, authError, signIn, logOut, upgradeTier, incrementSession, clearAuthError }}>
       {children}
     </AuthContext.Provider>
   );
