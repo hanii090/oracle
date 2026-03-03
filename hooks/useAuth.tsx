@@ -230,9 +230,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Save to Firestore
     if (db) {
       try {
-        await addDoc(collection(db, "users", user.uid, "sessions"), {
-          ...session,
-        });
+        await setDoc(doc(db, "users", user.uid, "sessions", session.id), session);
       } catch (e) {
         console.error("Firestore session save error", e);
       }

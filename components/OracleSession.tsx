@@ -26,9 +26,10 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
   const [isBreakthrough, setIsBreakthrough] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showDepthLimit, setShowDepthLimit] = useState(false);
+  const [nightMode, setNightMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { steerMusic, triggerBreakthrough } = useLyriaFoley(true);
-  const { user: authUser, profile, saveSession } = useAuth();
+  const { user: authUser, profile, saveSession, loadSessions } = useAuth();
 
   // Handle viewing a past session (read-only mode)
   useEffect(() => {
@@ -96,11 +97,21 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const handleExit = async () => {
+    const currentMessages = messages.filter(m => !(m.role === "oracle" && m.content === "What truth are you avoiding today?"));
+    if (currentMessages.filter(m => m.role === "user").length > 0) {
+      await saveSession(currentMessages, depth);
+      await loadSessions();
+    }
+    onExit();
+  };
+
   const handleReset = async () => {
     // Archive current session to history before resetting
-    const allMessages = [...pastThread, ...messages.filter(m => m.role === "user" || (m.role === "oracle" && m.content !== "What truth are you avoiding today?"))];
-    if (allMessages.filter(m => m.role === "user").length > 0) {
-      await saveSession(allMessages, depth);
+    const currentMessages = messages.filter(m => !(m.role === "oracle" && m.content === "What truth are you avoiding today?"));
+    if (currentMessages.filter(m => m.role === "user").length > 0) {
+      await saveSession(currentMessages, depth);
+      await loadSessions();
     }
 
     setMessages([{ id: crypto.randomUUID(), role: "oracle", content: "What truth are you avoiding today?", depth: 1 }]);
@@ -142,7 +153,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
       const rawKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim();
       const apiKey = rawKey ? rawKey : "dummy_key";
       const ai = new GoogleGenAI({ apiKey });
-      const newDepth = Math.min(depth + 1, 12);
+      const newDepth = depth + 1;
       
       const threadContext = pastThread.length > 0
         ? pastThread.slice(-10).map((m: any) => `${m.role}: ${m.content}`).join("\n")
@@ -164,9 +175,14 @@ Rules:
 - Each question should be shorter and more piercing than the last.
 - Do not use pleasantries. Do not say "hello". Just ask the question.
 
-Current depth level: ${newDepth} (1 is surface, 10 is abyss)
+Current depth level: ${newDepth} (1 is surface, beyond 10 is the abyss — you are in uncharted territory)
 Past Thread Context:
 ${threadContext}
+${newDepth > 7 && pastThread.length > 6 ? `
+⚡ CONFRONTATION MODE (depth ${newDepth}):
+Study the user's past statements carefully. Find a belief, value, or claim they expressed earlier that DIRECTLY CONTRADICTS something they have said in this conversation. Surface the contradiction in your question. Force them to reconcile it. Pattern: "You once told me [X]. Now you say [Y]. Which of these is the lie you tell yourself?"
+If no clear contradiction exists, target the most vulnerable unexamined assumption they have revealed.` : ''}${nightMode ? `
+🌙 NIGHT ORACLE MODE: Maximum minimalism. Fewest possible words. Your question should feel like it is glowing alone in infinite darkness. No more than 12 words. No preamble. Just the blade.` : ''}
 `;
 
       const emotionPrompt = `Analyse this for emotional subtext. Return JSON only:
@@ -352,7 +368,7 @@ Message: "${input}"`;
 
   return (
     <motion.div
-      className={`relative z-10 w-full max-w-3xl h-screen flex flex-col py-12 px-6 transition-colors duration-1000 mx-auto ${isBreakthrough ? 'bg-void/50' : ''}`}
+      className={`relative z-10 w-full ${nightMode ? 'max-w-xl' : 'max-w-3xl'} h-screen flex flex-col ${nightMode ? 'py-6 px-4' : 'py-12 px-6'} transition-all duration-1000 mx-auto ${isBreakthrough ? 'bg-void/50' : ''} ${nightMode ? 'bg-[#020104]' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -368,24 +384,39 @@ Message: "${input}"`;
         />
       )}
       <div className="relative z-10 flex flex-col h-full w-full">
-        <div className="flex justify-between items-center mb-12 border-b border-border pb-6">
+        <div className={`flex justify-between items-center mb-12 border-b ${nightMode ? 'border-border/30' : 'border-border'} pb-6`}>
         <div className="font-cinzel text-gold tracking-[0.3em] text-sm uppercase">
           {viewSession
             ? `Session — ${new Date(viewSession.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
             : `Depth Level ${depth}`
           }
+          {!viewSession && depth > 7 && !nightMode && (
+            <span className="ml-3 text-[9px] text-crimson-bright tracking-widest animate-pulse">⚡ Confrontation</span>
+          )}
+          {nightMode && (
+            <span className="ml-3 text-[9px] text-gold/60 tracking-widest">🌙 Night</span>
+          )}
         </div>
         <div className="flex items-center gap-6">
           {!viewSession && (
-            <button
-              onClick={() => setShowResetConfirm(true)}
-              className="text-text-muted hover:text-gold transition-colors font-courier text-xs tracking-widest uppercase cursor-none"
-            >
-              Restart
-            </button>
+            <>
+              <button
+                onClick={() => setNightMode(!nightMode)}
+                className={`transition-colors cursor-none text-sm ${nightMode ? 'text-gold opacity-100' : 'text-text-muted opacity-50 hover:opacity-100 hover:text-gold'}`}
+                title="Night Oracle — 3am mode"
+              >
+                🌙
+              </button>
+              <button
+                onClick={() => setShowResetConfirm(true)}
+                className="text-text-muted hover:text-gold transition-colors font-courier text-xs tracking-widest uppercase cursor-none"
+              >
+                Restart
+              </button>
+            </>
           )}
           <button
-            onClick={onExit}
+            onClick={viewSession ? onExit : handleExit}
             className="text-text-muted hover:text-gold transition-colors font-courier text-xs tracking-widest uppercase cursor-none"
           >
             {viewSession ? 'Back' : 'Depart'}
@@ -393,32 +424,59 @@ Message: "${input}"`;
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto mb-8 pr-4 space-y-8 scrollbar-hide">
-        {messages.map((msg, i) => (
+      {/* Feature Status */}
+      {!viewSession && !nightMode && (
+        <div className="flex gap-2 mb-4 flex-wrap">
+          <div className={`text-[8px] font-courier tracking-[0.12em] uppercase px-2 py-1 rounded border ${pastThread.length > 0 ? 'border-teal/30 text-teal-bright' : 'border-border text-text-muted/40'}`}>
+            🧵 Thread {pastThread.length > 0 ? 'Active' : 'Empty'}
+          </div>
+          <div className="text-[8px] font-courier tracking-[0.12em] uppercase px-2 py-1 rounded border border-gold/20 text-gold/70">
+            🎵 Lyria Active
+          </div>
+          {depth > 7 && (
+            <div className="text-[8px] font-courier tracking-[0.12em] uppercase px-2 py-1 rounded border border-crimson/30 text-crimson-bright animate-pulse">
+              ⚡ Confrontation
+            </div>
+          )}
+          <div className={`text-[8px] font-courier tracking-[0.12em] uppercase px-2 py-1 rounded border ${isBreakthrough ? 'border-violet/30 text-violet-bright animate-pulse' : 'border-border text-text-muted/40'}`}>
+            👁️ Visuals {isBreakthrough ? 'Triggered' : 'Standby'}
+          </div>
+        </div>
+      )}
+
+      <div className={`flex-1 overflow-y-auto mb-8 pr-4 space-y-8 scrollbar-hide ${nightMode ? 'flex flex-col justify-center' : ''}`}>
+        {(nightMode ? messages.slice(-2) : messages).map((msg, i) => (
           <motion.div
             key={msg.id}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: nightMode ? 0 : 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              duration: 0.8,
+              duration: nightMode ? 1.5 : 0.8,
               delay: i === messages.length - 1 ? 0.2 : 0,
             }}
-            className={`flex flex-col ${msg.role === "oracle" ? "items-start" : "items-end"}`}
+            className={`flex flex-col ${nightMode ? 'items-center' : msg.role === "oracle" ? "items-start" : "items-end"}`}
           >
-            <div className="text-[9px] tracking-[0.15em] uppercase text-text-muted mb-2 font-courier">
-              {msg.role === "oracle"
-                ? `Oracle asks — depth ${msg.depth}`
-                : "You say"}
-            </div>
+            {!nightMode && (
+              <div className="text-[9px] tracking-[0.15em] uppercase text-text-muted mb-2 font-courier">
+                {msg.role === "oracle"
+                  ? `Oracle asks — depth ${msg.depth}`
+                  : "You say"}
+              </div>
+            )}
             <div
               className={`
-              max-w-[85%] p-6 relative rounded-lg
+              ${nightMode ? 'max-w-full p-8' : 'max-w-[85%] p-6'} relative rounded-lg
               ${
                 msg.role === "oracle"
-                  ? "bg-gold-dim border border-gold/20 text-text-main font-cinzel text-sm md:text-base tracking-[0.03em] leading-relaxed rounded-tl-none"
-                  : "bg-raised border border-border text-text-mid font-cormorant italic text-lg md:text-xl leading-relaxed rounded-tr-none"
+                  ? nightMode
+                    ? "bg-transparent border-none text-gold-bright font-cinzel text-xl md:text-3xl tracking-[0.05em] leading-relaxed text-center"
+                    : "bg-gold-dim border border-gold/20 text-text-main font-cinzel text-sm md:text-base tracking-[0.03em] leading-relaxed rounded-tl-none"
+                  : nightMode
+                    ? "bg-transparent border-none text-text-muted/50 font-cormorant italic text-base text-center"
+                    : "bg-raised border border-border text-text-mid font-cormorant italic text-lg md:text-xl leading-relaxed rounded-tr-none"
               }
             `}
+              style={nightMode && msg.role === "oracle" ? { textShadow: '0 0 40px rgba(201,168,76,0.3), 0 0 80px rgba(201,168,76,0.1)' } : undefined}
             >
               {msg.content}
             </div>
@@ -428,12 +486,14 @@ Message: "${input}"`;
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-start"
+            className={`flex flex-col ${nightMode ? 'items-center' : 'items-start'}`}
           >
-            <div className="text-[9px] tracking-[0.15em] uppercase text-text-muted mb-2 font-courier">
-              Oracle is perceiving
-            </div>
-            <div className="p-6 bg-gold-dim border border-gold/20 rounded-lg rounded-tl-none flex items-center justify-center min-w-[100px] min-h-[60px] gap-3">
+            {!nightMode && (
+              <div className="text-[9px] tracking-[0.15em] uppercase text-text-muted mb-2 font-courier">
+                Oracle is perceiving
+              </div>
+            )}
+            <div className={`${nightMode ? 'p-8 bg-transparent border-none' : 'p-6 bg-gold-dim border border-gold/20 rounded-tl-none'} rounded-lg flex items-center justify-center min-w-[100px] min-h-[60px] gap-3`}>
               {Array.from({ length: Math.min(Math.ceil(depth / 2), 4) }).map((_, idx) => (
                 <motion.div
                   key={idx}
@@ -467,8 +527,8 @@ Message: "${input}"`;
                 handleSubmit(e);
               }
             }}
-            placeholder="Speak your truth..."
-            className="w-full bg-surface border border-border focus:border-gold/50 focus:ring-1 focus:ring-gold/30 rounded-lg p-6 text-text-main font-cormorant text-lg resize-none outline-none transition-all duration-300 cursor-none disabled:opacity-50 disabled:cursor-not-allowed"
+            placeholder={nightMode ? "..." : "Speak your truth..."}
+            className={`w-full ${nightMode ? 'bg-transparent border-gold/10 focus:border-gold/30 text-center' : 'bg-surface border-border focus:border-gold/50'} border focus:ring-1 focus:ring-gold/30 rounded-lg p-6 text-text-main font-cormorant text-lg resize-none outline-none transition-all duration-300 cursor-none disabled:opacity-50 disabled:cursor-not-allowed`}
             rows={3}
             disabled={isLoading}
           />
