@@ -100,14 +100,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      loadSessions();
-    } else {
-      setSessions([]);
-    }
-  }, [user, loadSessions]);
-
   const signIn = async () => {
     if (!auth) return;
     setAuthError(null);
@@ -211,6 +203,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setSessions(loaded);
   }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadSessions();
+    } else {
+      setSessions([]);
+    }
+  }, [user, loadSessions]);
 
   const saveSession = useCallback(async (messages: SessionMessage[], maxDepth: number) => {
     if (!user) return;
