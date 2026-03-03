@@ -29,7 +29,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
     }
 
-    const db = getAdminFirestore();
+    let db;
+    try {
+      db = getAdminFirestore();
+    } catch (adminError) {
+      // Firebase Admin not configured — allow the session and let
+      // the client-side profile (from client SDK) govern limits.
+      console.warn('Firebase Admin not configured, skipping server validation:', adminError);
+      return NextResponse.json({ canStart: true, reason: 'admin-unavailable' });
+    }
     const userDoc = await db.doc(`users/${userId}`).get();
 
     if (!userDoc.exists) {

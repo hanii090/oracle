@@ -180,6 +180,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
           depth: newDepth,
           nightMode,
           tier: profile?.tier || "free",
+          userId: authUser?.uid,
         }),
       });
 
@@ -253,7 +254,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, depth, profile, messages, pastThread, nightMode, steerMusic, triggerBreakthrough, userId]);
+  }, [input, isLoading, depth, profile, messages, pastThread, nightMode, steerMusic, triggerBreakthrough, userId, authUser?.uid]);
 
   // Voice transcript handler
   const handleVoiceTranscript = useCallback((text: string) => {

@@ -22,7 +22,7 @@ const requestSchema = z.object({
   depth: z.number().int().min(1).max(100),
   nightMode: z.boolean(),
   tier: z.enum(['free', 'philosopher', 'pro']),
-  userId: z.string().min(1),
+  userId: z.string().optional(),
 });
 
 function buildSystemPrompt(depth: number, threadContext: string, nightMode: boolean): string {
@@ -201,8 +201,9 @@ export async function POST(req: Request) {
 
     const { message, conversationHistory, threadContext, depth, nightMode, tier, userId } = parsed.data;
 
-    // Rate limiting
-    const rl = oracleRateLimit(userId);
+    // Rate limiting — use userId if available, otherwise fall back to IP
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = oracleRateLimit(userId || ip);
     if (!rl.success) {
       return NextResponse.json(
         { error: 'Rate limited. Please slow down.', resetAt: rl.resetAt },

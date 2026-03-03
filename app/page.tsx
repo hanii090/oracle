@@ -70,26 +70,30 @@ function HomeContent() {
       return;
     }
 
-    // #10 FIX: Validate session server-side
+    // #10 FIX: Validate session server-side, with client-side fallback
+    let sessionAllowed = false;
     try {
       const res = await fetch('/api/validate-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.uid }),
       });
-      const data = await res.json();
 
-      if (!data.canStart) {
-        setShowLimitModal(true);
-        return;
+      if (res.ok) {
+        const data = await res.json();
+        sessionAllowed = !!data.canStart;
+      } else {
+        // Server returned an error — fall back to client-side check
+        sessionAllowed = await incrementSession();
       }
     } catch {
-      // Fallback to client-side check if server is unreachable
-      const canStart = await incrementSession();
-      if (!canStart) {
-        setShowLimitModal(true);
-        return;
-      }
+      // Network error — fall back to client-side check
+      sessionAllowed = await incrementSession();
+    }
+
+    if (!sessionAllowed) {
+      setShowLimitModal(true);
+      return;
     }
 
     if (hasKey === false && typeof window !== 'undefined' && (window as any).aistudio) {
