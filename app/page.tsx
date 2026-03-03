@@ -5,10 +5,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Cursor } from '@/components/Cursor';
 import { Stars } from '@/components/Stars';
 import { OracleSession } from '@/components/OracleSession';
+import { useAuth, Tier } from '@/hooks/useAuth';
 
 export default function Home() {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [hasKey, setHasKey] = useState<boolean | null>(null);
+  const { user, profile, loading, signIn, logOut, upgradeTier, incrementSession } = useAuth();
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   useEffect(() => {
     const checkKey = async () => {
@@ -28,6 +31,17 @@ export default function Home() {
   }, []);
 
   const handleStart = async () => {
+    if (!user) {
+      await signIn();
+      return;
+    }
+
+    const canStart = await incrementSession();
+    if (!canStart) {
+      setShowLimitModal(true);
+      return;
+    }
+
     if (hasKey === false && typeof window !== 'undefined' && (window as any).aistudio) {
       try {
         await (window as any).aistudio.openSelectKey();
@@ -39,6 +53,17 @@ export default function Home() {
     } else {
       setSessionStarted(true);
     }
+  };
+
+  const handleUpgrade = async (tier: Tier) => {
+    if (!user) {
+      await signIn();
+      // After sign in, they would need to click upgrade again in a real app, 
+      // but for this demo we'll just let them sign in first.
+      return;
+    }
+    await upgradeTier(tier);
+    setShowLimitModal(false);
   };
 
   return (
@@ -56,9 +81,41 @@ export default function Home() {
             exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
             transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
           >
+            {/* HEADER / AUTH */}
+            <header className="w-full max-w-6xl px-6 py-6 flex justify-between items-center absolute top-0 z-50">
+              <div className="font-cinzel text-gold tracking-[0.3em] text-xs uppercase">
+                Oracle
+              </div>
+              <div className="flex items-center gap-6">
+                {!loading && (
+                  user ? (
+                    <div className="flex items-center gap-4">
+                      <div className="text-xs font-courier text-text-muted uppercase tracking-widest">
+                        {profile?.tier} Tier <span className="text-gold opacity-50 mx-2">|</span> {profile?.tier === 'free' ? `${profile.sessionsThisMonth}/5 Sessions` : '∞ Sessions'}
+                      </div>
+                      <button
+                        onClick={logOut}
+                        className="text-text-muted hover:text-gold transition-colors font-courier text-xs tracking-widest uppercase cursor-none"
+                      >
+                        Depart
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={signIn}
+                      className="text-text-muted hover:text-gold transition-colors font-courier text-xs tracking-widest uppercase cursor-none"
+                    >
+                      Enter
+                    </button>
+                  )
+                )}
+              </div>
+            </header>
+
             {/* HERO */}
-            <section className="min-h-screen flex flex-col items-center justify-center text-center px-6 max-w-4xl mx-auto py-20">
-              <div className="w-20 h-10 mb-12 relative">
+            <section className="min-h-screen flex flex-col items-center justify-center text-center px-6 max-w-4xl mx-auto py-20 relative">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(201,168,76,0.05)_0%,transparent_60%)] pointer-events-none" />
+              <div className="w-20 h-10 mb-12 relative z-10">
                 <svg viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
                   <path d="M4 20 C20 4 60 4 76 20 C60 36 20 36 4 20 Z" stroke="#c9a84c" strokeWidth="1" fill="none" opacity="0.6"/>
                   <circle cx="40" cy="20" r="8" stroke="#c9a84c" strokeWidth="1" fill="none" opacity="0.8"/>
@@ -81,11 +138,11 @@ export default function Home() {
 
               <button
                 onClick={handleStart}
-                className="group relative px-8 py-4 font-cinzel text-sm tracking-[0.2em] text-gold uppercase overflow-hidden border border-gold/30 hover:border-gold transition-colors duration-500 cursor-none rounded-lg"
+                className="group relative px-8 py-4 font-cinzel text-sm tracking-[0.2em] text-gold uppercase overflow-hidden border border-gold/30 hover:border-gold transition-all duration-500 cursor-none rounded-lg hover:shadow-[0_0_30px_rgba(201,168,76,0.2)] z-10"
               >
                 <div className="absolute inset-0 bg-gold/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
                 <span className="relative z-10">
-                  {hasKey === false ? "Connect API Key to Approach" : "Approach the Oracle"}
+                  {!user ? "Enter the Void (Sign In)" : hasKey === false ? "Connect API Key to Approach" : "Approach the Oracle"}
                 </span>
               </button>
               {hasKey === false && (
@@ -100,7 +157,13 @@ export default function Home() {
             <div className="w-full max-w-6xl h-px bg-gradient-to-r from-transparent via-border to-transparent my-20" />
 
             {/* PHILOSOPHY */}
-            <section className="w-full max-w-6xl px-6 py-20">
+            <motion.section 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full max-w-6xl px-6 py-20"
+            >
               <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-gold mb-5 flex items-center gap-4">
                 I · Philosophy
                 <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
@@ -136,10 +199,16 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-            </section>
+            </motion.section>
 
             {/* FEATURES */}
-            <section className="w-full max-w-6xl px-6 py-20">
+            <motion.section 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full max-w-6xl px-6 py-20"
+            >
               <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-gold mb-5 flex items-center gap-4">
                 II · Core Features
                 <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
@@ -165,10 +234,16 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            </section>
+            </motion.section>
             
             {/* PRICING */}
-            <section className="w-full max-w-6xl px-6 py-20 mb-20">
+            <motion.section 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full max-w-6xl px-6 py-20 mb-20"
+            >
               <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-gold mb-5 flex items-center gap-4">
                 X · Business Model
                 <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
@@ -179,11 +254,11 @@ export default function Home() {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Seeker */}
-                <div className="bg-surface p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(201,168,76,0.05)]">
+                <div className="bg-surface p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(201,168,76,0.05)] flex flex-col">
                   <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-text-muted mb-3">Seeker</div>
                   <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1">Free</div>
                   <div className="text-xs text-text-muted mb-10">Forever free · No card required</div>
-                  <ul className="space-y-4">
+                  <ul className="space-y-4 flex-1">
                     {['5 sessions per month', 'Basic Thread (last 30 days)', 'Up to depth level 5', 'Sacred question tracking'].map((item, i) => (
                       <li key={i} className="text-sm text-text-mid pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-gold">◆</span>{item}</li>
                     ))}
@@ -191,37 +266,64 @@ export default function Home() {
                       <li key={i} className="text-sm text-text-muted pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-text-muted">◆</span>{item}</li>
                     ))}
                   </ul>
+                  <button 
+                    onClick={() => handleUpgrade('free')}
+                    disabled={profile?.tier === 'free'}
+                    className="mt-8 w-full py-3 border border-border text-text-muted font-cinzel text-xs tracking-widest uppercase rounded hover:border-gold hover:text-gold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {profile?.tier === 'free' ? 'Current Tier' : 'Select'}
+                  </button>
                 </div>
 
                 {/* Philosopher */}
-                <div className="bg-raised p-12 border border-gold/30 relative rounded-lg hover:border-gold hover:shadow-[0_8px_30px_rgba(201,168,76,0.15)] transition-all duration-300 transform hover:-translate-y-1">
+                <div className="bg-raised p-12 border border-gold/30 relative rounded-lg hover:border-gold hover:shadow-[0_8px_30px_rgba(201,168,76,0.15)] transition-all duration-300 transform hover:-translate-y-1 flex flex-col">
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-gold text-void font-cinzel text-[9px] tracking-[0.15em] px-4 py-1 rounded-b-md">Most Popular</div>
                   <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-text-muted mb-3 mt-2">Philosopher</div>
                   <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-gold">£</sup>12</div>
                   <div className="text-xs text-text-muted mb-10">per month · or £99/year</div>
-                  <ul className="space-y-4">
+                  <ul className="space-y-4 flex-1">
                     {['Unlimited sessions', 'Full Thread — entire history', 'All depth levels (to the abyss)', 'Voice Oracle with emotion detection', 'Night Oracle mode', 'Monthly Excavation Reports', 'Confrontation feature'].map((item, i) => (
                       <li key={i} className="text-sm text-text-mid pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-gold">◆</span>{item}</li>
                     ))}
                   </ul>
+                  <button 
+                    onClick={() => handleUpgrade('philosopher')}
+                    disabled={profile?.tier === 'philosopher'}
+                    className="mt-8 w-full py-3 bg-gold/10 border border-gold text-gold font-cinzel text-xs tracking-widest uppercase rounded hover:bg-gold hover:text-void transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {profile?.tier === 'philosopher' ? 'Current Tier' : 'Upgrade'}
+                  </button>
                 </div>
 
                 {/* Oracle Pro */}
-                <div className="bg-surface p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(201,168,76,0.05)]">
+                <div className="bg-surface p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(201,168,76,0.05)] flex flex-col">
                   <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-text-muted mb-3">Oracle Pro</div>
                   <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-gold">£</sup>49</div>
                   <div className="text-xs text-text-muted mb-10">per month · practitioner tier</div>
-                  <ul className="space-y-4">
+                  <ul className="space-y-4 flex-1">
                     {['Everything in Philosopher', '5 client accounts included', 'Client Thread visibility', 'Therapist/coach dashboard', 'Session annotation tools', 'API access (1000 calls/mo)'].map((item, i) => (
                       <li key={i} className="text-sm text-text-mid pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-gold">◆</span>{item}</li>
                     ))}
                   </ul>
+                  <button 
+                    onClick={() => handleUpgrade('pro')}
+                    disabled={profile?.tier === 'pro'}
+                    className="mt-8 w-full py-3 border border-border text-text-muted font-cinzel text-xs tracking-widest uppercase rounded hover:border-gold hover:text-gold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {profile?.tier === 'pro' ? 'Current Tier' : 'Upgrade'}
+                  </button>
                 </div>
               </div>
-            </section>
+            </motion.section>
 
             {/* FOOTER */}
-            <footer className="w-full py-20 text-center relative max-w-6xl mx-auto border-t border-border">
+            <motion.footer 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.5 }}
+              className="w-full py-20 text-center relative max-w-6xl mx-auto border-t border-border"
+            >
               <div className="w-16 h-8 mx-auto mb-8 opacity-40">
                 <svg viewBox="0 0 60 30" fill="none">
                   <path d="M3 15 C15 3 45 3 57 15 C45 27 15 27 3 15 Z" stroke="#c9a84c" strokeWidth="0.8" fill="none"/>
@@ -234,10 +336,47 @@ export default function Home() {
               </div>
               <p className="text-xs text-text-muted tracking-[0.1em] mb-2">YC × Google DeepMind Hackathon · March 26, 2026</p>
               <p className="text-xs text-text-muted tracking-[0.1em]">Next.js 15 · Supabase · Gemini 3 · pgvector · ElevenLabs · Vercel</p>
-            </footer>
+            </motion.footer>
           </motion.div>
         ) : (
           <OracleSession key="session" onExit={() => setSessionStarted(false)} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showLimitModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-void/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-surface border border-gold/30 p-8 rounded-lg max-w-md text-center shadow-2xl shadow-gold/10"
+            >
+              <h3 className="font-cinzel text-xl text-gold mb-4">The Thread is Frayed</h3>
+              <p className="font-cormorant text-text-mid mb-8 text-lg">
+                You have reached your limit of 5 sessions for this moon cycle. To delve deeper into the abyss, you must ascend to the Philosopher tier.
+              </p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setShowLimitModal(false)}
+                  className="px-6 py-2 border border-border text-text-muted hover:text-text-main hover:border-text-main transition-colors font-cinzel text-xs tracking-widest uppercase rounded cursor-none"
+                >
+                  Retreat
+                </button>
+                <button
+                  onClick={() => handleUpgrade('philosopher')}
+                  className="px-6 py-2 bg-gold/10 border border-gold text-gold hover:bg-gold hover:text-void transition-colors font-cinzel text-xs tracking-widest uppercase rounded cursor-none"
+                >
+                  Ascend (£12/mo)
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </main>

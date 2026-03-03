@@ -6,6 +6,7 @@ import { GoogleGenAI } from "@google/genai";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { useLyriaFoley } from "@/hooks/useLyriaFoley";
+import { useAuth } from "@/hooks/useAuth";
 
 type Message = {
   id: string;
@@ -24,8 +25,10 @@ export function OracleSession({ onExit }: { onExit: () => void }) {
   const [currentVisual, setCurrentVisual] = useState<string | null>(null);
   const [isBreakthrough, setIsBreakthrough] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showDepthLimit, setShowDepthLimit] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { steerMusic, triggerBreakthrough } = useLyriaFoley(true);
+  const { profile } = useAuth();
 
   useEffect(() => {
     let uid = localStorage.getItem("oracle_user_id");
@@ -110,6 +113,11 @@ export function OracleSession({ onExit }: { onExit: () => void }) {
       content: input,
       depth: depth,
     };
+
+    if (profile?.tier === 'free' && depth >= 5) {
+      setShowDepthLimit(true);
+      return;
+    }
 
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
@@ -413,6 +421,46 @@ Message: "${input}"`;
                   className="px-6 py-2 bg-gold/10 border border-gold text-gold hover:bg-gold hover:text-void transition-colors font-cinzel text-xs tracking-widest uppercase rounded cursor-none"
                 >
                   Sever
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showDepthLimit && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-void/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-surface border border-gold/30 p-8 rounded-lg max-w-md text-center shadow-2xl shadow-gold/10"
+            >
+              <h3 className="font-cinzel text-xl text-gold mb-4">The Abyss is Sealed</h3>
+              <p className="font-cormorant text-text-mid mb-8 text-lg">
+                You have reached Depth Level 5, the limit of the Free tier. To descend further into the truth, you must become a Philosopher.
+              </p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setShowDepthLimit(false)}
+                  className="px-6 py-2 border border-border text-text-muted hover:text-text-main hover:border-text-main transition-colors font-cinzel text-xs tracking-widest uppercase rounded cursor-none"
+                >
+                  Remain Here
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDepthLimit(false);
+                    onExit(); // Go back to landing page to upgrade
+                  }}
+                  className="px-6 py-2 bg-gold/10 border border-gold text-gold hover:bg-gold hover:text-void transition-colors font-cinzel text-xs tracking-widest uppercase rounded cursor-none"
+                >
+                  Ascend
                 </button>
               </div>
             </motion.div>
