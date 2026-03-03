@@ -124,7 +124,9 @@ export function OracleSession({ onExit }: { onExit: () => void }) {
     setIsLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
+      const rawKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim();
+      const apiKey = rawKey ? rawKey : "dummy_key";
+      const ai = new GoogleGenAI({ apiKey });
       const newDepth = Math.min(depth + 1, 12);
       
       const threadContext = pastThread.length > 0
@@ -168,57 +170,126 @@ ${threadContext}
 }
 Message: "${input}"`;
 
-      const [emotionRes, oracleRes] = await Promise.all([
-        ai.models.generateContent({
-          model: "gemini-3.1-pro-preview",
-          contents: emotionPrompt,
-          config: { responseMimeType: "application/json" }
-        }),
-        ai.models.generateContent({
-          model: "gemini-3.1-pro-preview",
-          contents: currentConvo,
-          config: {
-            systemInstruction: systemInstruction,
-            temperature: 0.7,
-          },
-        })
-      ]);
-
+      let oracleText = "";
       let emotionData: any = {};
+
       try {
-        emotionData = JSON.parse(emotionRes.text || "{}");
-      } catch (e) {
-        console.error("Failed to parse emotion data", e);
-      }
+        if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) throw new Error("No Gemini key");
+        const [emotionRes, oracleRes] = await Promise.all([
+          ai.models.generateContent({
+            model: "gemini-3.1-pro-preview",
+            contents: emotionPrompt,
+            config: { responseMimeType: "application/json" }
+          }),
+          ai.models.generateContent({
+            model: "gemini-3.1-pro-preview",
+            contents: currentConvo,
+            config: {
+              systemInstruction: systemInstruction,
+              temperature: 0.7,
+            },
+          })
+        ]);
 
-      if (emotionData.lyriaEmotionWeights) {
-        steerMusic(emotionData.lyriaEmotionWeights);
-      }
-
-      if (emotionData.breakthrough > 0.75) {
-        setIsBreakthrough(true);
-        triggerBreakthrough();
-
+        oracleText = oracleRes.text?.trim() || "";
         try {
-          const visualRes = await ai.models.generateContent({
-            model: "gemini-3.1-flash-image-preview",
-            contents: `Abstract, NOT representational. No faces. No text. Painterly, atmospheric. Deep blacks, single accent colour, gold highlights. The image should evoke FEELING not depict OBJECTS. Square format, high contrast. This is a BREAKTHROUGH moment in a deep self-reflection conversation. The specific emotional content: ${emotionData.nanaBananaPrompt || "A moment of profound realization"}. The image should feel like the moment before something changes forever.`,
-          });
-          
-          for (const part of visualRes.candidates?.[0]?.content?.parts || []) {
-            if (part.inlineData) {
-              const imageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-              setCurrentVisual(imageUrl);
-              setTimeout(() => setIsBreakthrough(false), 12000);
-              break;
-            }
-          }
+          emotionData = JSON.parse(emotionRes.text || "{}");
         } catch (e) {
-          console.error("Visual generation failed", e);
+          console.warn("Failed to parse emotion data", e);
+        }
+
+        if (emotionData.lyriaEmotionWeights) {
+          steerMusic(emotionData.lyriaEmotionWeights);
+        }
+
+        if (emotionData.breakthrough > 0.75) {
+          setIsBreakthrough(true);
+          triggerBreakthrough();
+
+          try {
+            const visualRes = await ai.models.generateContent({
+              model: "gemini-3.1-flash-image-preview",
+              contents: `Abstract, NOT representational. No faces. No text. Painterly, atmospheric. Deep blacks, single accent colour, gold highlights. The image should evoke FEELING not depict OBJECTS. Square format, high contrast. This is a BREAKTHROUGH moment in a deep self-reflection conversation. The specific emotional content: ${emotionData.nanaBananaPrompt || "A moment of profound realization"}. The image should feel like the moment before something changes forever.`,
+            });
+            
+            for (const part of visualRes.candidates?.[0]?.content?.parts || []) {
+              if (part.inlineData) {
+                const imageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                setCurrentVisual(imageUrl);
+                setTimeout(() => setIsBreakthrough(false), 12000);
+                break;
+              }
+            }
+          } catch (e) {
+            console.warn("Visual generation failed", e);
+          }
+        }
+      } catch (geminiError) {
+        console.warn("Gemini failed, trying fallbacks...", geminiError);
+        
+        // Try Anthropic (Claude)
+        if (process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY) {
+          try {
+            const res = await fetch("https://api.anthropic.com/v1/messages", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-api-key": process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01",
+                "anthropic-dangerous-direct-browser-access": "true"
+              },
+              body: JSON.stringify({
+                model: "claude-3-5-sonnet-20241022",
+                max_tokens: 1024,
+                system: systemInstruction,
+                messages: [{ role: "user", content: currentConvo }]
+              })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              oracleText = data.content[0].text;
+            } else {
+              console.warn("Anthropic API returned error", await res.text());
+            }
+          } catch (e) {
+            console.warn("Anthropic fallback failed", e);
+          }
+        }
+
+        // Try Together AI
+        if (!oracleText && process.env.NEXT_PUBLIC_TOGETHER_API_KEY) {
+          try {
+            const res = await fetch("https://api.together.xyz/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.NEXT_PUBLIC_TOGETHER_API_KEY}`
+              },
+              body: JSON.stringify({
+                model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+                messages: [
+                  { role: "system", content: systemInstruction },
+                  { role: "user", content: currentConvo }
+                ]
+              })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              oracleText = data.choices[0].message.content;
+            } else {
+              console.warn("Together AI API returned error", await res.text());
+            }
+          } catch (e) {
+            console.warn("Together AI fallback failed", e);
+          }
+        }
+
+        if (!oracleText) {
+          throw new Error("All AI providers failed");
         }
       }
 
-      const question = oracleRes.text?.trim() || "What are you hiding from yourself?";
+      const question = oracleText.trim() || "What are you hiding from yourself?";
 
       const oracleMsg: Message = {
         id: crypto.randomUUID(),
@@ -239,8 +310,8 @@ Message: "${input}"`;
         try {
           await setDoc(doc(db, "threads", userId), { messages: updatedThread }, { merge: true });
           savedToFirebase = true;
-        } catch (e) {
-          console.error("Firebase save error", e);
+        } catch (e: any) {
+          console.warn("Firebase save error (falling back to local storage):", e.message);
         }
       }
       

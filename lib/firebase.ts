@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -20,5 +20,16 @@ const app = isFirebaseConfigured
   ? (!getApps().length ? initializeApp(firebaseConfig) : getApp())
   : null;
 
-export const db = app ? getFirestore(app) : null;
+let firestoreDb = null;
+if (app) {
+  try {
+    firestoreDb = initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true
+    });
+  } catch (e) {
+    firestoreDb = getFirestore(app);
+  }
+}
+
+export const db = firestoreDb;
 export const auth = app ? getAuth(app) : null;
