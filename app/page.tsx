@@ -1,17 +1,33 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Cursor } from '@/components/Cursor';
 import { Stars } from '@/components/Stars';
 import { OracleSession } from '@/components/OracleSession';
 import { useAuth, Tier } from '@/hooks/useAuth';
 
-export default function Home() {
+import { Suspense } from 'react';
+
+function HomeContent() {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [hasKey, setHasKey] = useState<boolean | null>(null);
   const { user, profile, loading, authError, signIn, logOut, upgradeTier, incrementSession, clearAuthError } = useAuth();
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user && searchParams.get('success') === 'true') {
+      const tier = searchParams.get('tier') as Tier;
+      if (tier) {
+        upgradeTier(tier).then(() => {
+          router.replace('/');
+        });
+      }
+    }
+  }, [user, searchParams, router, upgradeTier]);
 
   useEffect(() => {
     const checkKey = async () => {
@@ -58,12 +74,28 @@ export default function Home() {
   const handleUpgrade = async (tier: Tier) => {
     if (!user) {
       await signIn();
-      // After sign in, they would need to click upgrade again in a real app, 
-      // but for this demo we'll just let them sign in first.
       return;
     }
-    await upgradeTier(tier);
-    setShowLimitModal(false);
+    
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier, userId: user.uid }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.warn('Stripe checkout failed, falling back to local upgrade:', data.error);
+        await upgradeTier(tier);
+        setShowLimitModal(false);
+      }
+    } catch (e) {
+      console.error('Checkout error:', e);
+      await upgradeTier(tier);
+      setShowLimitModal(false);
+    }
   };
 
   return (
@@ -411,5 +443,13 @@ export default function Home() {
         )}
       </AnimatePresence>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-void flex items-center justify-center text-gold font-cinzel tracking-widest">Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }

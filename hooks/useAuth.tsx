@@ -39,15 +39,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
-      if (u && db) {
-        const docRef = doc(db, "users", u.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProfile(docSnap.data() as UserProfile);
+      if (u) {
+        let loadedProfile: UserProfile | null = null;
+        if (db) {
+          try {
+            const docRef = doc(db, "users", u.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              loadedProfile = docSnap.data() as UserProfile;
+            } else {
+              loadedProfile = { tier: "free", sessionsThisMonth: 0, lastSessionDate: null };
+              await setDoc(docRef, loadedProfile);
+            }
+          } catch (error: any) {
+            console.error("Firestore error loading profile:", error);
+            const localProfile = localStorage.getItem(`oracle_profile_${u.uid}`);
+            if (localProfile) {
+              loadedProfile = JSON.parse(localProfile);
+            } else {
+              loadedProfile = { tier: "free", sessionsThisMonth: 0, lastSessionDate: null };
+            }
+          }
         } else {
-          const newProfile: UserProfile = { tier: "free", sessionsThisMonth: 0, lastSessionDate: null };
-          await setDoc(docRef, newProfile);
-          setProfile(newProfile);
+          const localProfile = localStorage.getItem(`oracle_profile_${u.uid}`);
+          if (localProfile) {
+            loadedProfile = JSON.parse(localProfile);
+          } else {
+            loadedProfile = { tier: "free", sessionsThisMonth: 0, lastSessionDate: null };
+          }
+        }
+        setProfile(loadedProfile);
+        if (loadedProfile) {
+          localStorage.setItem(`oracle_profile_${u.uid}`, JSON.stringify(loadedProfile));
         }
       } else {
         setProfile(null);
@@ -81,15 +104,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const upgradeTier = async (tier: Tier) => {
-    if (!user || !db || !profile) return;
+    if (!user || !profile) return;
     const newProfile = { ...profile, tier };
-    await setDoc(doc(db, "users", user.uid), newProfile, { merge: true });
     setProfile(newProfile);
+    localStorage.setItem(`oracle_profile_${user.uid}`, JSON.stringify(newProfile));
+    if (db) {
+      try {
+        await setDoc(doc(db, "users", user.uid), newProfile, { merge: true });
+      } catch (e) {
+        console.error("Firestore save error", e);
+      }
+    }
   };
 
   const incrementSession = async (): Promise<boolean> => {
-    if (!user || !db || !profile) return false;
+    if (!user || !profile) return false;
     
+    let newProfile = { ...profile };
+
     // Check limits
     if (profile.tier === "free" && profile.sessionsThisMonth >= 5) {
       // Check if it's a new month
@@ -99,20 +131,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false; // Limit reached
       } else {
         // Reset for new month
-        const newProfile = { ...profile, sessionsThisMonth: 1, lastSessionDate: now.toISOString() };
-        await setDoc(doc(db, "users", user.uid), newProfile, { merge: true });
-        setProfile(newProfile);
-        return true;
+        newProfile = { ...profile, sessionsThisMonth: 1, lastSessionDate: now.toISOString() };
       }
+    } else {
+      newProfile = { 
+        ...profile, 
+        sessionsThisMonth: profile.sessionsThisMonth + 1,
+        lastSessionDate: new Date().toISOString()
+      };
     }
 
-    const newProfile = { 
-      ...profile, 
-      sessionsThisMonth: profile.sessionsThisMonth + 1,
-      lastSessionDate: new Date().toISOString()
-    };
-    await setDoc(doc(db, "users", user.uid), newProfile, { merge: true });
     setProfile(newProfile);
+    localStorage.setItem(`oracle_profile_${user.uid}`, JSON.stringify(newProfile));
+
+    if (db) {
+      try {
+        await setDoc(doc(db, "users", user.uid), newProfile, { merge: true });
+      } catch (e) {
+        console.error("Firestore save error", e);
+      }
+    }
     return true;
   };
 
