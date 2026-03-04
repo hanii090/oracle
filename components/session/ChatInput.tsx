@@ -21,11 +21,11 @@ export function ChatInput({ value, onChange, onSubmit, isLoading, nightMode, dis
   }, [isLoading]);
 
   return (
-    <form onSubmit={onSubmit} className="relative mt-auto group" role="form" aria-label="Send message to Oracle">
-      <label htmlFor="oracle-input" className="sr-only">Your message to Oracle</label>
+    <form onSubmit={onSubmit} className="relative mt-auto group" role="form" aria-label="Send message to Sorca">
+      <label htmlFor="sorca-input" className="sr-only">Your message to Sorca</label>
       <textarea
         ref={textareaRef}
-        id="oracle-input"
+        id="sorca-input"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {

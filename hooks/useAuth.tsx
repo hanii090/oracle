@@ -9,7 +9,7 @@ export type Tier = "free" | "philosopher" | "pro";
 
 export type SessionMessage = {
   id: string;
-  role: "user" | "oracle";
+  role: "user" | "assistant";
   content: string;
   depth: number;
 };
@@ -83,14 +83,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               if (snap.exists()) {
                 const p = snap.data() as UserProfile;
                 setProfile(p);
-                localStorage.setItem(`oracle_profile_${u.uid}`, JSON.stringify(p));
+                localStorage.setItem(`sorca_profile_${u.uid}`, JSON.stringify(p));
               }
             }, (error) => {
               console.error("Profile snapshot error:", error);
             });
           } catch (error: unknown) {
             console.error("Firestore error loading profile:", error);
-            const localProfile = localStorage.getItem(`oracle_profile_${u.uid}`);
+            const localProfile = localStorage.getItem(`sorca_profile_${u.uid}`);
             if (localProfile) {
               setProfile(JSON.parse(localProfile));
             } else {
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           }
         } else {
-          const localProfile = localStorage.getItem(`oracle_profile_${u.uid}`);
+          const localProfile = localStorage.getItem(`sorca_profile_${u.uid}`);
           if (localProfile) {
             setProfile(JSON.parse(localProfile));
           } else {
@@ -174,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     setProfile(newProfile);
-    localStorage.setItem(`oracle_profile_${user.uid}`, JSON.stringify(newProfile));
+    localStorage.setItem(`sorca_profile_${user.uid}`, JSON.stringify(newProfile));
 
     if (db) {
       try {
@@ -195,14 +195,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const sessionsRef = collection(db, "users", user.uid, "sessions");
         const q = query(sessionsRef, orderBy("createdAt", "desc"), limit(50));
         const snapshot = await getDocs(q);
-        loaded = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as SessionSummary));
+        loaded = snapshot.docs.map(d => {
+          const data = d.data() as SessionSummary;
+          return {
+            ...data,
+            id: d.id,
+            messages: (data.messages || []).map(m => ({
+              ...m,
+              role: (m.role as string) === 'oracle' ? 'assistant' : m.role,
+            })) as SessionMessage[],
+          };
+        });
       } catch (e) {
         console.error("Firestore sessions load error", e);
       }
     }
 
     if (loaded.length === 0) {
-      const localSessions = localStorage.getItem(`oracle_sessions_${user.uid}`);
+      const localSessions = localStorage.getItem(`sorca_sessions_${user.uid}`);
       if (localSessions) {
         try {
           loaded = JSON.parse(localSessions);
@@ -248,7 +258,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Always save to localStorage as fallback
-    const existingSessions = localStorage.getItem(`oracle_sessions_${user.uid}`);
+    const existingSessions = localStorage.getItem(`sorca_sessions_${user.uid}`);
     let allSessions: SessionSummary[] = [];
     if (existingSessions) {
       try {
@@ -257,7 +267,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     allSessions.unshift(session);
     allSessions = allSessions.slice(0, 50);
-    localStorage.setItem(`oracle_sessions_${user.uid}`, JSON.stringify(allSessions));
+    localStorage.setItem(`sorca_sessions_${user.uid}`, JSON.stringify(allSessions));
 
     setSessions(allSessions);
   }, [user]);

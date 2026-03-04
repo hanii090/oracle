@@ -12,19 +12,19 @@ const slides = [
   {
     icon: '🔮',
     title: 'This Is Not ChatGPT',
-    body: 'Oracle never answers. It never advises. It never reassures. It only asks questions — devastating, surgical, impossibly precise questions — until you find the truth yourself.',
+    body: 'Sorca never answers. It never advises. It never reassures. It only asks questions — devastating, surgical, impossibly precise questions — until you find the truth yourself.',
     accent: 'text-gold',
   },
   {
     icon: '🕳️',
     title: 'Go Deeper',
-    body: 'Each exchange increases your Depth Level. At Depth 5, the questions get personal. At Depth 7, Confrontation Mode begins — Oracle will surface your own contradictions.',
+    body: 'Each exchange increases your Depth Level. At Depth 5, the questions get personal. At Depth 7, Confrontation Mode begins — Sorca will surface your own contradictions.',
     accent: 'text-crimson-bright',
   },
   {
     icon: '🧵',
     title: 'It Remembers',
-    body: 'The Thread connects all your sessions. Oracle carries memory across conversations, building a map of your beliefs, fears, and recurring patterns over time.',
+    body: 'The Thread connects all your sessions. Sorca carries memory across conversations, building a map of your beliefs, fears, and recurring patterns over time.',
     accent: 'text-teal-bright',
   },
   {

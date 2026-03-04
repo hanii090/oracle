@@ -32,7 +32,7 @@ export function ResetModal({ show, onCancel, onConfirm }: ResetModalProps) {
           >
             <h3 id="reset-modal-title" className="font-cinzel text-xl text-gold mb-4">Sever the Thread?</h3>
             <p id="reset-modal-desc" className="font-cormorant text-text-mid mb-8 text-lg">
-              This will erase all memory of your current journey. The Oracle will forget everything you have said.
+              This will erase all memory of your current journey. Sorca will forget everything you have said.
             </p>
             <div className="flex justify-center gap-4">
               <button

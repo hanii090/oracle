@@ -25,11 +25,11 @@ const courier = Courier_Prime({
 
 export const metadata: Metadata = {
   title: {
-    default: "ORACLE — The AI That Never Answers",
-    template: "%s | ORACLE",
+    default: "SORCA — The Question That Changes Everything",
+    template: "%s | SORCA",
   },
   description:
-    "Oracle is a Socratic AI that never gives answers — only questions. Dive into the abyss of self-discovery through relentless, piercing inquiry.",
+    "Sorca is a Socratic AI that never gives answers — only questions. Dive into the abyss of self-discovery through relentless, piercing inquiry.",
   keywords: [
     "AI",
     "Socratic questioning",
@@ -37,20 +37,20 @@ export const metadata: Metadata = {
     "philosophy",
     "deep questions",
     "introspection",
-    "oracle",
+    "sorca",
     "AI therapy",
     "self-reflection",
   ],
-  authors: [{ name: "Oracle" }],
-  creator: "Oracle",
+  authors: [{ name: "Sorca" }],
+  creator: "Sorca",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "https://oracle-app.com"
+    process.env.NEXT_PUBLIC_APP_URL || "https://sorca.life"
   ),
   openGraph: {
     type: "website",
     locale: "en_GB",
-    siteName: "ORACLE",
-    title: "ORACLE — The AI That Never Answers",
+    siteName: "SORCA",
+    title: "SORCA — The Question That Changes Everything",
     description:
       "A Socratic AI that responds only with questions. No answers. No advice. Just the truth you're avoiding.",
     images: [
@@ -58,13 +58,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "ORACLE — The AI That Never Answers",
+        alt: "SORCA — The Question That Changes Everything",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ORACLE — The AI That Never Answers",
+    title: "SORCA — The Question That Changes Everything",
     description:
       "A Socratic AI that responds only with questions. Dive into the abyss.",
     images: ["/og-image.png"],

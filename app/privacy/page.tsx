@@ -2,8 +2,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — Oracle',
-  description: 'How Oracle collects, uses, and protects your data.',
+  title: 'Privacy Policy — Sorca',
+  description: 'How Sorca collects, uses, and protects your data.',
 };
 
 export default function PrivacyPage() {
@@ -11,7 +11,7 @@ export default function PrivacyPage() {
     <main className="min-h-screen bg-void py-20 px-6">
       <div className="max-w-3xl mx-auto">
         <Link href="/" className="font-cinzel text-gold tracking-[0.3em] text-xs uppercase hover:text-gold-bright transition-colors mb-12 inline-block">
-          ← Oracle
+          ← Sorca
         </Link>
 
         <h1 className="font-cinzel text-4xl text-gold mb-4">Privacy Policy</h1>
@@ -23,15 +23,15 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-cinzel text-xl text-text-main mb-4">1. Information We Collect</h2>
             <p><strong>Account data:</strong> When you sign in with Google, we receive your name, email, and profile picture from Google OAuth.</p>
-            <p><strong>Session data:</strong> The messages you exchange with Oracle during sessions, including timestamps and depth levels.</p>
+            <p><strong>Session data:</strong> The messages you exchange with Sorca during sessions, including timestamps and depth levels.</p>
             <p><strong>Payment data:</strong> Subscription payments are processed by Stripe. We do not store your card details. We store your Stripe customer ID and subscription status.</p>
             <p><strong>Usage data:</strong> Session counts, feature usage, and basic analytics.</p>
           </section>
 
           <section>
             <h2 className="font-cinzel text-xl text-text-main mb-4">2. How We Use Your Data</h2>
-            <p><strong>Session continuity:</strong> Your session history powers the Thread feature, allowing Oracle to reference past conversations.</p>
-            <p><strong>Service improvement:</strong> Aggregated, anonymised usage patterns help us improve Oracle.</p>
+            <p><strong>Session continuity:</strong> Your session history powers the Thread feature, allowing Sorca to reference past conversations.</p>
+            <p><strong>Service improvement:</strong> Aggregated, anonymised usage patterns help us improve Sorca.</p>
             <p><strong>Billing:</strong> To manage your subscription and enforce usage limits.</p>
             <p>We do not sell your data. We do not use your conversations to train AI models.</p>
           </section>
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="font-cinzel text-xl text-text-main mb-4">4. Third-Party Services</h2>
-            <p><strong>Google Gemini:</strong> Your messages are sent to Google&apos;s Gemini API to generate Oracle&apos;s questions. See Google&apos;s AI privacy policy for details.</p>
+            <p><strong>Google Gemini:</strong> Your messages are sent to Google&apos;s Gemini API to generate Sorca&apos;s questions. See Google&apos;s AI privacy policy for details.</p>
             <p><strong>Stripe:</strong> Payment processing. See Stripe&apos;s privacy policy.</p>
             <p><strong>Firebase Authentication:</strong> For secure sign-in. See Google&apos;s privacy policy.</p>
           </section>
@@ -74,7 +74,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="font-cinzel text-xl text-text-main mb-4">8. Children</h2>
-            <p>Oracle is not intended for users under 16 years of age. We do not knowingly collect data from children.</p>
+            <p>Sorca is not intended for users under 16 years of age. We do not knowingly collect data from children.</p>
           </section>
 
           <section>

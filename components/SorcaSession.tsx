@@ -16,7 +16,7 @@ import { FeatureStatus } from "@/components/session/FeatureStatus";
 import { ResetModal } from "@/components/session/ResetModal";
 import { DepthLimitModal } from "@/components/session/DepthLimitModal";
 import { BreakthroughVisual } from "@/components/session/BreakthroughVisual";
-import { VoiceOracle } from "@/components/VoiceOracle";
+import { VoiceSorca } from '@/components/VoiceSorca';
 import { SessionExport } from "@/components/SessionExport";
 
 // New onboarding / UX components
@@ -25,8 +25,9 @@ import { HelpPanel } from "@/components/session/HelpPanel";
 import { NightBanner } from "@/components/session/NightBanner";
 import { ShareCard } from "@/components/session/ShareCard";
 import { DepthToast } from "@/components/session/DepthToast";
+import AvoidedQuestionNotification from "@/components/session/AvoidedQuestionNotification";
 
-export function OracleSession({ onExit, viewSession }: { onExit: () => void; viewSession?: { messages: SessionMessage[]; maxDepth: number; createdAt: string } | null }) {
+export function SorcaSession({ onExit, viewSession }: { onExit: () => void; viewSession?: { messages: SessionMessage[]; maxDepth: number; createdAt: string } | null }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +41,12 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
   const [nightMode, setNightMode] = useState(false);
   const [lastOracleText, setLastOracleText] = useState<string | undefined>();
   const [showShareCard, setShowShareCard] = useState(false);
+  const [avoidedReminder, setAvoidedReminder] = useState<{
+    question: string;
+    daysSinceAvoided: number;
+    message: string;
+    deflectionType: string;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { steerMusic, triggerBreakthrough } = useLyriaFoley(true);
   const { user: authUser, profile, saveSession, loadSessions, getIdToken } = useAuth();
@@ -76,9 +83,9 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
   useEffect(() => {
     if (viewSession) return;
 
-    const uid = authUser?.uid || localStorage.getItem("oracle_user_id") || crypto.randomUUID();
+    const uid = authUser?.uid || localStorage.getItem("sorca_user_id") || crypto.randomUUID();
     if (!authUser) {
-      localStorage.setItem("oracle_user_id", uid);
+      localStorage.setItem("sorca_user_id", uid);
     }
     setUserId(uid);
 
@@ -91,8 +98,13 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
           if (docSnap.exists()) {
             const data = docSnap.data();
             if (data.messages && data.messages.length > 0) {
-              setPastThread(data.messages);
-              const lastDepth = data.messages[data.messages.length - 1].depth;
+              // Normalize old 'oracle' role to 'assistant' for backward compatibility
+              const normalizedMessages = data.messages.map((m: Message) => ({
+                ...m,
+                role: (m.role as string) === 'oracle' ? 'assistant' as const : m.role,
+              }));
+              setPastThread(normalizedMessages);
+              const lastDepth = normalizedMessages[normalizedMessages.length - 1].depth;
               if (lastDepth) setDepth(lastDepth);
               loadedFromFirebase = true;
             }
@@ -103,7 +115,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
       }
 
       if (!loadedFromFirebase) {
-        const local = localStorage.getItem("oracle_thread");
+        const local = localStorage.getItem("sorca_thread");
         if (local) {
           try {
             const parsed = JSON.parse(local);
@@ -118,7 +130,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
     loadThread();
 
     const greeting = "What truth are you avoiding today?";
-    setMessages([{ id: crypto.randomUUID(), role: "oracle", content: greeting, depth: 1 }]);
+    setMessages([{ id: crypto.randomUUID(), role: "assistant", content: greeting, depth: 1 }]);
     setLastOracleText(greeting);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -128,11 +140,35 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
   }, [messages]);
 
   const handleExit = useCallback(async () => {
-    const currentMessages = messages.filter(m => !(m.role === "oracle" && m.content === "What truth are you avoiding today?"));
+    const currentMessages = messages.filter(m => !(m.role === "assistant" && m.content === "What truth are you avoiding today?"));
     if (currentMessages.filter(m => m.role === "user").length > 0) {
       await saveSession(currentMessages, depth);
       await loadSessions();
       recordSession();
+
+      // Trigger avoided question analysis for paid users with enough messages
+      if (profile?.tier !== 'free' && currentMessages.length >= 4) {
+        try {
+          const token = await getIdToken();
+          const res = await fetch('/api/avoided', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ sessionMessages: currentMessages }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.weeklyReminder) {
+              setAvoidedReminder(data.weeklyReminder);
+            }
+          }
+        } catch {
+          // Silently fail — this is a non-critical feature
+        }
+      }
+
       // Show share card if they went deep enough
       if (depth >= 3) {
         setShowShareCard(true);
@@ -140,10 +176,10 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
       }
     }
     onExit();
-  }, [messages, depth, saveSession, loadSessions, onExit, recordSession]);
+  }, [messages, depth, saveSession, loadSessions, onExit, recordSession, profile, getIdToken]);
 
   const handleReset = useCallback(async () => {
-    const currentMessages = messages.filter(m => !(m.role === "oracle" && m.content === "What truth are you avoiding today?"));
+    const currentMessages = messages.filter(m => !(m.role === "assistant" && m.content === "What truth are you avoiding today?"));
     if (currentMessages.filter(m => m.role === "user").length > 0) {
       await saveSession(currentMessages, depth);
       await loadSessions();
@@ -151,7 +187,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
     }
 
     const greeting = "What truth are you avoiding today?";
-    setMessages([{ id: crypto.randomUUID(), role: "oracle", content: greeting, depth: 1 }]);
+    setMessages([{ id: crypto.randomUUID(), role: "assistant", content: greeting, depth: 1 }]);
     setLastOracleText(greeting);
     setPastThread([]);
     setDepth(1);
@@ -164,7 +200,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
         console.error("Firebase delete error", e);
       }
     }
-    localStorage.removeItem("oracle_thread");
+    localStorage.removeItem("sorca_thread");
   }, [messages, depth, saveSession, loadSessions, userId, recordSession]);
 
   // #4 FIX: All AI calls now go through the server-side proxy.
@@ -194,7 +230,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
 
       // POST to server-side AI proxy (#4 — no client-side API keys)
       const token = await getIdToken();
-      const res = await fetch("/api/oracle", {
+      const res = await fetch("/api/sorca", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -229,7 +265,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
       if (data.crisisResources) {
         const crisisMsg: Message = {
           id: crypto.randomUUID(),
-          role: "oracle",
+          role: "assistant",
           content: question + "\n\n" + data.crisisResources.join("\n"),
           depth,
         };
@@ -258,7 +294,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
 
       const oracleMsg: Message = {
         id: crypto.randomUUID(),
-        role: "oracle",
+        role: "assistant",
         content: question,
         depth: newDepth,
       };
@@ -283,15 +319,15 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
       }
 
       if (!savedToFirebase) {
-        localStorage.setItem("oracle_thread", JSON.stringify(updatedThread));
+        localStorage.setItem("sorca_thread", JSON.stringify(updatedThread));
       }
     } catch (error) {
-      console.error("Oracle API error:", error);
+      console.error("Sorca API error:", error);
       setMessages((prev) => [
         ...prev,
         {
           id: crypto.randomUUID(),
-          role: "oracle",
+          role: "assistant",
           content: "Why do you seek answers when the connection is severed?",
           depth,
         },
@@ -316,7 +352,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
       exit={{ opacity: 0 }}
       transition={{ duration: 1 }}
       role="region"
-      aria-label="Oracle session"
+      aria-label="Sorca session"
     >
       <BreakthroughVisual imageUrl={currentVisual} isActive={isBreakthrough} />
 
@@ -347,7 +383,7 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
               tier={profile?.tier || 'free'}
             />
             <div className="flex items-center gap-2">
-              <VoiceOracle
+              <VoiceSorca
                 onTranscript={handleVoiceTranscript}
                 oracleText={lastOracleText}
                 enabled={profile?.tier !== "free"}
@@ -422,6 +458,14 @@ export function OracleSession({ onExit, viewSession }: { onExit: () => void; vie
         depth={depth}
         messageCount={messages.length}
         onClose={() => { setShowShareCard(false); onExit(); }}
+      />
+      <AvoidedQuestionNotification
+        reminder={avoidedReminder}
+        onDismiss={() => setAvoidedReminder(null)}
+        onExplore={(question) => {
+          setAvoidedReminder(null);
+          setInput(question);
+        }}
       />
     </motion.div>
   );

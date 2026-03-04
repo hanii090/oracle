@@ -15,7 +15,7 @@ export function ShareCard({ show, depth, messageCount, onClose }: ShareCardProps
   const [copied, setCopied] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const shareText = `I reached Depth ${depth} on Oracle — the AI that never answers. ${messageCount} exchanges into the void.\n\nCan you handle the truth?\nhttps://oracleai.app`;
+  const shareText = `I reached Depth ${depth} on Sorca — the question that changes everything. ${messageCount} exchanges into the void.\n\nCan you handle the truth?\nhttps://sorca.life`;
 
   const handleCopy = useCallback(async () => {
     try {
@@ -39,7 +39,7 @@ export function ShareCard({ show, depth, messageCount, onClose }: ShareCardProps
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Oracle — Depth ${depth}`,
+          title: `Sorca — Depth ${depth}`,
           text: shareText,
         });
       } catch {
@@ -114,11 +114,11 @@ export function ShareCard({ show, depth, messageCount, onClose }: ShareCardProps
     ctx.fillStyle = 'rgba(201, 168, 76, 0.5)';
     ctx.font = '600 12px serif';
     ctx.letterSpacing = '6px';
-    ctx.fillText('O R A C L E  —  T H E  A I  T H A T  N E V E R  A N S W E R S', 600, 560);
+    ctx.fillText('S O R C A  —  T H E  Q U E S T I O N  T H A T  C H A N G E S  E V E R Y T H I N G', 600, 560);
 
     // Download
     const link = document.createElement('a');
-    link.download = `oracle-depth-${depth}.png`;
+    link.download = `sorca-depth-${depth}.png`;
     link.href = canvas.toDataURL('image/png');
     document.body.appendChild(link);
     link.click();
@@ -167,7 +167,7 @@ export function ShareCard({ show, depth, messageCount, onClose }: ShareCardProps
                 {messageCount} exchanges into the void
               </div>
               <div className="font-cinzel text-[8px] tracking-[0.3em] text-gold/40 uppercase relative z-10">
-                Oracle — The AI That Never Answers
+                Sorca — The Question That Changes Everything
               </div>
             </div>
 

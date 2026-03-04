@@ -21,7 +21,7 @@ export function NightBanner({ show, onDismiss }: NightBannerProps) {
           <div className="bg-deep/95 backdrop-blur-md border border-gold/10 rounded-xl px-6 py-4 text-center shadow-xl shadow-void/80">
             <div className="flex items-center justify-center gap-2 mb-2">
               <span className="text-lg" aria-hidden="true">🌙</span>
-              <span className="font-cinzel text-gold text-[11px] tracking-[0.2em] uppercase">Night Oracle Active</span>
+              <span className="font-cinzel text-gold text-[11px] tracking-[0.2em] uppercase">Night Sorca Active</span>
             </div>
             <p className="font-cormorant italic text-text-mid text-sm leading-relaxed">
               Questions are stripped to 12 words. The void speaks plainly at 3am.

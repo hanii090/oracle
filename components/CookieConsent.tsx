@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
-const CONSENT_KEY = "oracle_cookie_consent";
+const CONSENT_KEY = "sorca_cookie_consent";
 
 export function CookieConsent() {
   const [show, setShow] = useState(false);
@@ -42,7 +42,7 @@ export function CookieConsent() {
         >
           <div className="mx-auto max-w-2xl rounded-lg border border-border bg-void/95 backdrop-blur-sm p-5 shadow-2xl">
             <p className="font-cormorant text-sm text-text-muted leading-relaxed mb-4">
-              Oracle uses essential cookies for authentication and session management.
+              Sorca uses essential cookies for authentication and session management.
               We do not use tracking cookies or share data with third parties.{" "}
               <a
                 href="/privacy"

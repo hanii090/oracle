@@ -129,9 +129,9 @@ export function checkoutRateLimit(ip: string): RateLimitResult {
   return rateLimit(`checkout:${ip}`, { maxRequests: 5, windowMs: 60_000 });
 }
 
-/** Oracle AI: 20 requests per minute per user */
-export function oracleRateLimit(userId: string): RateLimitResult {
-  return rateLimit(`oracle:${userId}`, { maxRequests: 20, windowMs: 60_000 });
+/** Sorca AI: 20 requests per minute per user */
+export function sorcaRateLimit(userId: string): RateLimitResult {
+  return rateLimit(`sorca:${userId}`, { maxRequests: 20, windowMs: 60_000 });
 }
 
 /** Session validation: 10 requests per minute per user */
@@ -140,8 +140,8 @@ export function sessionRateLimit(userId: string): RateLimitResult {
 }
 
 /** Async versions — use Redis when available */
-export async function oracleRateLimitAsync(userId: string): Promise<RateLimitResult> {
-  return rateLimitAsync(`oracle:${userId}`, { maxRequests: 20, windowMs: 60_000 });
+export async function sorcaRateLimitAsync(userId: string): Promise<RateLimitResult> {
+  return rateLimitAsync(`sorca:${userId}`, { maxRequests: 20, windowMs: 60_000 });
 }
 
 export async function checkoutRateLimitAsync(ip: string): Promise<RateLimitResult> {

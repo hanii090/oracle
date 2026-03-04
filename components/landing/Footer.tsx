@@ -21,7 +21,7 @@ export function Footer() {
         </svg>
       </div>
       <div className="font-cinzel text-4xl font-black tracking-[0.3em] text-transparent mb-4" style={{ WebkitTextStroke: '1px rgba(201,168,76,0.3)' }} aria-hidden="true">
-        ORACLE
+        SORCA
       </div>
       <p className="text-xs text-text-muted tracking-[0.1em] mb-2">YC × Google DeepMind Hackathon · March 2026</p>
       <p className="text-xs text-text-muted tracking-[0.1em] mb-6">Next.js 15 · Firebase · Gemini · Stripe · Vercel</p>

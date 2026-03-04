@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
-import { oracleRateLimit } from '@/lib/rate-limit';
+import { sorcaRateLimit } from '@/lib/rate-limit';
 import { withRetry, withFallback } from '@/lib/retry';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { detectCrisis, sanitizeMessage } from '@/lib/safety';
@@ -10,17 +10,17 @@ import { z } from 'zod';
 
 /**
  * Server-side AI proxy — keeps all API keys secret.
- * POST /api/oracle
+ * POST /api/sorca
  */
 
 const requestSchema = z.object({
   message: z.string().min(1).max(10_000),
   conversationHistory: z.array(z.object({
-    role: z.enum(['user', 'oracle']),
+    role: z.enum(['user', 'assistant']),
     content: z.string(),
   })).max(200),
   threadContext: z.array(z.object({
-    role: z.enum(['user', 'oracle']),
+    role: z.enum(['user', 'assistant']),
     content: z.string(),
   })).max(200),
   depth: z.number().int().min(1).max(100),
@@ -30,7 +30,7 @@ const requestSchema = z.object({
 
 function buildSystemPrompt(depth: number, threadContext: string, nightMode: boolean): string {
   let prompt = `
-You are Oracle. You never give answers, advice, affirmations, or empathy.
+You are Sorca. You never give answers, advice, affirmations, or empathy.
 You ask ONE question per response. Never more.
 
 Rules:
@@ -56,7 +56,7 @@ If no clear contradiction exists, target the most vulnerable unexamined assumpti
 
   if (nightMode) {
     prompt += `
-🌙 NIGHT ORACLE MODE: Maximum minimalism. Fewest possible words. Your question should feel like it is glowing alone in infinite darkness. No more than 12 words. No preamble. Just the blade.`;
+🌙 NIGHT SORCA MODE: Maximum minimalism. Fewest possible words. Your question should feel like it is glowing alone in infinite darkness. No more than 12 words. No preamble. Just the blade.`;
   }
 
   return prompt;
@@ -92,7 +92,7 @@ async function callGemini(
 
   const ai = new GoogleGenAI({ apiKey });
 
-  const [oracleRes, emotionRes] = await Promise.all([
+  const [sorcaRes, emotionRes] = await Promise.all([
     withRetry(
       () => ai.models.generateContent({
         model: 'gemini-2.5-flash',
@@ -111,7 +111,7 @@ async function callGemini(
     ),
   ]);
 
-  const oracleText = oracleRes.text?.trim() || '';
+  const sorcaText = sorcaRes.text?.trim() || '';
   let emotionData: Record<string, unknown> = {};
   try {
     emotionData = JSON.parse(emotionRes.text || '{}');
@@ -139,7 +139,7 @@ async function callGemini(
     }
   }
 
-  return { oracleText, emotionData, visual };
+  return { sorcaText, emotionData, visual };
 }
 
 async function callAnthropic(systemPrompt: string, conversation: string) {
@@ -163,7 +163,7 @@ async function callAnthropic(systemPrompt: string, conversation: string) {
 
   if (!res.ok) throw new Error(`Anthropic API error: ${res.status}`);
   const data = await res.json();
-  return { oracleText: data.content[0].text, emotionData: {}, visual: null };
+  return { sorcaText: data.content[0].text, emotionData: {}, visual: null };
 }
 
 async function callTogether(systemPrompt: string, conversation: string) {
@@ -187,11 +187,11 @@ async function callTogether(systemPrompt: string, conversation: string) {
 
   if (!res.ok) throw new Error(`Together API error: ${res.status}`);
   const data = await res.json();
-  return { oracleText: data.choices[0].message.content, emotionData: {}, visual: null };
+  return { sorcaText: data.choices[0].message.content, emotionData: {}, visual: null };
 }
 
 export async function POST(req: Request) {
-  const log = createLogger({ route: '/api/oracle', correlationId: crypto.randomUUID() });
+  const log = createLogger({ route: '/api/sorca', correlationId: crypto.randomUUID() });
 
   try {
     // ── Auth verification ──────────────────────────────────────
@@ -199,7 +199,7 @@ export async function POST(req: Request) {
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 
-    log.info('Oracle request received', { userId });
+    log.info('Sorca request received', { userId });
 
     const body = await req.json();
     const parsed = requestSchema.safeParse(body);
@@ -229,7 +229,7 @@ export async function POST(req: Request) {
     const sanitizedMessage = sanitizeMessage(message);
 
     // ── Rate limiting ──────────────────────────────────────────
-    const rl = oracleRateLimit(userId);
+    const rl = sorcaRateLimit(userId);
     if (!rl.success) {
       return NextResponse.json(
         { error: 'Rate limited. Please slow down.', resetAt: rl.resetAt },
@@ -276,7 +276,7 @@ export async function POST(req: Request) {
       },
     ]);
 
-    const question = result.oracleText || 'What are you hiding from yourself?';
+    const question = result.sorcaText || 'What are you hiding from yourself?';
 
     return NextResponse.json({
       question,
@@ -284,7 +284,7 @@ export async function POST(req: Request) {
       visual: result.visual,
     });
   } catch (error) {
-    log.error('Oracle API error', {}, error);
+    log.error('Sorca API error', {}, error);
     return NextResponse.json(
       { error: 'All AI providers failed. Please try again.' },
       { status: 500 }

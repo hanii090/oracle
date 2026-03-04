@@ -2,9 +2,9 @@
 
 import { useState, useCallback } from 'react';
 
-const ONBOARDING_KEY = 'oracle_onboarding_seen';
-const NIGHT_BANNER_KEY = 'oracle_night_banner_seen';
-const STREAK_KEY = 'oracle_streak_data';
+const ONBOARDING_KEY = 'sorca_onboarding_seen';
+const NIGHT_BANNER_KEY = 'sorca_night_banner_seen';
+const STREAK_KEY = 'sorca_streak_data';
 
 interface StreakData {
   currentStreak: number;

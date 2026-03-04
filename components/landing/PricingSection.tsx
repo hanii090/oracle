@@ -36,7 +36,7 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
             {['5 sessions per month', 'Basic Thread (last 30 days)', 'Up to depth level 5', 'Sacred question tracking'].map((item, i) => (
               <li key={i} className="text-sm text-text-mid pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-gold" aria-hidden="true">◆</span>{item}</li>
             ))}
-            {['Voice Oracle', 'Excavation Reports', 'Full Thread history'].map((item, i) => (
+            {['Voice Sorca', 'Excavation Reports', 'Full Thread history'].map((item, i) => (
               <li key={`disabled-${i}`} className="text-sm text-text-muted pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-text-muted" aria-hidden="true">◆</span><span aria-label={`${item} - not included`}>{item}</span></li>
             ))}
           </ul>
@@ -57,7 +57,7 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
           <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-gold">£</sup>12</div>
           <div className="text-xs text-text-muted mb-10">per month · or £99/year</div>
           <ul className="space-y-4 flex-1" aria-label="Philosopher features">
-            {['Unlimited sessions', 'Full Thread — entire history', 'All depth levels (to the abyss)', 'Voice Oracle with emotion detection', 'Night Oracle mode', 'Monthly Excavation Reports', 'Confrontation feature'].map((item, i) => (
+            {['Unlimited sessions', 'Full Thread — entire history', 'All depth levels (to the abyss)', 'Voice Sorca with emotion detection', 'Night Sorca mode', 'Monthly Excavation Reports', 'Confrontation feature'].map((item, i) => (
               <li key={i} className="text-sm text-text-mid pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-gold" aria-hidden="true">◆</span>{item}</li>
             ))}
           </ul>
@@ -72,11 +72,11 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
         </div>
 
         {/* Oracle Pro */}
-        <div className="bg-surface p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(201,168,76,0.05)] flex flex-col" role="article" aria-label="Oracle Pro plan">
-          <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-text-muted mb-3">Oracle Pro</div>
+        <div className="bg-surface p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(201,168,76,0.05)] flex flex-col" role="article" aria-label="Sorca Pro plan">
+          <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-text-muted mb-3">Sorca Pro</div>
           <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-gold">£</sup>49</div>
           <div className="text-xs text-text-muted mb-10">per month · practitioner tier</div>
-          <ul className="space-y-4 flex-1" aria-label="Oracle Pro features">
+          <ul className="space-y-4 flex-1" aria-label="Sorca Pro features">
             {['Everything in Philosopher', '5 client accounts included', 'Client Thread visibility', 'Therapist/coach dashboard', 'Session annotation tools', 'API access (1000 calls/mo)'].map((item, i) => (
               <li key={i} className="text-sm text-text-mid pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-gold" aria-hidden="true">◆</span>{item}</li>
             ))}
@@ -85,7 +85,7 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
             onClick={() => onUpgrade('pro')}
             disabled={currentTier === 'pro'}
             className="mt-8 w-full py-3 border border-border text-text-muted font-cinzel text-xs tracking-widest uppercase rounded hover:border-gold hover:text-gold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label={currentTier === 'pro' ? 'Current plan: Oracle Pro' : 'Upgrade to Oracle Pro plan for £49 per month'}
+            aria-label={currentTier === 'pro' ? 'Current plan: Sorca Pro' : 'Upgrade to Sorca Pro plan for £49 per month'}
           >
             {currentTier === 'pro' ? 'Current Tier' : 'Upgrade'}
           </button>

@@ -19,15 +19,15 @@ export function SessionExport({ messages, depth }: SessionExportProps) {
       year: 'numeric',
     });
 
-    let md = `# Oracle Session\n\n`;
+    let md = `# Sorca Session\n\n`;
     md += `**Date:** ${date}\n`;
     md += `**Maximum Depth:** ${depth}\n`;
     md += `**Exchanges:** ${messages.length}\n\n`;
     md += `---\n\n`;
 
     for (const msg of messages) {
-      if (msg.role === 'oracle') {
-        md += `### 🔮 Oracle (Depth ${msg.depth})\n\n`;
+      if (msg.role === 'assistant') {
+        md += `### 🔮 Sorca (Depth ${msg.depth})\n\n`;
         md += `> ${msg.content}\n\n`;
       } else {
         md += `### You\n\n`;
@@ -36,7 +36,7 @@ export function SessionExport({ messages, depth }: SessionExportProps) {
     }
 
     md += `---\n\n`;
-    md += `*Exported from Oracle — The AI that never answers.*\n`;
+    md += `*Exported from Sorca — The question that changes everything.*\n`;
 
     return md;
   }, [messages, depth]);
@@ -47,7 +47,7 @@ export function SessionExport({ messages, depth }: SessionExportProps) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `oracle-session-${new Date().toISOString().split('T')[0]}.md`;
+    a.download = `sorca-session-${new Date().toISOString().split('T')[0]}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

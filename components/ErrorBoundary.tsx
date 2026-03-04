@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           </div>
           <h2 className="font-cinzel text-2xl text-crimson-bright mb-4">Something Went Wrong</h2>
           <p className="font-cormorant italic text-text-mid mb-8 max-w-md">
-            The Oracle encountered an unexpected disturbance. Please refresh the page.
+            Sorca encountered an unexpected disturbance. Please refresh the page.
           </p>
           <button
             onClick={() => this.setState({ hasError: false, error: null })}

@@ -2,17 +2,17 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-interface VoiceOracleProps {
+interface VoiceSorcaProps {
   onTranscript: (text: string) => void;
   oracleText?: string;
   enabled: boolean;
 }
 
 /**
- * Voice Oracle — Web Speech API for voice input and SpeechSynthesis for TTS output.
+ * Voice Sorca — Web Speech API for voice input and SpeechSynthesis for TTS output.
  * Progressive: only shows if browser supports the APIs.
  */
-export function VoiceOracle({ onTranscript, oracleText, enabled }: VoiceOracleProps) {
+export function VoiceSorca({ onTranscript, oracleText, enabled }: VoiceSorcaProps) {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -87,15 +87,15 @@ export function VoiceOracle({ onTranscript, oracleText, enabled }: VoiceOraclePr
       <div className="relative group">
         <button
           className="w-8 h-8 flex items-center justify-center rounded-lg border border-border text-text-muted/30 cursor-not-allowed"
-          aria-label="Voice Oracle — upgrade to Philosopher to unlock"
-          title="Voice Oracle — Philosopher tier"
+          aria-label="Voice Sorca — upgrade to Philosopher to unlock"
+          title="Voice Sorca — Philosopher tier"
           disabled
         >
           🎙️
         </button>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
           <div className="bg-deep border border-gold/20 rounded-lg px-3 py-2 text-[10px] font-courier text-gold tracking-wide whitespace-nowrap shadow-xl">
-            🔒 Voice Oracle — Upgrade to unlock
+            🔒 Voice Sorca — Upgrade to unlock
           </div>
         </div>
       </div>

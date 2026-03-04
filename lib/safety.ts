@@ -91,8 +91,8 @@ export function detectCrisis(message: string): CrisisDetection | null {
 export function sanitizeMessage(message: string): string {
   let sanitized = message;
 
-  // Remove attempts to impersonate the oracle role
-  sanitized = sanitized.replace(/^(oracle|system|assistant)\s*:/gim, '[user said]:');
+  // Remove attempts to impersonate the assistant role
+  sanitized = sanitized.replace(/^(sorca|system|assistant)\s*:/gim, '[user said]:');
 
   // Remove markdown-style system instructions
   sanitized = sanitized.replace(/```(system|instruction|prompt)[\s\S]*?```/gi, '[filtered]');

@@ -12,7 +12,7 @@ interface FeatureStatusProps {
 export function FeatureStatus({ pastThreadLength, depth, isBreakthrough, tier = 'free' }: FeatureStatusProps) {
   return (
     <div className="flex gap-2 mb-4 flex-wrap" role="status" aria-label="Active features">
-      <Tooltip content="The Thread — Oracle remembers your past sessions and patterns" side="bottom">
+      <Tooltip content="The Thread — Sorca remembers your past sessions and patterns" side="bottom">
         <div className={`text-[8px] font-courier tracking-[0.12em] uppercase px-2 py-1 rounded border ${pastThreadLength > 0 ? 'border-teal/30 text-teal-bright' : 'border-border text-text-muted/40'}`}>
           🧵 Thread {pastThreadLength > 0 ? 'Active' : 'Empty'}
         </div>
@@ -25,7 +25,7 @@ export function FeatureStatus({ pastThreadLength, depth, isBreakthrough, tier = 
       </Tooltip>
 
       {depth > 7 && (
-        <Tooltip content="Confrontation — Oracle now surfaces your own contradictions" side="bottom">
+        <Tooltip content="Confrontation — Sorca now surfaces your own contradictions" side="bottom">
           <div className="text-[8px] font-courier tracking-[0.12em] uppercase px-2 py-1 rounded border border-crimson/30 text-crimson-bright animate-pulse">
             ⚡ Confrontation
           </div>

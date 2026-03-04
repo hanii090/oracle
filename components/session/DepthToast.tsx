@@ -9,11 +9,11 @@ interface DepthToastProps {
 }
 
 const depthHints: Record<number, string> = {
-  2: 'The Oracle is listening… go deeper.',
+  2: 'Sorca is listening… go deeper.',
   3: 'Real questions start at Depth 5.',
   4: 'One more step and things get personal…',
-  5: 'Depth 5 — the Oracle sees your patterns now.',
-  7: '⚡ Confrontation mode — Oracle will surface your contradictions.',
+  5: 'Depth 5 — Sorca sees your patterns now.',
+  7: '⚡ Confrontation mode — Sorca will surface your contradictions.',
   10: 'Few reach Depth 10. The void is paying attention.',
 };
 

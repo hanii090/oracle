@@ -17,10 +17,12 @@ import { PricingSection } from '@/components/landing/PricingSection';
 import { Footer } from '@/components/landing/Footer';
 import { LimitModal } from '@/components/landing/LimitModal';
 import { AuthErrorModal } from '@/components/landing/AuthErrorModal';
+import { PatternOfTheWeek } from '@/components/landing/PatternOfTheWeek';
+import MirrorLetter from '@/components/landing/MirrorLetter';
 
 // Code-split OracleSession — loads only when a session starts (#15)
-const OracleSession = lazy(() =>
-  import('@/components/OracleSession').then(m => ({ default: m.OracleSession }))
+const SorcaSession = lazy(() =>
+  import('@/components/SorcaSession').then(m => ({ default: m.SorcaSession }))
 );
 
 function HomeContent() {
@@ -229,6 +231,16 @@ function HomeContent() {
               />
             )}
 
+            {/* Pattern of the Week — surfaces recurring theme for paid users */}
+            {user && profile && profile.tier !== 'free' && (
+              <PatternOfTheWeek />
+            )}
+
+            {/* Mirror Letter — monthly first-person reflection for paid users */}
+            {user && profile && profile.tier !== 'free' && (
+              <MirrorLetter userId={user.uid} isPaidUser={true} />
+            )}
+
             {/* Divider */}
             <div className="w-full max-w-6xl h-px bg-gradient-to-r from-transparent via-border to-transparent my-20" aria-hidden="true" />
 
@@ -243,7 +255,7 @@ function HomeContent() {
               <div className="font-cinzel text-gold tracking-widest animate-pulse">Entering the void...</div>
             </div>
           }>
-            <OracleSession
+            <SorcaSession
               key="session"
               onExit={() => { setSessionStarted(false); setViewingSession(null); }}
               viewSession={viewingSession}

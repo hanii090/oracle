@@ -27,7 +27,7 @@ export default function NotFound() {
         href="/"
         className="px-8 py-3 border border-gold/30 text-gold font-cinzel text-sm tracking-[0.2em] uppercase hover:border-gold hover:bg-gold/10 transition-all duration-300 rounded-lg"
       >
-        Return to the Oracle
+        Return to Sorca
       </Link>
     </main>
   );

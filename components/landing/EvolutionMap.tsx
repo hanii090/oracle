@@ -43,7 +43,7 @@ function extractThemes(session: SessionSummary): string[] {
     'really', 'also', 'even', 'still', 'way', 'something', 'anything',
     'nothing', 'everything', 'thing', 'things', 'dont', "don't", 'im',
     "i'm", "it's", 'yes', 'yeah', 'okay', 'well', 'much', 'many',
-    'truth', 'oracle', 'question', 'answer', 'avoiding', 'today',
+    'truth', 'sorca', 'question', 'answer', 'avoiding', 'today',
   ]);
 
   const userMessages = session.messages

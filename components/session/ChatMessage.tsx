@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 
 export type Message = {
   id: string;
-  role: 'user' | 'oracle';
+  role: 'user' | 'assistant';
   content: string;
   depth: number;
 };
@@ -27,14 +27,14 @@ export function ChatMessage({ message, nightMode, isLast, index }: ChatMessagePr
         duration: nightMode ? 1.5 : 0.8,
         delay: isLast ? 0.2 : 0,
       }}
-      className={`flex flex-col ${nightMode ? 'items-center' : message.role === 'oracle' ? 'items-start' : 'items-end'}`}
+      className={`flex flex-col ${nightMode ? 'items-center' : message.role === 'assistant' ? 'items-start' : 'items-end'}`}
       role="article"
-      aria-label={message.role === 'oracle' ? `Oracle asks at depth ${message.depth}` : 'Your response'}
+      aria-label={message.role === 'assistant' ? `Sorca asks at depth ${message.depth}` : 'Your response'}
     >
       {!nightMode && (
         <div className="text-[9px] tracking-[0.15em] uppercase text-text-muted mb-2 font-courier">
-          {message.role === 'oracle'
-            ? `Oracle asks — depth ${message.depth}`
+          {message.role === 'assistant'
+            ? `Sorca asks — depth ${message.depth}`
             : 'You say'}
         </div>
       )}
@@ -42,7 +42,7 @@ export function ChatMessage({ message, nightMode, isLast, index }: ChatMessagePr
         className={`
           ${nightMode ? 'max-w-full p-8' : 'max-w-[85%] p-6'} relative rounded-lg
           ${
-            message.role === 'oracle'
+            message.role === 'assistant'
               ? nightMode
                 ? 'bg-transparent border-none text-gold-bright font-cinzel text-xl md:text-3xl tracking-[0.05em] leading-relaxed text-center'
                 : 'bg-gold-dim border border-gold/20 text-text-main font-cinzel text-sm md:text-base tracking-[0.03em] leading-relaxed rounded-tl-none'
@@ -51,7 +51,7 @@ export function ChatMessage({ message, nightMode, isLast, index }: ChatMessagePr
                 : 'bg-raised border border-border text-text-mid font-cormorant italic text-lg md:text-xl leading-relaxed rounded-tr-none'
           }
         `}
-        style={nightMode && message.role === 'oracle' ? { textShadow: '0 0 40px rgba(201,168,76,0.3), 0 0 80px rgba(201,168,76,0.1)' } : undefined}
+        style={nightMode && message.role === 'assistant' ? { textShadow: '0 0 40px rgba(201,168,76,0.3), 0 0 80px rgba(201,168,76,0.1)' } : undefined}
       >
         {message.content}
       </div>
@@ -71,11 +71,11 @@ export function LoadingIndicator({ depth, nightMode }: LoadingIndicatorProps) {
       animate={{ opacity: 1 }}
       className={`flex flex-col ${nightMode ? 'items-center' : 'items-start'}`}
       role="status"
-      aria-label="Oracle is thinking"
+      aria-label="Sorca is thinking"
     >
       {!nightMode && (
         <div className="text-[9px] tracking-[0.15em] uppercase text-text-muted mb-2 font-courier">
-          Oracle is perceiving
+          Sorca is perceiving
         </div>
       )}
       <div className={`${nightMode ? 'p-8 bg-transparent border-none' : 'p-6 bg-gold-dim border border-gold/20 rounded-tl-none'} rounded-lg flex items-center justify-center min-w-[100px] min-h-[60px] gap-3`}>

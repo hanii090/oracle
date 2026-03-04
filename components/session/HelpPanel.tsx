@@ -11,7 +11,7 @@ const helpItems = [
   {
     icon: '💬',
     label: 'How It Works',
-    desc: 'Type your truth. Oracle responds only with questions — never answers, never advice.',
+    desc: 'Type your truth. Sorca responds only with questions — never answers, never advice.',
   },
   {
     icon: '📊',
@@ -21,7 +21,7 @@ const helpItems = [
   {
     icon: '🧵',
     label: 'The Thread',
-    desc: 'Cross-session memory. Oracle remembers your past conversations and patterns.',
+    desc: 'Cross-session memory. Sorca remembers your past conversations and patterns.',
   },
   {
     icon: '🎵',
@@ -30,13 +30,13 @@ const helpItems = [
   },
   {
     icon: '🌙',
-    label: 'Night Oracle',
+    label: 'Night Sorca',
     desc: 'Midnight–5am stripped-back mode. Questions shortened to 12 words. Auto-activates.',
   },
   {
     icon: '🎙️',
-    label: 'Voice Oracle',
-    desc: 'Speak your truth aloud and hear the Oracle\'s questions. Philosopher tier.',
+    label: 'Voice Sorca',
+    desc: 'Speak your truth aloud and hear Sorca\'s questions. Philosopher tier.',
   },
   {
     icon: '👁️',
@@ -46,7 +46,7 @@ const helpItems = [
   {
     icon: '⚡',
     label: 'Confrontation',
-    desc: 'At Depth 7+, Oracle surfaces your own contradictions from past statements.',
+    desc: 'At Depth 7+, Sorca surfaces your own contradictions from past statements.',
   },
   {
     icon: '⬇️ 📋',
@@ -56,7 +56,7 @@ const helpItems = [
   {
     icon: '🔥',
     label: 'Streaks',
-    desc: 'Return daily to build your streak. Consecutive days deepen the Oracle\'s awareness.',
+    desc: 'Return daily to build your streak. Consecutive days deepen Sorca\'s awareness.',
   },
 ];
 
