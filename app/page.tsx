@@ -19,6 +19,14 @@ import { LimitModal } from '@/components/landing/LimitModal';
 import { AuthErrorModal } from '@/components/landing/AuthErrorModal';
 import { PatternOfTheWeek } from '@/components/landing/PatternOfTheWeek';
 import MirrorLetter from '@/components/landing/MirrorLetter';
+import { ReviewsSection } from '@/components/landing/ReviewsSection';
+import { CompaniesSection } from '@/components/landing/CompaniesSection';
+import { QuestionDNA } from '@/components/landing/QuestionDNA';
+import { BeliefLifespan } from '@/components/landing/BeliefLifespan';
+import { TimeCapsule } from '@/components/landing/TimeCapsule';
+import { SharedSessions } from '@/components/landing/SharedSessions';
+import { QuestionGift } from '@/components/landing/QuestionGift';
+import { ComingSoonSection } from '@/components/landing/ComingSoonSection';
 
 // Code-split OracleSession — loads only when a session starts (#15)
 const SorcaSession = lazy(() =>
@@ -241,12 +249,46 @@ function HomeContent() {
               <MirrorLetter userId={user.uid} isPaidUser={true} />
             )}
 
+            {/* Feature 02: Question DNA — honesty analysis per question type */}
+            {user && profile && profile.tier !== 'free' && (
+              <QuestionDNA />
+            )}
+
+            {/* Feature 04: Belief Lifespan — track how beliefs evolve */}
+            {user && profile && profile.tier !== 'free' && (
+              <BeliefLifespan />
+            )}
+
+            {/* Feature 12: Time Capsule — seal questions for the future */}
+            {user && profile && profile.tier !== 'free' && (
+              <TimeCapsule />
+            )}
+
+            {/* Feature 15: Shared Sessions — explore the same question with someone */}
+            {user && profile && profile.tier === 'pro' && (
+              <SharedSessions />
+            )}
+
+            {/* Feature 16: Question Gift — send a curated question to someone */}
+            {user && profile && profile.tier !== 'free' && (
+              <QuestionGift />
+            )}
+
             {/* Divider */}
             <div className="w-full max-w-6xl h-px bg-gradient-to-r from-transparent via-border to-transparent my-20" aria-hidden="true" />
 
             <PhilosophySection />
             <FeaturesSection />
+
+            {/* Social proof — Reviews & Companies */}
+            <ReviewsSection />
+            <CompaniesSection />
+
             <PricingSection currentTier={profile?.tier} onUpgrade={handleUpgrade} />
+
+            {/* Coming Soon — Teams, End of Life, Thread API */}
+            <ComingSoonSection />
+
             <Footer />
           </motion.div>
         ) : (

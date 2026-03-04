@@ -7,6 +7,7 @@ import type { SessionSummary } from '@/hooks/useAuth';
 interface EvolutionMapProps {
   sessions: SessionSummary[];
   onViewSession?: (session: SessionSummary) => void;
+  beliefs?: { text: string; category: string; status: string; sessionDate: string }[];
 }
 
 interface Node {
@@ -109,13 +110,14 @@ function depthGlow(depth: number): string {
   return 'rgba(42, 107, 107, 0.2)';
 }
 
-export function EvolutionMap({ sessions, onViewSession }: EvolutionMapProps) {
+export function EvolutionMap({ sessions, onViewSession, beliefs }: EvolutionMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const animFrameRef = useRef<number>(0);
   const [hoveredNode, setHoveredNode] = useState<Node | null>(null);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [viewMode, setViewMode] = useState<'sessions' | 'beliefs'>('sessions');
 
   // Build the node graph
   const nodes = useMemo(() => {
@@ -308,6 +310,14 @@ export function EvolutionMap({ sessions, onViewSession }: EvolutionMapProps) {
       <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-gold mb-5 flex items-center gap-4">
         <span id="evolution-heading">IV · Evolution Map</span>
         <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" aria-hidden="true" />
+        {beliefs && beliefs.length > 0 && (
+          <button
+            onClick={() => setViewMode(viewMode === 'sessions' ? 'beliefs' : 'sessions')}
+            className="text-text-muted hover:text-gold transition-colors font-courier text-[10px] tracking-widest uppercase"
+          >
+            {viewMode === 'sessions' ? 'Beliefs' : 'Sessions'}
+          </button>
+        )}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="text-text-muted hover:text-gold transition-colors font-courier text-[10px] tracking-widest uppercase"
@@ -438,6 +448,54 @@ export function EvolutionMap({ sessions, onViewSession }: EvolutionMapProps) {
                 </div>
               </div>
             </div>
+
+            {/* Feature 04/11: Belief Constellation Overlay */}
+            {viewMode === 'beliefs' && beliefs && beliefs.length > 0 && (
+              <div className="bg-surface border border-border rounded-lg p-5 mb-4">
+                <div className="font-courier text-[9px] text-text-muted tracking-widest uppercase mb-4">
+                  Belief Constellation · {beliefs.length} beliefs tracked
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {beliefs.map((belief, i) => {
+                    const statusColors: Record<string, string> = {
+                      active: '#2a6b6b',
+                      evolved: '#b8860b',
+                      deepened: '#c0392b',
+                      contradicted: '#e74c3c',
+                      abandoned: '#7a7060',
+                    };
+                    const color = statusColors[belief.status] || '#3d3830';
+                    return (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="flex items-start gap-3 p-3 bg-deep/50 rounded-lg border border-border/50"
+                      >
+                        <div
+                          className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0"
+                          style={{ backgroundColor: color }}
+                        />
+                        <div className="min-w-0">
+                          <p className="font-cormorant text-sm text-text-mid italic leading-snug">
+                            &ldquo;{belief.text}&rdquo;
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="font-courier text-[8px] tracking-widest uppercase" style={{ color }}>
+                              {belief.status}
+                            </span>
+                            <span className="font-courier text-[8px] text-text-muted tracking-widest">
+                              {belief.category}
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

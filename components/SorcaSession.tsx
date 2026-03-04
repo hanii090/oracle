@@ -18,6 +18,7 @@ import { DepthLimitModal } from "@/components/session/DepthLimitModal";
 import { BreakthroughVisual } from "@/components/session/BreakthroughVisual";
 import { VoiceSorca } from '@/components/VoiceSorca';
 import { SessionExport } from "@/components/SessionExport";
+import { SilenceScore } from "@/components/session/SilenceScore";
 
 // New onboarding / UX components
 import { WelcomeModal } from "@/components/session/WelcomeModal";
@@ -47,6 +48,12 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
     message: string;
     deflectionType: string;
   } | null>(null);
+  const [silenceData, setSilenceData] = useState<{ totalSpeechMs: number; totalSilenceMs: number; pauses: { durationMs: number; timestamp: number }[] } | null>(null);
+  const [silenceScore, setSilenceScore] = useState<{ score: number; quality: string; trend: string } | null>(null);
+  const [personalKey, setPersonalKey] = useState<{ key: string; mode: string; emotion: string } | null>(null);
+  const [ambientPortrait, setAmbientPortrait] = useState<{ description: string; palette: string[] } | null>(null);
+  const [showPortrait, setShowPortrait] = useState(false);
+  const isFirstMessage = useRef(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { steerMusic, triggerBreakthrough } = useLyriaFoley(true);
   const { user: authUser, profile, saveSession, loadSessions, getIdToken } = useAuth();
@@ -146,28 +153,98 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
       await loadSessions();
       recordSession();
 
-      // Trigger avoided question analysis for paid users with enough messages
+      const token = await getIdToken();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      // Run post-session analyses in parallel (non-blocking)
+      const postSessionTasks: Promise<void>[] = [];
+
+      // Feature 05: Avoided question analysis for paid users
       if (profile?.tier !== 'free' && currentMessages.length >= 4) {
-        try {
-          const token = await getIdToken();
-          const res = await fetch('/api/avoided', {
+        postSessionTasks.push(
+          fetch('/api/avoided', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
+            headers,
             body: JSON.stringify({ sessionMessages: currentMessages }),
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.weeklyReminder) {
-              setAvoidedReminder(data.weeklyReminder);
+          }).then(async res => {
+            if (res.ok) {
+              const data = await res.json();
+              if (data.weeklyReminder) setAvoidedReminder(data.weeklyReminder);
             }
-          }
-        } catch {
-          // Silently fail — this is a non-critical feature
-        }
+          }).catch(() => {})
+        );
       }
+
+      // Feature 02: Question DNA analysis
+      if (profile?.tier !== 'free' && currentMessages.length >= 3) {
+        postSessionTasks.push(
+          fetch('/api/question-dna', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              sessionMessages: currentMessages.map(m => ({ role: m.role, content: m.content })),
+            }),
+          }).then(() => {}).catch(() => {})
+        );
+      }
+
+      // Feature 04: Belief extraction
+      if (profile?.tier !== 'free' && currentMessages.length >= 3) {
+        postSessionTasks.push(
+          fetch('/api/beliefs', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              sessionMessages: currentMessages.map(m => ({ role: m.role, content: m.content })),
+            }),
+          }).then(() => {}).catch(() => {})
+        );
+      }
+
+      // Feature 10: Silence Score (only if voice was used and we have data)
+      if (silenceData && silenceData.totalSpeechMs > 0) {
+        postSessionTasks.push(
+          fetch('/api/silence-score', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              totalSpeechMs: silenceData.totalSpeechMs,
+              totalSilenceMs: silenceData.totalSilenceMs,
+              pauses: silenceData.pauses,
+              messageCount: currentMessages.length,
+              depth,
+            }),
+          }).then(async res => {
+            if (res.ok) {
+              const data = await res.json();
+              setSilenceScore(data);
+            }
+          }).catch(() => {})
+        );
+      }
+
+      // Feature 09: Ambient Portrait generation
+      if (profile?.tier === 'pro' && currentMessages.length >= 4) {
+        postSessionTasks.push(
+          fetch('/api/ambient-portrait', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              sessionMessages: currentMessages.map(m => ({ role: m.role, content: m.content })),
+              depth,
+            }),
+          }).then(async res => {
+            if (res.ok) {
+              const data = await res.json();
+              setAmbientPortrait(data.portrait);
+              setShowPortrait(true);
+            }
+          }).catch(() => {})
+        );
+      }
+
+      await Promise.allSettled(postSessionTasks);
 
       // Show share card if they went deep enough
       if (depth >= 3) {
@@ -176,7 +253,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
       }
     }
     onExit();
-  }, [messages, depth, saveSession, loadSessions, onExit, recordSession, profile, getIdToken]);
+  }, [messages, depth, saveSession, loadSessions, onExit, recordSession, profile, getIdToken, silenceData]);
 
   const handleReset = useCallback(async () => {
     const currentMessages = messages.filter(m => !(m.role === "assistant" && m.content === "What truth are you avoiding today?"));
@@ -224,6 +301,31 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
+
+    // Feature 07: Assign Personal Key on first message
+    if (isFirstMessage.current && profile?.tier !== 'free') {
+      isFirstMessage.current = false;
+      try {
+        const token = await getIdToken();
+        const keyRes = await fetch('/api/personal-key', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            action: 'assign',
+            firstMessage: input,
+          }),
+        });
+        if (keyRes.ok) {
+          const keyData = await keyRes.json();
+          setPersonalKey(keyData);
+        }
+      } catch {
+        // Non-critical — continue without personal key
+      }
+    }
 
     try {
       const newDepth = depth + 1;
@@ -342,6 +444,15 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
     setInput(text);
   }, []);
 
+  // Feature 03 & 10: Silence detection + data tracking
+  const handleSilenceDetected = useCallback(() => {
+    // The VoiceSorca component shows "Take your time" — we can log analytics here
+  }, []);
+
+  const handleSilenceData = useCallback((data: { totalSpeechMs: number; totalSilenceMs: number; pauses: { durationMs: number; timestamp: number }[] }) => {
+    setSilenceData(data);
+  }, []);
+
   const displayMessages = nightMode ? messages.slice(-2) : messages;
 
   return (
@@ -387,8 +498,18 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
                 onTranscript={handleVoiceTranscript}
                 oracleText={lastOracleText}
                 enabled={profile?.tier !== "free"}
+                onSilenceDetected={handleSilenceDetected}
+                onSilenceData={handleSilenceData}
               />
-              <SessionExport messages={messages} depth={depth} />
+              <SessionExport messages={messages} depth={depth} allSessions={undefined} />
+              {silenceScore && (
+                <SilenceScore score={silenceScore.score} quality={silenceScore.quality} trend={silenceScore.trend} />
+              )}
+              {personalKey && (
+                <span className="font-courier text-[9px] text-gold/60 tracking-widest uppercase" title={`Your key: ${personalKey.key} ${personalKey.mode}`}>
+                  ♫ {personalKey.key}
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -467,6 +588,37 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
           setInput(question);
         }}
       />
+
+      {/* Feature 09: Ambient Portrait overlay */}
+      {showPortrait && ambientPortrait && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/80 backdrop-blur-md"
+          onClick={() => { setShowPortrait(false); }}
+        >
+          <div className="max-w-lg mx-auto p-8 text-center">
+            <h3 className="font-cinzel text-xl text-gold mb-4">Your Ambient Portrait</h3>
+            <p className="font-cormorant text-lg text-void/80 leading-relaxed italic mb-6">
+              &ldquo;{ambientPortrait.description}&rdquo;
+            </p>
+            <div className="flex justify-center gap-2 mb-6">
+              {ambientPortrait.palette.map((color, i) => (
+                <div
+                  key={i}
+                  className="w-8 h-8 rounded-full border border-void/20"
+                  style={{ backgroundColor: color }}
+                  title={color}
+                />
+              ))}
+            </div>
+            <p className="font-courier text-[10px] text-void/40 tracking-widest uppercase">
+              Tap anywhere to close
+            </p>
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

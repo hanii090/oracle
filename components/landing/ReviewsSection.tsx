@@ -1,0 +1,168 @@
+'use client';
+
+import { motion } from 'motion/react';
+import { useState } from 'react';
+
+interface Review {
+  quote: string;
+  author: string;
+  role: string;
+  depth: string;
+  avatar: string;
+}
+
+const REVIEWS: Review[] = [
+  {
+    quote: "I've done 8 years of therapy. Sorca asked me one question in session three that undid more than the last two years combined. I sat in silence for forty seconds. That silence was the answer.",
+    author: "Dr. Elena Marsh",
+    role: "Clinical Psychologist, London",
+    depth: "Depth 14 reached",
+    avatar: "🌙",
+  },
+  {
+    quote: "I came in thinking I had a career problem. By depth 7, I realised I had a father problem. By depth 11, I realised I had a permission problem. Sorca never told me any of this. It just kept asking.",
+    author: "James Okoro",
+    role: "Founder & CEO",
+    depth: "47 sessions completed",
+    avatar: "⚡",
+  },
+  {
+    quote: "The Pattern of the Week feature is terrifying in the best way. Last week it told me: 'You use competence as a hiding place.' I've been thinking about that sentence for six days straight.",
+    author: "Ava Chen",
+    role: "Executive Coach",
+    depth: "Pattern Engine user",
+    avatar: "🔮",
+  },
+  {
+    quote: "My Mirror Letter made me cry. Not because it was sad. Because it was me — actually me — saying things I'd been circling for months. I screenshot it and read it every morning.",
+    author: "Marcus Webb",
+    role: "Writer & Poet",
+    depth: "12 Mirror Letters received",
+    avatar: "✒️",
+  },
+  {
+    quote: "I recommend Sorca to all my clients now. Not as a replacement for therapy — as preparation for it. They come to sessions already excavated. We can go deeper, faster.",
+    author: "Dr. Priya Khatri",
+    role: "Psychotherapist, NHS",
+    depth: "Referring since month one",
+    avatar: "🧠",
+  },
+  {
+    quote: "The Night Sorca session at 3am changed my life. Just a single question glowing in the dark. No interface. No distractions. Just me and the truth I'd been avoiding for three years.",
+    author: "Sophie Laurent",
+    role: "Filmmaker",
+    depth: "Night session convert",
+    avatar: "🌑",
+  },
+];
+
+export function ReviewsSection() {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+      className="w-full max-w-6xl px-6 py-20"
+      aria-labelledby="reviews-heading"
+    >
+      <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-gold mb-5 flex items-center gap-4">
+        IV · Testimonials
+        <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" aria-hidden="true" />
+      </div>
+      <h2 id="reviews-heading" className="font-cinzel font-semibold text-3xl md:text-5xl mb-6 text-text-main">
+        What They <em className="font-cormorant italic font-light text-gold">Discovered</em>
+      </h2>
+      <p className="font-cormorant text-lg text-text-muted mb-16 max-w-2xl">
+        Every person who enters Sorca leaves knowing something they didn&apos;t know they knew. These are their words.
+      </p>
+
+      {/* Featured review */}
+      <div className="mb-12">
+        <motion.div
+          key={activeIndex}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="bg-raised border border-gold/20 rounded-lg p-10 md:p-14 relative overflow-hidden"
+        >
+          <div className="absolute top-6 left-8 text-6xl opacity-[0.06] font-cinzel text-gold" aria-hidden="true">&ldquo;</div>
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-gold/30 via-gold to-gold/30" aria-hidden="true" />
+          
+          <blockquote className="relative z-10">
+            <p className="font-cormorant italic text-xl md:text-2xl text-text-main leading-relaxed mb-8">
+              &ldquo;{REVIEWS[activeIndex].quote}&rdquo;
+            </p>
+            <footer className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-2xl" aria-hidden="true">
+                {REVIEWS[activeIndex].avatar}
+              </div>
+              <div>
+                <cite className="font-cinzel text-sm tracking-wide text-text-main not-italic block">
+                  {REVIEWS[activeIndex].author}
+                </cite>
+                <span className="font-courier text-[10px] text-text-muted tracking-widest uppercase">
+                  {REVIEWS[activeIndex].role}
+                </span>
+              </div>
+              <div className="ml-auto hidden md:block">
+                <span className="font-courier text-[10px] text-gold/60 tracking-widest uppercase border border-gold/20 px-3 py-1 rounded-full">
+                  {REVIEWS[activeIndex].depth}
+                </span>
+              </div>
+            </footer>
+          </blockquote>
+        </motion.div>
+      </div>
+
+      {/* Review selector dots */}
+      <div className="flex justify-center gap-3 mb-12" role="tablist" aria-label="Select testimonial">
+        {REVIEWS.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setActiveIndex(i)}
+            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+              i === activeIndex
+                ? 'bg-gold scale-125'
+                : 'bg-border hover:bg-gold/40'
+            }`}
+            role="tab"
+            aria-selected={i === activeIndex}
+            aria-label={`Testimonial ${i + 1} from ${REVIEWS[i].author}`}
+          />
+        ))}
+      </div>
+
+      {/* Grid of smaller reviews */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {REVIEWS.filter((_, i) => i !== activeIndex).slice(0, 3).map((review, i) => (
+          <motion.div
+            key={review.author}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: i * 0.1 }}
+            className="bg-surface border border-border rounded-lg p-8 hover:border-gold/20 transition-all duration-300 cursor-pointer group"
+            onClick={() => setActiveIndex(REVIEWS.indexOf(review))}
+            role="button"
+            aria-label={`Read full testimonial from ${review.author}`}
+          >
+            <p className="font-cormorant italic text-sm text-text-mid leading-relaxed mb-6 line-clamp-4">
+              &ldquo;{review.quote.slice(0, 150)}...&rdquo;
+            </p>
+            <div className="flex items-center gap-3">
+              <span className="text-xl" aria-hidden="true">{review.avatar}</span>
+              <div>
+                <div className="font-cinzel text-[11px] tracking-wide text-text-main">{review.author}</div>
+                <div className="font-courier text-[9px] text-text-muted tracking-widest uppercase">{review.role}</div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </motion.section>
+  );
+}

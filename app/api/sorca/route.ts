@@ -7,6 +7,7 @@ import { detectCrisis, sanitizeMessage } from '@/lib/safety';
 import { getServerEnv } from '@/lib/env';
 import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
+import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase-admin';
 
 /**
  * Server-side AI proxy — keeps all API keys secret.
@@ -28,7 +29,7 @@ const requestSchema = z.object({
   tier: z.enum(['free', 'philosopher', 'pro']),
 });
 
-function buildSystemPrompt(depth: number, threadContext: string, nightMode: boolean): string {
+function buildSystemPrompt(depth: number, threadContext: string, nightMode: boolean, dnaProfile?: Record<string, number>): string {
   let prompt = `
 You are Sorca. You never give answers, advice, affirmations, or empathy.
 You ask ONE question per response. Never more.
@@ -46,6 +47,20 @@ Rules:
 Current depth level: ${depth} (1 is surface, beyond 10 is the abyss — you are in uncharted territory)
 Past Thread Context:
 ${threadContext}`;
+
+  // Feature 02: Question DNA weighting — adapt question style based on user's honesty profile
+  if (dnaProfile && Object.keys(dnaProfile).length > 0) {
+    const sorted = Object.entries(dnaProfile).sort((a, b) => b[1] - a[1]);
+    const mostHonest = sorted.filter(([, v]) => v > 0.6).map(([k]) => k);
+    const leastHonest = sorted.filter(([, v]) => v < 0.4).map(([k]) => k);
+
+    if (leastHonest.length > 0) {
+      prompt += `\n\n📊 QUESTION DNA INSIGHT: This user tends to be LEAST honest when facing ${leastHonest.join(', ')} questions. Lean INTO these types. They need them most.`;
+    }
+    if (mostHonest.length > 0) {
+      prompt += `\nThey respond most honestly to ${mostHonest.join(', ')} questions — use these as entry points before pivoting to harder territory.`;
+    }
+  }
 
   if (depth > 7) {
     prompt += `
@@ -257,7 +272,22 @@ export async function POST(req: Request) {
       .map(m => `${m.role}: ${sanitizeMessage(m.content)}`)
       .join('\n');
 
-    const systemPrompt = buildSystemPrompt(depth, threadStr, nightMode);
+    // Feature 02: Load user's Question DNA profile for adaptive questioning
+    let dnaProfile: Record<string, number> | undefined;
+    if (tier !== 'free' && isAdminConfigured()) {
+      try {
+        const db = getAdminFirestore();
+        const dnaDoc = await db.collection('questionDna').doc(userId).get();
+        if (dnaDoc.exists) {
+          const data = dnaDoc.data();
+          dnaProfile = data?.honestyByType;
+        }
+      } catch {
+        // Non-critical — continue without DNA data
+      }
+    }
+
+    const systemPrompt = buildSystemPrompt(depth, threadStr, nightMode, dnaProfile);
     const emotionPrompt = buildEmotionPrompt(sanitizedMessage);
 
     // Try providers with fallback

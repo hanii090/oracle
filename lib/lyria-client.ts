@@ -5,6 +5,12 @@ export type EmotionWeights = {
   relief?: number; dread?: number; stillness?: number;
 }
 
+export type PersonalKeyInfo = {
+  key: string;
+  mode: string;
+  emotion: string;
+}
+
 const EMOTION_TO_PROMPT: Record<string, string> = {
   tension: "tense sparse piano, minor key, unresolved chord, silence between notes",
   grief: "slow cello, low register, long sustained notes, minor thirds",
@@ -14,16 +20,42 @@ const EMOTION_TO_PROMPT: Record<string, string> = {
   stillness: "near silence, single note held, infinite reverb, empty space"
 }
 
+const KEY_TO_MUSICAL: Record<string, string> = {
+  "C minor": "C natural minor scale, somber, introspective quality",
+  "D minor": "D minor key, melancholic but grounded, baroque sadness",
+  "E♭ major": "E-flat major, warm heroic quality, expansive feeling",
+  "F# minor": "F-sharp minor, dark tension, searching quality",
+  "G major": "G major key, pastoral brightness, gentle optimism",
+  "A minor": "A natural minor, contemplative, classical depth",
+  "B♭ major": "B-flat major, warm resonance, steady grounding",
+  "C# minor": "C-sharp minor, mysterious darkness, profound depth",
+  "D major": "D major key, triumphant clarity, bright confidence",
+  "E minor": "E minor, folk-like simplicity, honest vulnerability",
+  "F minor": "F minor key, deep passion, emotional intensity",
+  "A♭ major": "A-flat major, rich warmth, complex beauty",
+}
+
 export class LyriaFoleyEngine {
   private session: any = null;
   private audioCtx: AudioContext | null = null;
   private nextPlayTime = 0;
   private isPlaying = false;
   private reconnectAttempts = 0;
+  private personalKey: PersonalKeyInfo | null = null;
+  private breakthroughAudioBuffers: Float32Array[] = [];
+  private isCapturingBreakthrough = false;
+
+  /** Feature 07: Set the user's personal musical key for all audio generation */
+  setPersonalKey(key: PersonalKeyInfo) {
+    this.personalKey = key;
+  }
+
+  /** Feature 08: Get stored breakthrough audio signature */
+  getBreakthroughSignature(): Float32Array[] {
+    return this.breakthroughAudioBuffers;
+  }
 
   async connect() {
-    // API key is fetched from a server-side proxy endpoint to avoid client-side exposure.
-    // Falls back to NEXT_PUBLIC_GEMINI_API_KEY if the proxy is not available.
     let apiKey: string | undefined;
     try {
       const res = await fetch('/api/lyria-token');
@@ -45,6 +77,10 @@ export class LyriaFoleyEngine {
       const ai = new GoogleGenAI({ apiKey });
       this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
 
+      const keyInstruction = this.personalKey
+        ? ` All music should be rooted in ${KEY_TO_MUSICAL[this.personalKey.key] || this.personalKey.key}, with ${this.personalKey.mode} mode.`
+        : '';
+
       const sessionPromise = ai.live.connect({
         model: "gemini-2.5-flash-native-audio-preview-09-2025",
         callbacks: {
@@ -57,6 +93,11 @@ export class LyriaFoleyEngine {
             if (base64Audio) {
               const pcmData = this.base64ToFloat32(base64Audio);
               this.queueAudio(pcmData);
+
+              // Feature 08: Capture audio during breakthrough for soundmark
+              if (this.isCapturingBreakthrough) {
+                this.breakthroughAudioBuffers.push(pcmData);
+              }
             }
           },
           onclose: () => {
@@ -72,7 +113,7 @@ export class LyriaFoleyEngine {
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } }
           },
-          systemInstruction: "Generate ambient music based on the user's emotional state."
+          systemInstruction: `Generate ambient music based on the user's emotional state.${keyInstruction}`
         }
       });
 
@@ -92,17 +133,39 @@ export class LyriaFoleyEngine {
         weight: weight as number
       }));
 
+    const keyContext = this.personalKey
+      ? ` Maintain the root key of ${this.personalKey.key} ${this.personalKey.mode}.`
+      : '';
+
     const promptText = weightedPrompts.map(p => `${p.text} (weight: ${p.weight})`).join(", ");
 
     this.session.sendRealtimeInput([{
-      text: `Generate ambient music with these characteristics: ${promptText}`
+      text: `Generate ambient music with these characteristics: ${promptText}${keyContext}`
     }]);
   }
 
+  /** Feature 08: Trigger breakthrough with soundmark capture */
   async triggerBreakthrough() {
+    // Start capturing audio for the breakthrough soundmark
+    this.isCapturingBreakthrough = true;
+    this.breakthroughAudioBuffers = [];
+
     this.steer({ wonder: 0.9, relief: 0.3, stillness: 0.1 });
     await new Promise(r => setTimeout(r, 8000));
+
+    // Stop capturing
+    this.isCapturingBreakthrough = false;
+
     this.steer({ stillness: 0.8 });
+  }
+
+  /** Feature 08: Replay stored breakthrough soundmark */
+  async replayBreakthroughSignature() {
+    if (!this.audioCtx || this.breakthroughAudioBuffers.length === 0) return;
+
+    for (const pcm of this.breakthroughAudioBuffers) {
+      this.queueAudio(pcm);
+    }
   }
 
   private queueAudio(pcm: Float32Array) {
@@ -133,9 +196,8 @@ export class LyriaFoleyEngine {
 
   disconnect() {
     this.isPlaying = false;
+    this.isCapturingBreakthrough = false;
     if (this.session) {
-      // The Live API doesn't expose a close method directly on the session object in all versions,
-      // but we can just null it out to stop sending.
       this.session = null;
     }
     this.audioCtx?.close();
