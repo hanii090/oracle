@@ -16,7 +16,7 @@ function getStripe(): Stripe {
   if (!stripe) {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key) throw new Error('STRIPE_SECRET_KEY is required');
-    stripe = new Stripe(key, { apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion });
+    stripe = new Stripe(key, { apiVersion: '2026-02-25.clover' });
   }
   return stripe;
 }

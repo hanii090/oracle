@@ -13,7 +13,7 @@ let stripeClient: Stripe | null = null;
 
 function getStripe(secretKey: string): Stripe {
   if (!stripeClient) {
-    stripeClient = new Stripe(secretKey, { apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion });
+    stripeClient = new Stripe(secretKey, { apiVersion: '2026-02-25.clover' });
   }
   return stripeClient;
 }

@@ -18,7 +18,7 @@ function getStripe(): Stripe | null {
   if (!stripeClient) {
     try {
       const env = getStripeEnv();
-      stripeClient = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion });
+      stripeClient = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-02-25.clover' });
     } catch {
       return null;
     }
