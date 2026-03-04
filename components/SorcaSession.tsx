@@ -346,7 +346,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
 
   return (
     <motion.div
-      className={`relative z-10 w-full ${nightMode ? "max-w-xl" : "max-w-3xl"} h-[100dvh] flex flex-col ${nightMode ? "py-6 px-4" : "py-12 px-6"} transition-all duration-1000 mx-auto ${isBreakthrough ? "bg-void/50" : ""} ${nightMode ? "bg-[#020104]" : ""}`}
+      className={`relative z-10 w-full ${nightMode ? "max-w-xl" : "max-w-3xl"} h-[100dvh] flex flex-col ${nightMode ? "py-6 px-4" : "py-12 px-6"} transition-all duration-1000 mx-auto ${isBreakthrough ? "bg-ink/20" : ""} ${nightMode ? "bg-ink text-void" : ""}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

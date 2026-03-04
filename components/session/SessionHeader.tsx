@@ -24,9 +24,9 @@ function DepthRing({ depth, maxDepth, tier }: { depth: number; maxDepth: number;
   const strokeDashoffset = circumference * (1 - progress);
 
   // Color shifts based on depth
-  let strokeColor = '#c9a84c'; // gold
-  if (depth >= confrontationThreshold) strokeColor = '#c42847'; // crimson
-  else if (depth >= freeLimit) strokeColor = '#e8c97a'; // gold bright
+  let strokeColor = '#c0392b'; // accent red
+  if (depth >= confrontationThreshold) strokeColor = '#8b1a2f'; // crimson
+  else if (depth >= freeLimit) strokeColor = '#e74c3c'; // accent warm
 
   return (
     <Tooltip content={tier === 'free' ? `Depth ${depth}/${freeLimit} (Free limit)` : `Depth ${depth} — ${depth >= 7 ? 'Confrontation active' : depth >= 5 ? 'Getting personal' : 'Warming up'}`} side="bottom">
@@ -35,7 +35,7 @@ function DepthRing({ depth, maxDepth, tier }: { depth: number; maxDepth: number;
           <circle
             cx="18" cy="18" r="14"
             fill="none"
-            stroke="rgba(30, 28, 48, 0.6)"
+            stroke="rgba(197, 187, 168, 0.4)"
             strokeWidth="2"
           />
           <circle

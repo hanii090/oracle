@@ -1,25 +1,26 @@
 import type { Metadata } from "next";
-import { Cinzel, Cormorant_Garamond, Courier_Prime } from "next/font/google";
+import { Playfair_Display, DM_Sans, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { SkipNav } from "@/components/SkipNav";
 
-const cinzel = Cinzel({
+const cinzel = Playfair_Display({
   subsets: ["latin"],
+  weight: ["400", "700", "900"],
+  style: ["normal", "italic"],
   variable: "--font-cinzel",
 });
 
-const cormorant = Cormorant_Garamond({
+const cormorant = DM_Sans({
   subsets: ["latin"],
-  weight: ["300", "400", "600"],
+  weight: ["300", "400", "500"],
   style: ["normal", "italic"],
   variable: "--font-cormorant",
 });
 
-const courier = Courier_Prime({
+const courier = Bebas_Neue({
   subsets: ["latin"],
-  weight: ["400", "700"],
-  style: ["normal", "italic"],
+  weight: ["400"],
   variable: "--font-courier",
 });
 
@@ -102,7 +103,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <SkipNav />
-        <div className="fixed inset-0 z-50 pointer-events-none opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
+        <div className="fixed inset-0 z-50 pointer-events-none opacity-[0.04] mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
         <Providers>
           {children}
         </Providers>

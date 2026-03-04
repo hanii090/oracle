@@ -35,7 +35,7 @@ export function ChatInput({ value, onChange, onSubmit, isLoading, nightMode, dis
           }
         }}
         placeholder={nightMode ? '...' : 'Speak your truth...'}
-        className={`w-full ${nightMode ? 'bg-transparent border-gold/10 focus:border-gold/30 text-center' : 'bg-surface border-border focus:border-gold/50'} border focus:ring-1 focus:ring-gold/30 rounded-lg p-6 text-text-main font-cormorant text-lg resize-none outline-none transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed`}
+        className={`w-full ${nightMode ? 'bg-transparent border-gold/10 focus:border-gold/30 text-center text-void placeholder:text-void/30' : 'bg-surface border-border focus:border-gold/50 text-text-main placeholder:text-text-muted'} border focus:ring-1 focus:ring-gold/30 rounded-lg p-6 font-cormorant text-lg resize-none outline-none transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed`}
         rows={3}
         disabled={isLoading || disabled}
         aria-describedby="input-hint"

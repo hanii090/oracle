@@ -19,7 +19,7 @@ export default function PrivacyPage() {
           Last updated: March 2026
         </p>
 
-        <div className="prose prose-invert max-w-none font-cormorant text-lg text-text-mid space-y-8">
+        <div className="prose max-w-none font-cormorant text-lg text-text-mid space-y-8">
           <section>
             <h2 className="font-cinzel text-xl text-text-main mb-4">1. Information We Collect</h2>
             <p><strong>Account data:</strong> When you sign in with Google, we receive your name, email, and profile picture from Google OAuth.</p>

@@ -100,18 +100,18 @@ export default function MirrorLetter({ userId, isPaidUser }: MirrorLetterProps) 
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
         >
-          <div className="bg-stone-900/60 backdrop-blur-sm border border-stone-800/50 rounded-2xl overflow-hidden">
+          <div className="bg-surface backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between p-5 pb-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center">
-                  <Mail className="w-4 h-4 text-violet-400" />
+                <div className="w-8 h-8 rounded-full bg-gold-dim flex items-center justify-center">
+                  <Mail className="w-4 h-4 text-gold" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-cinzel tracking-wide text-stone-200">
+                  <h3 className="text-sm font-cinzel tracking-wide text-text-main">
                     Mirror Letter
                   </h3>
-                  <p className="text-xs text-stone-500 mt-0.5">
+                  <p className="text-xs text-text-muted mt-0.5">
                     {new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
                   </p>
                 </div>
@@ -119,14 +119,14 @@ export default function MirrorLetter({ userId, isPaidUser }: MirrorLetterProps) 
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setExpanded(!expanded)}
-                  className="text-stone-500 hover:text-stone-300 transition-colors p-1.5"
+                  className="text-text-muted hover:text-text-main transition-colors p-1.5"
                   aria-label={expanded ? 'Collapse letter' : 'Expand letter'}
                 >
                   {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </button>
                 <button
                   onClick={handleDismiss}
-                  className="text-stone-500 hover:text-stone-300 transition-colors p-1.5"
+                  className="text-text-muted hover:text-text-main transition-colors p-1.5"
                   aria-label="Dismiss mirror letter"
                 >
                   <X className="w-4 h-4" />
@@ -136,15 +136,15 @@ export default function MirrorLetter({ userId, isPaidUser }: MirrorLetterProps) 
 
             {/* Loading state */}
             {loading && (
-              <div className="p-5 flex items-center gap-2 text-stone-500 text-sm">
-                <Sparkles className="w-4 h-4 animate-pulse text-violet-400" />
+              <div className="p-5 flex items-center gap-2 text-text-muted text-sm">
+                <Sparkles className="w-4 h-4 animate-pulse text-gold" />
                 <span className="font-cormorant italic">Writing your letter…</span>
               </div>
             )}
 
             {/* Error */}
             {error && (
-              <div className="p-5 text-stone-500 text-sm">
+              <div className="p-5 text-text-muted text-sm">
                 <p>{error}</p>
               </div>
             )}
@@ -152,7 +152,7 @@ export default function MirrorLetter({ userId, isPaidUser }: MirrorLetterProps) 
             {/* Preview (always visible) */}
             {letter && !loading && (
               <div className="px-5 py-4">
-                <p className="text-stone-400 font-cormorant text-base italic leading-relaxed line-clamp-2">
+                <p className="text-text-mid font-cormorant text-base italic leading-relaxed line-clamp-2">
                   {letter.split('\n')[0]}
                 </p>
               </div>
@@ -168,20 +168,20 @@ export default function MirrorLetter({ userId, isPaidUser }: MirrorLetterProps) 
                   transition={{ duration: 0.3 }}
                   className="overflow-hidden"
                 >
-                  <div className="px-5 pb-5 border-t border-stone-800/50 pt-4">
-                    <div className="prose prose-invert prose-sm max-w-none">
+                  <div className="px-5 pb-5 border-t border-border pt-4">
+                    <div className="prose prose-sm max-w-none">
                       {letter.split('\n').map((paragraph, i) => (
                         <p
                           key={i}
-                          className="text-stone-300 font-cormorant text-base leading-relaxed mb-3 last:mb-0"
+                          className="text-text-mid font-cormorant text-base leading-relaxed mb-3 last:mb-0"
                         >
                           {paragraph}
                         </p>
                       ))}
                     </div>
 
-                    <div className="mt-5 pt-4 border-t border-stone-800/30 flex items-center justify-between">
-                      <span className="text-xs text-stone-600 font-cinzel tracking-wider">
+                    <div className="mt-5 pt-4 border-t border-border/50 flex items-center justify-between">
+                      <span className="text-xs text-text-muted/60 font-cinzel tracking-wider">
                         From your patterns — Sorca
                       </span>
                       <button
@@ -190,7 +190,7 @@ export default function MirrorLetter({ userId, isPaidUser }: MirrorLetterProps) 
                             navigator.clipboard.writeText(letter);
                           }
                         }}
-                        className="text-xs text-stone-500 hover:text-stone-300 transition-colors"
+                        className="text-xs text-text-muted hover:text-text-main transition-colors"
                       >
                         Copy letter
                       </button>

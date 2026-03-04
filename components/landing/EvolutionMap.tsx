@@ -94,19 +94,19 @@ function findConnections(sessions: SessionSummary[], themes: Map<string, string[
 
 // Color based on session depth
 function depthColor(depth: number): string {
-  if (depth >= 10) return '#c42847'; // crimson
-  if (depth >= 7) return '#ff6b35'; // orange
-  if (depth >= 5) return '#e8c97a'; // gold bright
-  if (depth >= 3) return '#c9a84c'; // gold
-  return '#4db8b8'; // teal
+  if (depth >= 10) return '#8b1a2f'; // crimson
+  if (depth >= 7) return '#c0392b'; // accent red
+  if (depth >= 5) return '#e74c3c'; // warm red
+  if (depth >= 3) return '#b8860b'; // editorial gold
+  return '#2a6b6b'; // teal
 }
 
 function depthGlow(depth: number): string {
-  if (depth >= 10) return 'rgba(196, 40, 71, 0.4)';
-  if (depth >= 7) return 'rgba(255, 107, 53, 0.3)';
-  if (depth >= 5) return 'rgba(232, 201, 122, 0.3)';
-  if (depth >= 3) return 'rgba(201, 168, 76, 0.25)';
-  return 'rgba(77, 184, 184, 0.25)';
+  if (depth >= 10) return 'rgba(139, 26, 47, 0.3)';
+  if (depth >= 7) return 'rgba(192, 57, 43, 0.25)';
+  if (depth >= 5) return 'rgba(231, 76, 60, 0.2)';
+  if (depth >= 3) return 'rgba(184, 134, 11, 0.2)';
+  return 'rgba(42, 107, 107, 0.2)';
 }
 
 export function EvolutionMap({ sessions, onViewSession }: EvolutionMapProps) {
@@ -204,7 +204,7 @@ export function EvolutionMap({ sessions, onViewSession }: EvolutionMapProps) {
           const midY = (node.y + target.y) / 2 * scaleY - 20;
           ctx.quadraticCurveTo(midX, midY, target.x * scaleX, target.y * scaleY);
 
-          ctx.strokeStyle = 'rgba(201, 168, 76, 0.08)';
+          ctx.strokeStyle = 'rgba(14, 12, 9, 0.06)';
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -238,13 +238,13 @@ export function EvolutionMap({ sessions, onViewSession }: EvolutionMapProps) {
         if (isHovered || isSelected) {
           ctx.beginPath();
           ctx.arc(nx, ny, r + 3, 0, Math.PI * 2);
-          ctx.strokeStyle = 'rgba(201, 168, 76, 0.5)';
+          ctx.strokeStyle = 'rgba(192, 57, 43, 0.4)';
           ctx.lineWidth = 1;
           ctx.stroke();
         }
 
         // Label
-        ctx.fillStyle = isHovered || isSelected ? '#e8e4d9' : 'rgba(138, 128, 112, 0.6)';
+        ctx.fillStyle = isHovered || isSelected ? '#0e0c09' : 'rgba(61, 56, 48, 0.6)';
         ctx.font = `${isHovered ? 11 : 9}px monospace`;
         ctx.textAlign = 'center';
         ctx.fillText(node.date, nx, ny + r + 14);
@@ -417,23 +417,23 @@ export function EvolutionMap({ sessions, onViewSession }: EvolutionMapProps) {
               {/* Legend */}
               <div className="absolute bottom-3 right-3 flex items-center gap-3 bg-deep/80 backdrop-blur px-3 py-2 rounded-lg border border-border/50">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#4db8b8' }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2a6b6b' }} />
                   <span className="font-courier text-[8px] text-text-muted">1-2</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#c9a84c' }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#b8860b' }} />
                   <span className="font-courier text-[8px] text-text-muted">3-4</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#e8c97a' }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#e74c3c' }} />
                   <span className="font-courier text-[8px] text-text-muted">5-6</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#ff6b35' }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#c0392b' }} />
                   <span className="font-courier text-[8px] text-text-muted">7-9</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#c42847' }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8b1a2f' }} />
                   <span className="font-courier text-[8px] text-text-muted">10+</span>
                 </div>
               </div>

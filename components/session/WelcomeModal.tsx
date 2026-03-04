@@ -59,7 +59,7 @@ export function WelcomeModal({ show, onDismiss }: WelcomeModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-void/90 backdrop-blur-md"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-ink/80 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
           aria-labelledby="welcome-title"
@@ -72,7 +72,7 @@ export function WelcomeModal({ show, onDismiss }: WelcomeModalProps) {
             className="bg-surface border border-gold/20 rounded-xl p-10 max-w-lg w-[90vw] text-center shadow-2xl shadow-gold/5 relative overflow-hidden"
           >
             {/* Background glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(201,168,76,0.04)_0%,transparent_70%)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192,57,43,0.03)_0%,transparent_70%)] pointer-events-none" />
 
             {/* Progress dots */}
             <div className="flex justify-center gap-2 mb-8 relative z-10">

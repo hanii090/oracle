@@ -5,9 +5,9 @@ export default function NotFound() {
     <main className="min-h-screen bg-void flex flex-col items-center justify-center text-center px-6">
       <div className="w-16 h-8 mx-auto mb-8 opacity-40">
         <svg viewBox="0 0 60 30" fill="none">
-          <path d="M3 15 C15 3 45 3 57 15 C45 27 15 27 3 15 Z" stroke="#c9a84c" strokeWidth="0.8" fill="none"/>
-          <circle cx="30" cy="15" r="6" stroke="#c9a84c" strokeWidth="0.8" fill="none"/>
-          <circle cx="30" cy="15" r="2.5" fill="#c9a84c"/>
+          <path d="M3 15 C15 3 45 3 57 15 C45 27 15 27 3 15 Z" stroke="#c0392b" strokeWidth="0.8" fill="none"/>
+          <circle cx="30" cy="15" r="6" stroke="#c0392b" strokeWidth="0.8" fill="none"/>
+          <circle cx="30" cy="15" r="2.5" fill="#c0392b"/>
         </svg>
       </div>
 

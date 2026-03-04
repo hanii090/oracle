@@ -2,19 +2,26 @@
 @import "tw-animate-css";
 
 @theme {
-  --color-void: #05040a;
-  --color-deep: #0a0914;
-  --color-surface: #0f0e1a;
-  --color-raised: #151325;
-  --color-border: #1e1c30;
-  --color-border-bright: #2d2a45;
-  --color-gold: #c9a84c;
-  --color-gold-dim: rgba(201, 168, 76, 0.08);
-  --color-gold-glow: rgba(201, 168, 76, 0.15);
-  --color-gold-bright: #e8c97a;
-  --color-text-main: #e8e4d9;
-  --color-text-mid: #8a8070;
-  --color-text-muted: #433e55;
+  /* Backgrounds — warm paper editorial palette */
+  --color-void: #f5f0e8;
+  --color-deep: #ede7d8;
+  --color-surface: #f5f0e8;
+  --color-raised: #ede7d8;
+  --color-border: #c5bba8;
+  --color-border-bright: #8a7f6e;
+
+  /* Primary accent — editorial red */
+  --color-gold: #c0392b;
+  --color-gold-dim: rgba(192, 57, 43, 0.06);
+  --color-gold-glow: rgba(192, 57, 43, 0.12);
+  --color-gold-bright: #e74c3c;
+
+  /* Text — ink palette */
+  --color-text-main: #0e0c09;
+  --color-text-mid: #3d3830;
+  --color-text-muted: #7a7060;
+
+  /* Semantic colors */
   --color-crimson: #8b1a2f;
   --color-crimson-bright: #c42847;
   --color-violet: #5b4a8a;
@@ -22,6 +29,15 @@
   --color-teal: #2a6b6b;
   --color-teal-bright: #4db8b8;
 
+  /* Editorial additions */
+  --color-ink: #0e0c09;
+  --color-ink-light: #1a1810;
+  --color-paper-dark: #d9d1c0;
+  --color-ink-faint: #b5aa98;
+  --color-editorial-gold: #b8860b;
+  --color-editorial-gold-light: #d4a017;
+
+  /* Fonts — editorial typefaces (mapped to existing class names) */
   --font-cinzel: var(--font-cinzel);
   --font-cormorant: var(--font-cormorant);
   --font-courier: var(--font-courier);
@@ -30,7 +46,9 @@
 body {
   background-color: var(--color-void);
   color: var(--color-text-main);
-  font-family: var(--font-courier);
+  font-family: var(--font-cormorant);
+  font-weight: 300;
+  line-height: 1.6;
 }
 
 /* Custom cursor: only on non-touch devices that don't prefer reduced motion */
@@ -79,16 +97,16 @@ body {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
   background: var(--color-void);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--color-paper-dark);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-gold);
+  background: var(--color-border-bright);
 }
 
 /* Hide scrollbar for chat */

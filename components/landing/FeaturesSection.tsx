@@ -31,7 +31,7 @@ export function FeaturesSection() {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="list" aria-label="Sorca features">
         {FEATURES.map((feature, i) => (
-          <div key={i} role="listitem" className="bg-surface p-10 relative overflow-hidden group hover:bg-raised hover:-translate-y-1 transition-all duration-300 border border-border hover:border-gold/30 rounded-lg hover:shadow-[0_8px_30px_rgba(201,168,76,0.05)]">
+          <div key={i} role="listitem" className="bg-surface p-10 relative overflow-hidden group hover:bg-raised hover:-translate-y-1 transition-all duration-300 border border-border hover:border-gold/30 rounded-lg hover:shadow-[0_8px_30px_rgba(192,57,43,0.05)]">
             <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: `var(--color-${feature.color})` }} aria-hidden="true" />
             <span className="text-3xl mb-6 block" aria-hidden="true">{feature.icon}</span>
             <h3 className="font-cinzel text-sm tracking-[0.05em] text-text-main mb-3">{feature.title}</h3>

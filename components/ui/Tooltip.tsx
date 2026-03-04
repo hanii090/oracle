@@ -64,7 +64,7 @@ export function Tooltip({ children, content, side = 'top', delay = 300 }: Toolti
             className={`absolute z-[100] ${positionClasses[side]} ${originMap[side]} pointer-events-none`}
             role="tooltip"
           >
-            <div className="bg-deep border border-gold/20 rounded-lg px-3 py-2 text-[10px] font-courier text-text-main tracking-wide whitespace-nowrap shadow-xl shadow-void/60">
+            <div className="bg-deep border border-gold/20 rounded-lg px-3 py-2 text-[10px] font-courier text-text-main tracking-wide whitespace-nowrap shadow-xl shadow-ink/15">
               {content}
             </div>
           </motion.div>

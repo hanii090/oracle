@@ -35,14 +35,14 @@ export function Stars() {
     resize();
     window.addEventListener("resize", resize);
 
-    // Generate stars once
-    starsRef.current = Array.from({ length: 120 }, () => ({
+    // Generate dust motes
+    starsRef.current = Array.from({ length: 60 }, () => ({
       x: Math.random(),
       y: Math.random(),
-      size: Math.random() * 2 + 0.5,
-      minO: Math.random() * 0.15,
-      maxO: Math.random() * 0.15 + Math.random() * 0.4,
-      speed: 0.3 + Math.random() * 0.8,
+      size: Math.random() * 1.5 + 0.3,
+      minO: Math.random() * 0.03,
+      maxO: Math.random() * 0.04 + Math.random() * 0.06,
+      speed: 0.2 + Math.random() * 0.5,
       phase: Math.random() * Math.PI * 2,
     }));
 
@@ -65,7 +65,7 @@ export function Stars() {
           0,
           Math.PI * 2
         );
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.fillStyle = `rgba(14, 12, 9, ${opacity})`;
         ctx.fill();
       }
 

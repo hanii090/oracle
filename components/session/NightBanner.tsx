@@ -18,7 +18,7 @@ export function NightBanner({ show, onDismiss }: NightBannerProps) {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] max-w-md w-[90vw]"
         >
-          <div className="bg-deep/95 backdrop-blur-md border border-gold/10 rounded-xl px-6 py-4 text-center shadow-xl shadow-void/80">
+          <div className="bg-deep/95 backdrop-blur-md border border-gold/10 rounded-xl px-6 py-4 text-center shadow-xl shadow-ink/20">
             <div className="flex items-center justify-center gap-2 mb-2">
               <span className="text-lg" aria-hidden="true">🌙</span>
               <span className="font-cinzel text-gold text-[11px] tracking-[0.2em] uppercase">Night Sorca Active</span>

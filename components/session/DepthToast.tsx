@@ -44,7 +44,7 @@ export function DepthToast({ depth, tier }: DepthToastProps) {
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[80] max-w-sm w-[85vw]"
         >
-          <div className="bg-deep/95 backdrop-blur-md border border-gold/15 rounded-xl px-5 py-3 text-center shadow-xl shadow-void/60">
+          <div className="bg-deep/95 backdrop-blur-md border border-gold/15 rounded-xl px-5 py-3 text-center shadow-xl shadow-ink/15">
             <p className="font-cormorant italic text-text-mid text-sm leading-relaxed">
               {message}
             </p>

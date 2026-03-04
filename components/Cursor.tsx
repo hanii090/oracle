@@ -72,13 +72,13 @@ export function Cursor() {
     <>
       <div
         ref={dotRef}
-        className="fixed top-0 left-0 w-2 h-2 bg-gold rounded-full pointer-events-none z-[9999] mix-blend-screen"
+        className="fixed top-0 left-0 w-2 h-2 bg-ink rounded-full pointer-events-none z-[9999] mix-blend-multiply"
         style={{ opacity: 0, willChange: "transform" }}
         aria-hidden="true"
       />
       <div
         ref={ringRef}
-        className="fixed top-0 left-0 w-8 h-8 border border-gold/40 rounded-full pointer-events-none z-[9998]"
+        className="fixed top-0 left-0 w-8 h-8 border border-ink/30 rounded-full pointer-events-none z-[9998]"
         style={{ opacity: 0, willChange: "transform" }}
         aria-hidden="true"
       />

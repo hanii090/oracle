@@ -19,7 +19,7 @@ export default function TermsPage() {
           Last updated: March 2026
         </p>
 
-        <div className="prose prose-invert max-w-none font-cormorant text-lg text-text-mid space-y-8">
+        <div className="prose max-w-none font-cormorant text-lg text-text-mid space-y-8">
           <section>
             <h2 className="font-cinzel text-xl text-text-main mb-4">1. Acceptance of Terms</h2>
             <p>By accessing or using Sorca (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.</p>

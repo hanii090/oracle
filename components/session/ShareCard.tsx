@@ -62,56 +62,56 @@ export function ShareCard({ show, depth, messageCount, onClose }: ShareCardProps
 
     // Background
     const gradient = ctx.createLinearGradient(0, 0, 0, 630);
-    gradient.addColorStop(0, '#05040a');
-    gradient.addColorStop(0.5, '#0a0914');
-    gradient.addColorStop(1, '#05040a');
+    gradient.addColorStop(0, '#f5f0e8');
+    gradient.addColorStop(0.5, '#ede7d8');
+    gradient.addColorStop(1, '#f5f0e8');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 1200, 630);
 
     // Border
-    ctx.strokeStyle = 'rgba(201, 168, 76, 0.3)';
+    ctx.strokeStyle = 'rgba(192, 57, 43, 0.3)';
     ctx.lineWidth = 2;
     ctx.roundRect(20, 20, 1160, 590, 16);
     ctx.stroke();
 
-    // Gold glow circle
+    // Subtle radial glow
     const radGradient = ctx.createRadialGradient(600, 280, 0, 600, 280, 300);
-    radGradient.addColorStop(0, 'rgba(201, 168, 76, 0.08)');
+    radGradient.addColorStop(0, 'rgba(192, 57, 43, 0.04)');
     radGradient.addColorStop(1, 'transparent');
     ctx.fillStyle = radGradient;
     ctx.fillRect(0, 0, 1200, 630);
 
     // Eye symbol
-    ctx.strokeStyle = 'rgba(201, 168, 76, 0.6)';
+    ctx.strokeStyle = 'rgba(192, 57, 43, 0.5)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.ellipse(600, 160, 50, 25, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.beginPath();
     ctx.arc(600, 160, 10, 0, Math.PI * 2);
-    ctx.fillStyle = '#c9a84c';
+    ctx.fillStyle = '#c0392b';
     ctx.fill();
 
     // "DEPTH" text
-    ctx.fillStyle = '#c9a84c';
+    ctx.fillStyle = '#c0392b';
     ctx.font = '600 14px serif';
     ctx.textAlign = 'center';
     ctx.letterSpacing = '8px';
     ctx.fillText('D E P T H', 600, 230);
 
     // Depth number
-    ctx.fillStyle = '#e8c97a';
+    ctx.fillStyle = '#0e0c09';
     ctx.font = 'bold 120px serif';
     ctx.textAlign = 'center';
     ctx.fillText(String(depth), 600, 360);
 
     // Subtitle
-    ctx.fillStyle = '#8a8070';
+    ctx.fillStyle = '#3d3830';
     ctx.font = 'italic 24px serif';
     ctx.fillText(`${messageCount} exchanges into the void`, 600, 410);
 
     // Oracle brand
-    ctx.fillStyle = 'rgba(201, 168, 76, 0.5)';
+    ctx.fillStyle = 'rgba(192, 57, 43, 0.4)';
     ctx.font = '600 12px serif';
     ctx.letterSpacing = '6px';
     ctx.fillText('S O R C A  —  T H E  Q U E S T I O N  T H A T  C H A N G E S  E V E R Y T H I N G', 600, 560);
@@ -132,7 +132,7 @@ export function ShareCard({ show, depth, messageCount, onClose }: ShareCardProps
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-void/85 backdrop-blur-sm"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-ink/80 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
@@ -148,19 +148,19 @@ export function ShareCard({ show, depth, messageCount, onClose }: ShareCardProps
               ref={cardRef}
               className="bg-gradient-to-b from-deep via-surface to-deep border border-gold/20 rounded-xl p-10 text-center mb-6 relative overflow-hidden"
             >
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(201,168,76,0.06)_0%,transparent_60%)] pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192,57,43,0.04)_0%,transparent_60%)] pointer-events-none" />
               
               {/* Eye */}
               <div className="w-16 h-8 mx-auto mb-6 relative z-10" aria-hidden="true">
                 <svg viewBox="0 0 80 40" fill="none" className="w-full h-full">
-                  <path d="M4 20 C20 4 60 4 76 20 C60 36 20 36 4 20 Z" stroke="#c9a84c" strokeWidth="1.5" fill="none" opacity="0.6"/>
-                  <circle cx="40" cy="20" r="8" stroke="#c9a84c" strokeWidth="1.5" fill="none" opacity="0.8"/>
-                  <circle cx="40" cy="20" r="3" fill="#c9a84c" opacity="0.9"/>
+                  <path d="M4 20 C20 4 60 4 76 20 C60 36 20 36 4 20 Z" stroke="#c0392b" strokeWidth="1.5" fill="none" opacity="0.6"/>
+                  <circle cx="40" cy="20" r="8" stroke="#c0392b" strokeWidth="1.5" fill="none" opacity="0.8"/>
+                  <circle cx="40" cy="20" r="3" fill="#c0392b" opacity="0.9"/>
                 </svg>
               </div>
 
               <div className="font-cinzel text-[10px] tracking-[0.4em] text-gold/60 uppercase mb-3 relative z-10">Depth</div>
-              <div className="font-cinzel text-7xl md:text-8xl text-gold-bright mb-3 relative z-10" style={{ textShadow: '0 0 60px rgba(201,168,76,0.3)' }}>
+              <div className="font-cinzel text-7xl md:text-8xl text-gold-bright mb-3 relative z-10" style={{ textShadow: '0 0 60px rgba(192,57,43,0.2)' }}>
                 {depth}
               </div>
               <div className="font-cormorant italic text-text-mid text-lg mb-6 relative z-10">
