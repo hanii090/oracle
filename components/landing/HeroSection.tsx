@@ -52,16 +52,8 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
       {/* HERO */}
       <section className="min-h-screen flex flex-col items-center justify-center text-center px-6 max-w-4xl mx-auto py-20 relative" aria-labelledby="hero-title">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192,57,43,0.04)_0%,transparent_60%)] pointer-events-none" aria-hidden="true" />
-        <div className="w-20 h-10 mb-12 relative z-10" aria-hidden="true">
-          <svg viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" role="img" aria-label="Sorca eye symbol">
-            <path d="M4 20 C20 4 60 4 76 20 C60 36 20 36 4 20 Z" stroke="#c0392b" strokeWidth="1" fill="none" opacity="0.6"/>
-            <circle cx="40" cy="20" r="8" stroke="#c0392b" strokeWidth="1" fill="none" opacity="0.8"/>
-            <circle cx="40" cy="20" r="3" fill="#c0392b" opacity="0.9"/>
-            <circle cx="37" cy="17" r="1.5" fill="#f5f0e8" opacity="0.6"/>
-          </svg>
-        </div>
         
-        <div className="font-cinzel text-[11px] tracking-[0.4em] uppercase text-gold mb-6">
+        <div className="font-cinzel text-[11px] tracking-[0.4em] uppercase text-gold mb-6 relative z-10">
           The question that changes everything
         </div>
         
@@ -69,8 +61,12 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
           SORCA
         </h1>
         
-        <p className="font-cormorant italic text-xl md:text-2xl text-text-mid max-w-2xl mb-16 leading-relaxed">
+        <p className="font-cormorant italic text-xl md:text-2xl text-text-mid max-w-2xl mb-6 leading-relaxed">
           You come with a problem. It asks questions — devastating, surgical, impossibly precise questions — until you find the truth yourself.
+        </p>
+
+        <p className="font-courier text-[10px] tracking-[0.2em] uppercase text-text-muted mb-16 max-w-lg">
+          Used by therapists, coaches, founders, and anyone brave enough to face themselves
         </p>
 
         <button

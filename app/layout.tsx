@@ -26,49 +26,54 @@ const courier = Bebas_Neue({
 
 export const metadata: Metadata = {
   title: {
-    default: "SORCA — The Question That Changes Everything",
+    default: "SORCA — The AI That Only Asks Questions",
     template: "%s | SORCA",
   },
   description:
-    "Sorca is a Socratic AI that never gives answers — only questions. Dive into the abyss of self-discovery through relentless, piercing inquiry.",
+    "Sorca is a Socratic AI for therapists, coaches, and anyone seeking radical self-honesty. No answers. No advice. Just questions so precise they change everything. Used by clinical psychologists, executive coaches, and founders worldwide.",
   keywords: [
-    "AI",
-    "Socratic questioning",
-    "self-discovery",
-    "philosophy",
-    "deep questions",
-    "introspection",
+    "AI therapy tool",
+    "Socratic questioning AI",
+    "self-discovery AI",
+    "AI for therapists",
+    "AI for coaches",
+    "deep questions AI",
+    "introspection tool",
     "sorca",
-    "AI therapy",
-    "self-reflection",
+    "self-reflection app",
+    "AI mental health",
+    "therapy companion",
+    "executive coaching tool",
+    "Socratic method",
+    "philosophical AI",
+    "grief and legacy AI",
+    "end of life planning",
   ],
   authors: [{ name: "Sorca" }],
   creator: "Sorca",
+  publisher: "Sorca",
+  category: "Mental Health & Self-Discovery",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || "https://sorca.life"
   ),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: "en_GB",
     siteName: "SORCA",
-    title: "SORCA — The Question That Changes Everything",
+    title: "SORCA — The AI That Only Asks Questions",
     description:
-      "A Socratic AI that responds only with questions. No answers. No advice. Just the truth you're avoiding.",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "SORCA — The Question That Changes Everything",
-      },
-    ],
+      "No answers. No advice. Just questions so precise they change everything. Used by therapists, coaches, and founders seeking radical self-honesty.",
+    url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SORCA — The Question That Changes Everything",
+    title: "SORCA — The AI That Only Asks Questions",
     description:
-      "A Socratic AI that responds only with questions. Dive into the abyss.",
-    images: ["/og-image.png"],
+      "A Socratic AI for therapists, coaches, and anyone brave enough to face themselves. No answers — only the questions you've been avoiding.",
+    creator: "@saboracle",
   },
   robots: {
     index: true,
@@ -81,11 +86,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
-  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -103,6 +104,47 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <SkipNav />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "SORCA",
+              applicationCategory: "HealthApplication",
+              operatingSystem: "Web",
+              url: "https://sorca.life",
+              description:
+                "A Socratic AI that responds only with questions. Used by therapists, coaches, and individuals for radical self-discovery.",
+              offers: [
+                {
+                  "@type": "Offer",
+                  name: "Seeker",
+                  price: "0",
+                  priceCurrency: "GBP",
+                  description:
+                    "5 sessions per month, basic Thread, depth level 5",
+                },
+                {
+                  "@type": "Offer",
+                  name: "Philosopher",
+                  price: "12",
+                  priceCurrency: "GBP",
+                  description:
+                    "Unlimited sessions, full Thread, Voice Sorca, Excavation Reports",
+                },
+                {
+                  "@type": "Offer",
+                  name: "Sorca Pro",
+                  price: "49",
+                  priceCurrency: "GBP",
+                  description:
+                    "Everything in Philosopher plus End of Life mode, Memory Portraits, Thread Archive",
+                },
+              ],
+            }),
+          }}
+        />
         <div className="fixed inset-0 z-50 pointer-events-none opacity-[0.04] mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
         <Providers>
           {children}
