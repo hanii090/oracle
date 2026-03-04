@@ -28,6 +28,7 @@ import { SharedSessions } from '@/components/landing/SharedSessions';
 import { QuestionGift } from '@/components/landing/QuestionGift';
 import { ComingSoonSection } from '@/components/landing/ComingSoonSection';
 import { ExcavationReportSection } from '@/components/landing/ExcavationReport';
+import { EndOfLifeSection } from '@/components/landing/EndOfLifeSection';
 
 // Code-split OracleSession — loads only when a session starts (#15)
 const SorcaSession = lazy(() =>
@@ -278,6 +279,11 @@ function HomeContent() {
             {/* Feature 16: Question Gift — send a curated question to someone */}
             {user && profile && profile.tier !== 'free' && (
               <QuestionGift />
+            )}
+
+            {/* Sorca for End of Life — Pro only */}
+            {user && profile && profile.tier === 'pro' && (
+              <EndOfLifeSection />
             )}
 
             {/* Divider */}

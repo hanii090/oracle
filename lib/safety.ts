@@ -48,12 +48,16 @@ const SELF_HARM_RESOURCES = [
 /**
  * Scan a message for crisis-level content.
  * Returns null if no crisis detected.
+ *
+ * When eolMode is true (End of Life mode), only HIGH severity patterns
+ * are checked — grief, death, and loss discussions are expected and normal
+ * in that context. Medium severity patterns are skipped.
  */
-export function detectCrisis(message: string): CrisisDetection | null {
+export function detectCrisis(message: string, eolMode?: boolean): CrisisDetection | null {
   const trimmed = message.trim();
   if (!trimmed) return null;
 
-  // Check high severity first
+  // Check high severity first — always checked, even in EOL mode
   for (const pattern of HIGH_SEVERITY_PATTERNS) {
     if (pattern.test(trimmed)) {
       return {
@@ -66,6 +70,9 @@ export function detectCrisis(message: string): CrisisDetection | null {
       };
     }
   }
+
+  // In EOL mode, skip medium severity — grief, death discussions are expected
+  if (eolMode) return null;
 
   // Check medium severity
   for (const pattern of MEDIUM_SEVERITY_PATTERNS) {

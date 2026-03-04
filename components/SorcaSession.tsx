@@ -27,6 +27,7 @@ import { NightBanner } from "@/components/session/NightBanner";
 import { ShareCard } from "@/components/session/ShareCard";
 import { DepthToast } from "@/components/session/DepthToast";
 import AvoidedQuestionNotification from "@/components/session/AvoidedQuestionNotification";
+import { EndOfLifeToggle, MemoryPortraitOverlay, ThreadArchiveModal, EolSessionTools } from "@/components/session/EndOfLifeMode";
 
 export function SorcaSession({ onExit, viewSession }: { onExit: () => void; viewSession?: { messages: SessionMessage[]; maxDepth: number; createdAt: string } | null }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -53,6 +54,19 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
   const [personalKey, setPersonalKey] = useState<{ key: string; mode: string; emotion: string } | null>(null);
   const [ambientPortrait, setAmbientPortrait] = useState<{ description: string; palette: string[] } | null>(null);
   const [showPortrait, setShowPortrait] = useState(false);
+
+  // End of Life mode state
+  const [eolMode, setEolMode] = useState(false);
+  const [memoryPortrait, setMemoryPortrait] = useState<{
+    id: string; title: string; essence: string; coreValues: string[];
+    unsaidWords: string; legacyWish: string; keyQuotes: string[];
+    toThoseLeft: string; palette: string[]; generatedAt: string;
+  } | null>(null);
+  const [showMemoryPortrait, setShowMemoryPortrait] = useState(false);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [isGeneratingPortrait, setIsGeneratingPortrait] = useState(false);
+  const [isCreatingArchive, setIsCreatingArchive] = useState(false);
+  const [archiveResult, setArchiveResult] = useState<{ token: string; shareUrl: string; totalSessions: number } | null>(null);
   const isFirstMessage = useRef(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { steerMusic, triggerBreakthrough } = useLyriaFoley(true);
@@ -142,6 +156,69 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
     setLastOracleText(greeting);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // EOL mode toggle handler
+  const handleToggleEol = useCallback(() => {
+    if (profile?.tier !== 'pro') return;
+    const entering = !eolMode;
+    setEolMode(entering);
+    if (entering) {
+      const eolGreeting = "What do you want them to remember about you?";
+      setMessages([{ id: crypto.randomUUID(), role: "assistant", content: eolGreeting, depth: 1 }]);
+      setLastOracleText(eolGreeting);
+      setDepth(1);
+      setPastThread([]);
+    }
+  }, [eolMode, profile?.tier]);
+
+  // Generate Memory Portrait handler
+  const handleGenerateMemoryPortrait = useCallback(async () => {
+    const currentMessages = messages.filter(m => m.role !== 'assistant' || m.content !== "What do you want them to remember about you?");
+    if (currentMessages.length < 6) return;
+    setIsGeneratingPortrait(true);
+    try {
+      const token = await getIdToken();
+      const res = await fetch('/api/memory-portrait', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          sessionMessages: currentMessages.map(m => ({ role: m.role, content: m.content })),
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMemoryPortrait(data.portrait);
+        setShowMemoryPortrait(true);
+      }
+    } catch { /* non-critical */ } finally {
+      setIsGeneratingPortrait(false);
+    }
+  }, [messages, getIdToken]);
+
+  // Create Thread Archive handler
+  const handleCreateArchive = useCallback(async (recipientName: string, personalNote: string) => {
+    setIsCreatingArchive(true);
+    try {
+      const token = await getIdToken();
+      const res = await fetch('/api/thread-archive', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ action: 'create', recipientName, personalNote }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setArchiveResult(data.archive);
+      }
+    } catch { /* non-critical */ } finally {
+      setIsCreatingArchive(false);
+    }
+  }, [getIdToken]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -332,27 +409,43 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
       const newDepth = depth + 1;
 
       // POST to server-side AI proxy (#4 — no client-side API keys)
+      // Route through EOL API when End of Life mode is active
       const token = await getIdToken();
-      const res = await fetch("/api/sorca", {
+      const apiEndpoint = eolMode ? "/api/end-of-life" : "/api/sorca";
+      const apiBody = eolMode
+        ? {
+            message: input,
+            conversationHistory: [...messages, userMsg].map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+            threadContext: pastThread.slice(-10).map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+            depth: newDepth,
+          }
+        : {
+            message: input,
+            conversationHistory: [...messages, userMsg].map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+            threadContext: pastThread.slice(-10).map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+            depth: newDepth,
+            nightMode,
+            tier: profile?.tier || "free",
+          };
+      const res = await fetch(apiEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          message: input,
-          conversationHistory: [...messages, userMsg].map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          threadContext: pastThread.slice(-10).map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          depth: newDepth,
-          nightMode,
-          tier: profile?.tier || "free",
-        }),
+        body: JSON.stringify(apiBody),
       });
 
       if (!res.ok) {
@@ -446,7 +539,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, depth, profile, messages, pastThread, nightMode, steerMusic, triggerBreakthrough, userId, getIdToken, saveSession, loadSessions]);
+  }, [input, isLoading, depth, profile, messages, pastThread, nightMode, eolMode, steerMusic, triggerBreakthrough, userId, getIdToken, saveSession, loadSessions]);
 
   // Voice transcript handler
   const handleVoiceTranscript = useCallback((text: string) => {
@@ -466,7 +559,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
 
   return (
     <motion.div
-      className={`relative z-10 w-full ${nightMode ? "max-w-xl" : "max-w-3xl"} h-[100dvh] flex flex-col ${nightMode ? "py-6 px-4" : "py-12 px-6"} transition-all duration-1000 mx-auto ${isBreakthrough ? "bg-ink/20" : ""} ${nightMode ? "bg-ink text-void" : ""}`}
+      className={`relative z-10 w-full ${nightMode ? "max-w-xl" : "max-w-3xl"} h-[100dvh] flex flex-col ${nightMode ? "py-6 px-4" : "py-12 px-6"} transition-all duration-1000 mx-auto ${isBreakthrough ? "bg-ink/20" : ""} ${nightMode ? "bg-ink text-void" : ""} ${eolMode ? "bg-gradient-to-b from-amber-950/5 to-transparent" : ""}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -497,13 +590,28 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
         {/* Feature Status + Session Tools */}
         {!viewSession && !nightMode && (
           <div className="flex items-center justify-between mb-4">
-            <FeatureStatus
-              pastThreadLength={pastThread.length}
-              depth={depth}
-              isBreakthrough={isBreakthrough}
-              tier={profile?.tier || 'free'}
-            />
             <div className="flex items-center gap-2">
+              <FeatureStatus
+                pastThreadLength={pastThread.length}
+                depth={depth}
+                isBreakthrough={isBreakthrough}
+                tier={profile?.tier || 'free'}
+              />
+              <EndOfLifeToggle
+                isActive={eolMode}
+                onToggle={handleToggleEol}
+                isPro={profile?.tier === 'pro'}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              {eolMode && (
+                <EolSessionTools
+                  onGeneratePortrait={handleGenerateMemoryPortrait}
+                  onOpenArchive={() => setShowArchiveModal(true)}
+                  isGeneratingPortrait={isGeneratingPortrait}
+                  messageCount={messages.length}
+                />
+              )}
               <VoiceSorca
                 onTranscript={handleVoiceTranscript}
                 oracleText={lastOracleText}
@@ -597,6 +705,22 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
           setAvoidedReminder(null);
           setInput(question);
         }}
+      />
+
+      {/* End of Life: Memory Portrait overlay */}
+      <MemoryPortraitOverlay
+        portrait={memoryPortrait}
+        show={showMemoryPortrait}
+        onClose={() => setShowMemoryPortrait(false)}
+      />
+
+      {/* End of Life: Thread Archive modal */}
+      <ThreadArchiveModal
+        show={showArchiveModal}
+        onClose={() => { setShowArchiveModal(false); setArchiveResult(null); }}
+        onCreateArchive={handleCreateArchive}
+        isCreating={isCreatingArchive}
+        archiveResult={archiveResult}
       />
 
       {/* Feature 09: Ambient Portrait overlay */}

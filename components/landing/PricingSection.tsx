@@ -75,9 +75,9 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
         <div className="bg-surface p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(192,57,43,0.05)] flex flex-col" role="article" aria-label="Sorca Pro plan">
           <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-text-muted mb-3">Sorca Pro</div>
           <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-gold">£</sup>49</div>
-          <div className="text-xs text-text-muted mb-10">per month · practitioner tier</div>
+          <div className="text-xs text-text-muted mb-10">per month · deepest tier</div>
           <ul className="space-y-4 flex-1" aria-label="Sorca Pro features">
-            {['Everything in Philosopher', '5 client accounts included', 'Client Thread visibility', 'Therapist/coach dashboard', 'Session annotation tools', 'API access (1000 calls/mo)'].map((item, i) => (
+            {['Everything in Philosopher', 'Ambient Portraits per session', 'Shared Sessions with others', '🕯️ Sorca for End of Life', 'Visual Memory Portraits', 'Permanent Thread Archive for family'].map((item, i) => (
               <li key={i} className="text-sm text-text-mid pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-gold" aria-hidden="true">◆</span>{item}</li>
             ))}
           </ul>

@@ -16,13 +16,6 @@ const COMING_SOON = [
     color: 'gold',
   },
   {
-    icon: '🕯️',
-    title: 'Sorca for End of Life',
-    desc: 'A specialised mode for legacy, grief, and love. Questions about what you want to leave behind. Visual memory portraits. A permanent Thread archive for your family. The most meaningful thing AI could do.',
-    tag: 'Clinical Partnership · 2027',
-    color: 'crimson',
-  },
-  {
     icon: '🌐',
     title: 'Thread API',
     desc: 'Open your Thread to other tools. Export your beliefs, patterns, and growth data to therapy apps, journals, and personal knowledge graphs. Your data, your choice.',
@@ -52,7 +45,7 @@ export function ComingSoonSection() {
         Features in development that will deepen what Sorca can do. Some are months away. Some are years. All are inevitable.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {COMING_SOON.map((feature, i) => (
           <motion.div
             key={feature.title}
