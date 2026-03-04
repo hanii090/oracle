@@ -27,6 +27,7 @@ import { TimeCapsule } from '@/components/landing/TimeCapsule';
 import { SharedSessions } from '@/components/landing/SharedSessions';
 import { QuestionGift } from '@/components/landing/QuestionGift';
 import { ComingSoonSection } from '@/components/landing/ComingSoonSection';
+import { ExcavationReportSection } from '@/components/landing/ExcavationReport';
 
 // Code-split OracleSession — loads only when a session starts (#15)
 const SorcaSession = lazy(() =>
@@ -247,6 +248,11 @@ function HomeContent() {
             {/* Mirror Letter — monthly first-person reflection for paid users */}
             {user && profile && profile.tier !== 'free' && (
               <MirrorLetter userId={user.uid} isPaidUser={true} />
+            )}
+
+            {/* Feature 06: Monthly Excavation Report — stats, patterns, narrative */}
+            {user && profile && profile.tier !== 'free' && (
+              <ExcavationReportSection />
             )}
 
             {/* Feature 02: Question DNA — honesty analysis per question type */}

@@ -70,14 +70,15 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
     recordSession,
   } = useOnboarding();
 
-  // #22 Night Oracle auto-detection (midnight–5am)
+  // #22 Night Oracle auto-detection (midnight–5am) — paid tiers only
   useEffect(() => {
+    if (profile?.tier === 'free') return;
     const hour = new Date().getHours();
     if (hour >= 0 && hour < 5) {
       setNightMode(true);
       showNightExplanation();
     }
-  }, [showNightExplanation]);
+  }, [showNightExplanation, profile?.tier]);
 
   // Handle viewing a past session (read-only mode)
   useEffect(() => {
@@ -423,6 +424,14 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
       if (!savedToFirebase) {
         localStorage.setItem("sorca_thread", JSON.stringify(updatedThread));
       }
+
+      // Auto-save to session history after each exchange so it appears immediately
+      const allMessages = [...messages, userMsg, oracleMsg].filter(
+        m => !(m.role === "assistant" && m.content === "What truth are you avoiding today?")
+      );
+      if (allMessages.filter(m => m.role === "user").length > 0) {
+        saveSession(allMessages, newDepth).then(() => loadSessions()).catch(() => {});
+      }
     } catch (error) {
       console.error("Sorca API error:", error);
       setMessages((prev) => [
@@ -437,7 +446,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, depth, profile, messages, pastThread, nightMode, steerMusic, triggerBreakthrough, userId, getIdToken]);
+  }, [input, isLoading, depth, profile, messages, pastThread, nightMode, steerMusic, triggerBreakthrough, userId, getIdToken, saveSession, loadSessions]);
 
   // Voice transcript handler
   const handleVoiceTranscript = useCallback((text: string) => {
@@ -476,6 +485,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
           streak={streak.currentStreak}
           tier={profile?.tier || 'free'}
           onToggleNight={() => {
+            if (profile?.tier === 'free') return; // Night Sorca is paid-only
             setNightMode(!nightMode);
             if (!nightMode) showNightExplanation();
           }}

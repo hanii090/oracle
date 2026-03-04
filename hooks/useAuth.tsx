@@ -222,8 +222,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    // Enforce 30-day limit for free tier — paid users get full history
+    const currentTier = profile?.tier || 'free';
+    if (currentTier === 'free') {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      loaded = loaded.filter(s => new Date(s.createdAt) > thirtyDaysAgo);
+    }
+
     setSessions(loaded);
-  }, [user]);
+  }, [user, profile?.tier]);
 
   useEffect(() => {
     if (user) {
@@ -239,14 +247,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userMessages = messages.filter(m => m.role === "user");
     if (userMessages.length === 0) return;
 
-    const session: SessionSummary = {
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      messageCount: messages.length,
-      maxDepth,
-      preview: userMessages[0]?.content.slice(0, 120) || "...",
-      messages,
-    };
+    // Check if there's already a session from this active conversation
+    // (within the last 30 minutes with the same first user message)
+    const firstUserMsg = userMessages[0]?.content.slice(0, 120) || "...";
+    const now = new Date();
+    const thirtyMinAgo = new Date(now.getTime() - 30 * 60 * 1000);
+
+    // Find existing session to update (auto-save during conversation)
+    const existingSessions = localStorage.getItem(`sorca_sessions_${user.uid}`);
+    let allSessions: SessionSummary[] = [];
+    if (existingSessions) {
+      try {
+        allSessions = JSON.parse(existingSessions);
+      } catch { /* ignore */ }
+    }
+
+    const existingIdx = allSessions.findIndex(s =>
+      s.preview === firstUserMsg && new Date(s.createdAt) > thirtyMinAgo
+    );
+
+    let session: SessionSummary;
+
+    if (existingIdx !== -1) {
+      // Update existing session in place
+      session = {
+        ...allSessions[existingIdx],
+        messageCount: messages.length,
+        maxDepth,
+        messages,
+      };
+      allSessions[existingIdx] = session;
+    } else {
+      // Create new session
+      session = {
+        id: crypto.randomUUID(),
+        createdAt: now.toISOString(),
+        messageCount: messages.length,
+        maxDepth,
+        preview: firstUserMsg,
+        messages,
+      };
+      allSessions.unshift(session);
+    }
+
+    allSessions = allSessions.slice(0, 50);
 
     // Save to Firestore
     if (db) {
@@ -258,15 +302,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Always save to localStorage as fallback
-    const existingSessions = localStorage.getItem(`sorca_sessions_${user.uid}`);
-    let allSessions: SessionSummary[] = [];
-    if (existingSessions) {
-      try {
-        allSessions = JSON.parse(existingSessions);
-      } catch (e) { /* ignore */ }
-    }
-    allSessions.unshift(session);
-    allSessions = allSessions.slice(0, 50);
     localStorage.setItem(`sorca_sessions_${user.uid}`, JSON.stringify(allSessions));
 
     setSessions(allSessions);
