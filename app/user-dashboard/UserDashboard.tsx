@@ -6,7 +6,11 @@ import { useAuth, SessionSummary } from '@/hooks/useAuth';
 import { useTherapy } from '@/hooks/useTherapy';
 import { useRouter } from 'next/navigation';
 import { Stars } from '@/components/Stars';
-import { SessionIcon, HomeworkIcon, BookIcon, AnchorIcon, ConsentIcon, ChevronIcon, CalendarIcon, ChartIcon, CapsuleIcon, GiftIcon } from '@/components/icons';
+import { SessionIcon, HomeworkIcon, BookIcon, AnchorIcon, ConsentIcon, ChevronIcon, CalendarIcon, ChartIcon, CapsuleIcon, GiftIcon, SettingsIcon } from '@/components/icons';
+import { TimeCapsule } from '@/components/landing/TimeCapsule';
+import { QuestionGift } from '@/components/landing/QuestionGift';
+import { ExcavationReportSection } from '@/components/landing/ExcavationReport';
+import { AccountSettings } from '@/components/AccountSettings';
 
 interface WeekSummary {
   id: string;
@@ -39,7 +43,8 @@ export function UserDashboard() {
   const { therapyProfile, isInTherapy } = useTherapy();
   const router = useRouter();
   
-  const [activeTab, setActiveTab] = useState<'sessions' | 'summaries' | 'homework' | 'anchors' | 'report' | 'capsule' | 'gift' | 'consent'>('sessions');
+  const [activeTab, setActiveTab] = useState<'sessions' | 'summaries' | 'homework' | 'anchors' | 'report' | 'capsule' | 'gift' | 'settings' | 'consent'>('sessions');
+  const [showSettings, setShowSettings] = useState(false);
   const [summaries, setSummaries] = useState<WeekSummary[]>([]);
   const [homework, setHomework] = useState<HomeworkAssignment[]>([]);
   const [anchors, setAnchors] = useState<CopingAnchor[]>([]);
@@ -124,6 +129,7 @@ export function UserDashboard() {
     { id: 'report', label: 'Excavation Report', Icon: ChartIcon, count: null },
     { id: 'capsule', label: 'Time Capsule', Icon: CapsuleIcon, count: null },
     { id: 'gift', label: 'Question Gift', Icon: GiftIcon, count: null },
+    { id: 'settings', label: 'Settings', Icon: SettingsIcon, count: null },
     { id: 'consent', label: 'Consent', Icon: ConsentIcon, count: null },
   ] as const;
 
@@ -342,9 +348,6 @@ export function UserDashboard() {
 
           {activeTab === 'report' && (
             <div>
-              <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
-                Monthly Excavation Report
-              </h2>
               {profile?.tier === 'free' ? (
                 <div className="text-center py-12">
                   <ChartIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
@@ -352,52 +355,90 @@ export function UserDashboard() {
                   <p className="text-xs text-text-muted/60">Upgrade to receive monthly insights into your patterns and breakthroughs.</p>
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <ChartIcon size={48} className="mx-auto mb-4 text-gold/50" />
-                  <p className="text-sm text-text-muted mb-4">View your monthly excavation report with patterns, beliefs, and insights.</p>
-                  <a
-                    href="/?report=true"
-                    className="inline-block px-6 py-3 border border-gold text-gold font-cinzel text-xs tracking-widest rounded-lg hover:bg-gold/10"
-                  >
-                    View Report
-                  </a>
-                </div>
+                <ExcavationReportSection />
               )}
             </div>
           )}
 
           {activeTab === 'capsule' && (
             <div>
-              <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
-                Time Capsule
-              </h2>
-              <div className="text-center py-8">
-                <CapsuleIcon size={48} className="mx-auto mb-4 text-amber-500/50" />
-                <p className="text-sm text-text-muted mb-4">Send messages to your future self. They&apos;ll arrive when you need them most.</p>
-                <a
-                  href="/?capsule=true"
-                  className="inline-block px-6 py-3 border border-amber-500 text-amber-500 font-cinzel text-xs tracking-widest rounded-lg hover:bg-amber-500/10"
-                >
-                  Create Time Capsule
-                </a>
-              </div>
+              {profile?.tier === 'free' ? (
+                <div className="text-center py-12">
+                  <CapsuleIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
+                  <p className="text-sm text-text-muted mb-2">Time Capsule is available for Philosopher tier.</p>
+                  <p className="text-xs text-text-muted/60">Upgrade to send messages to your future self.</p>
+                </div>
+              ) : (
+                <TimeCapsule />
+              )}
             </div>
           )}
 
           {activeTab === 'gift' && (
             <div>
-              <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
-                Question Gift
+              {profile?.tier === 'free' ? (
+                <div className="text-center py-12">
+                  <GiftIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
+                  <p className="text-sm text-text-muted mb-2">Question Gift is available for Philosopher tier.</p>
+                  <p className="text-xs text-text-muted/60">Upgrade to gift powerful questions to others.</p>
+                </div>
+              ) : (
+                <QuestionGift />
+              )}
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
+            <div>
+              <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-6">
+                Account Settings
               </h2>
-              <div className="text-center py-8">
-                <GiftIcon size={48} className="mx-auto mb-4 text-violet-500/50" />
-                <p className="text-sm text-text-muted mb-4">Gift a powerful question to someone you care about. They&apos;ll receive it anonymously.</p>
-                <a
-                  href="/?gift=true"
-                  className="inline-block px-6 py-3 border border-violet-500 text-violet-500 font-cinzel text-xs tracking-widest rounded-lg hover:bg-violet-500/10"
+              
+              {/* Profile Info */}
+              <div className="bg-raised border border-border rounded-lg p-6 mb-6">
+                <h3 className="font-cinzel text-xs text-text-muted tracking-widest uppercase mb-4">Profile</h3>
+                <div className="flex items-center gap-4">
+                  {user?.photoURL && (
+                    <img src={user.photoURL} alt="" className="w-12 h-12 rounded-full border border-border" />
+                  )}
+                  <div>
+                    <p className="text-sm text-text-main font-medium">{user?.displayName || 'Seeker'}</p>
+                    <p className="text-xs text-text-muted">{user?.email}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Subscription */}
+              <div className="bg-raised border border-border rounded-lg p-6 mb-6">
+                <h3 className="font-cinzel text-xs text-text-muted tracking-widest uppercase mb-4">Subscription</h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-text-main capitalize">{profile?.tier || 'free'} Tier</p>
+                    <p className="text-xs text-text-muted">
+                      {profile?.tier === 'free' ? 'Limited features' : 'Full access to all features'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowSettings(true)}
+                    className="px-4 py-2 border border-gold text-gold font-cinzel text-xs tracking-widest rounded-lg hover:bg-gold/10"
+                  >
+                    Manage Billing
+                  </button>
+                </div>
+              </div>
+
+              {/* Danger Zone */}
+              <div className="bg-raised border border-red-500/20 rounded-lg p-6">
+                <h3 className="font-cinzel text-xs text-red-400 tracking-widest uppercase mb-4">Danger Zone</h3>
+                <p className="text-xs text-text-muted mb-4">
+                  Permanently delete your account and all associated data. This action cannot be undone.
+                </p>
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="px-4 py-2 border border-red-500/50 text-red-400 font-cinzel text-xs tracking-widest rounded-lg hover:bg-red-500/10"
                 >
-                  Send a Question Gift
-                </a>
+                  Delete Account
+                </button>
               </div>
             </div>
           )}
@@ -461,6 +502,11 @@ export function UserDashboard() {
           </a>
         </div>
       </div>
+
+      {/* Account Settings Modal */}
+      {showSettings && (
+        <AccountSettings onClose={() => setShowSettings(false)} />
+      )}
     </main>
   );
 }

@@ -69,15 +69,42 @@ const PRICING = {
 export function ForTherapistsContent() {
   const { user, loading, signIn, logOut, getIdToken } = useAuth();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [showCredentialModal, setShowCredentialModal] = useState(false);
+  const [credentials, setCredentials] = useState({
+    registrationBody: '',
+    registrationNumber: '',
+    practiceName: '',
+  });
+  const [credentialError, setCredentialError] = useState<string | null>(null);
+
+  const REGISTRATION_BODIES = [
+    { value: 'HCPC', label: 'HCPC (Health and Care Professions Council)' },
+    { value: 'BACP', label: 'BACP (British Association for Counselling and Psychotherapy)' },
+    { value: 'UKCP', label: 'UKCP (UK Council for Psychotherapy)' },
+    { value: 'BPS', label: 'BPS (British Psychological Society)' },
+    { value: 'NCS', label: 'NCS (National Counselling Society)' },
+    { value: 'BABCP', label: 'BABCP (British Association for Behavioural and Cognitive Psychotherapies)' },
+    { value: 'OTHER', label: 'Other Professional Body' },
+  ];
 
   const handleStartTrial = async () => {
     if (!user) {
-      // Sign in first, then redirect to checkout
       await signIn();
+      return;
+    }
+    // Show credential verification modal
+    setShowCredentialModal(true);
+  };
+
+  const handleSubmitCredentials = async () => {
+    if (!credentials.registrationBody || !credentials.registrationNumber) {
+      setCredentialError('Please provide your registration details');
       return;
     }
 
     setCheckoutLoading(true);
+    setCredentialError(null);
+
     try {
       const token = await getIdToken();
       const res = await fetch('/api/checkout', {
@@ -86,14 +113,26 @@ export function ForTherapistsContent() {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ tier: 'practice', trial: true }),
+        body: JSON.stringify({
+          tier: 'practice',
+          trial: true,
+          therapistCredentials: {
+            registrationBody: credentials.registrationBody,
+            registrationNumber: credentials.registrationNumber,
+            practiceName: credentials.practiceName || undefined,
+          },
+        }),
       });
       if (res.ok) {
         const { url } = await res.json();
         if (url) window.location.href = url;
+      } else {
+        const data = await res.json();
+        setCredentialError(data.error || 'Failed to start checkout');
       }
     } catch (e) {
       console.error('Checkout error:', e);
+      setCredentialError('Unable to connect to payment service');
     } finally {
       setCheckoutLoading(false);
     }
@@ -382,6 +421,95 @@ export function ForTherapistsContent() {
       </section>
 
       <Footer />
+
+      {/* Credential Verification Modal */}
+      {showCredentialModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-void border border-teal-500/30 rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl"
+          >
+            <h2 className="font-cinzel text-lg text-teal-400 tracking-widest mb-2">
+              Professional Verification
+            </h2>
+            <p className="text-sm text-text-muted mb-6">
+              To ensure Sorca is used appropriately, we require professional registration details. 
+              Your credentials will be verified before full access is granted.
+            </p>
+
+            {credentialError && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4">
+                <p className="text-sm text-red-400">{credentialError}</p>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs text-text-muted font-cinzel tracking-wider mb-2">
+                  Registration Body *
+                </label>
+                <select
+                  value={credentials.registrationBody}
+                  onChange={(e) => setCredentials({ ...credentials, registrationBody: e.target.value })}
+                  className="w-full bg-raised border border-border rounded-lg px-4 py-3 text-text-main text-sm focus:outline-none focus:border-teal-500 transition-colors"
+                >
+                  <option value="">Select your registration body...</option>
+                  {REGISTRATION_BODIES.map((body) => (
+                    <option key={body.value} value={body.value}>{body.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs text-text-muted font-cinzel tracking-wider mb-2">
+                  Registration Number *
+                </label>
+                <input
+                  type="text"
+                  value={credentials.registrationNumber}
+                  onChange={(e) => setCredentials({ ...credentials, registrationNumber: e.target.value })}
+                  placeholder="e.g., PYL12345"
+                  className="w-full bg-raised border border-border rounded-lg px-4 py-3 text-text-main text-sm placeholder:text-text-muted/50 focus:outline-none focus:border-teal-500 transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-text-muted font-cinzel tracking-wider mb-2">
+                  Practice Name (optional)
+                </label>
+                <input
+                  type="text"
+                  value={credentials.practiceName}
+                  onChange={(e) => setCredentials({ ...credentials, practiceName: e.target.value })}
+                  placeholder="e.g., Mindful Therapy London"
+                  className="w-full bg-raised border border-border rounded-lg px-4 py-3 text-text-main text-sm placeholder:text-text-muted/50 focus:outline-none focus:border-teal-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowCredentialModal(false)}
+                className="flex-1 py-3 border border-border text-text-muted font-cinzel text-xs tracking-widest uppercase rounded-lg hover:border-teal-500/30 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitCredentials}
+                disabled={checkoutLoading || !credentials.registrationBody || !credentials.registrationNumber}
+                className="flex-1 py-3 bg-teal-500 text-void font-cinzel text-xs tracking-widest uppercase rounded-lg hover:bg-teal-400 transition-colors disabled:opacity-50"
+              >
+                {checkoutLoading ? 'Processing...' : 'Continue to Trial'}
+              </button>
+            </div>
+
+            <p className="text-[10px] text-text-muted text-center mt-4">
+              We may contact your registration body to verify your credentials.
+            </p>
+          </motion.div>
+        </div>
+      )}
     </main>
   );
 }

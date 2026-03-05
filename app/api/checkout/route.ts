@@ -41,10 +41,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
     }
 
-    const { tier } = await req.json();
+    const { tier, therapistCredentials } = await req.json();
 
     if (!tier) {
       return NextResponse.json({ error: 'Missing tier' }, { status: 400 });
+    }
+
+    // Validate therapist credentials for practice tier
+    if (tier === 'practice') {
+      if (!therapistCredentials?.registrationBody || !therapistCredentials?.registrationNumber) {
+        return NextResponse.json({ 
+          error: 'Professional registration details are required for clinical practice accounts' 
+        }, { status: 400 });
+      }
     }
 
     let priceId = '';
@@ -84,6 +93,11 @@ export async function POST(req: Request) {
       success_url: `${origin}/?success=true`,
       cancel_url: `${origin}/?canceled=true`,
       client_reference_id: userId,
+      metadata: tier === 'practice' ? {
+        therapist_registration_body: therapistCredentials.registrationBody,
+        therapist_registration_number: therapistCredentials.registrationNumber,
+        therapist_practice_name: therapistCredentials.practiceName || '',
+      } : undefined,
     });
 
     log.info('Checkout session created', { userId, tier, sessionId: session.id });
