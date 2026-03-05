@@ -29,7 +29,13 @@ const requestSchema = z.object({
   tier: z.enum(['free', 'philosopher', 'pro']),
 });
 
-function buildSystemPrompt(depth: number, threadContext: string, nightMode: boolean, dnaProfile?: Record<string, number>): string {
+function buildSystemPrompt(
+  depth: number, 
+  threadContext: string, 
+  nightMode: boolean, 
+  dnaProfile?: Record<string, number>,
+  semanticContradiction?: { statement1: string; statement2: string } | null
+): string {
   let prompt = `
 You are Sorca. You never give answers, advice, affirmations, or empathy.
 You ask ONE question per response. Never more.
@@ -64,9 +70,19 @@ ${threadContext}`;
 
   if (depth > 7) {
     prompt += `
-⚡ CONFRONTATION MODE (depth ${depth}):
+⚡ CONFRONTATION MODE (depth ${depth}):`;
+    
+    if (semanticContradiction) {
+      prompt += `
+🎯 SEMANTIC CONTRADICTION DETECTED:
+Past statement: "${semanticContradiction.statement1}"
+Current statement: "${semanticContradiction.statement2}"
+Surface this contradiction directly. Ask: "You once told me [past]. Now you say [current]. Which of these is the lie you tell yourself?"`;
+    } else {
+      prompt += `
 Study the user's past statements carefully. Find a belief, value, or claim they expressed earlier that DIRECTLY CONTRADICTS something they have said in this conversation. Surface the contradiction in your question. Force them to reconcile it. Pattern: "You once told me [X]. Now you say [Y]. Which of these is the lie you tell yourself?"
 If no clear contradiction exists, target the most vulnerable unexamined assumption they have revealed.`;
+    }
   }
 
   if (nightMode) {
@@ -274,6 +290,8 @@ export async function POST(req: Request) {
 
     // Feature 02: Load user's Question DNA profile for adaptive questioning
     let dnaProfile: Record<string, number> | undefined;
+    let semanticContradiction: { statement1: string; statement2: string } | null = null;
+    
     if (tier !== 'free' && isAdminConfigured()) {
       try {
         const db = getAdminFirestore();
@@ -282,12 +300,42 @@ export async function POST(req: Request) {
           const data = dnaDoc.data();
           dnaProfile = data?.honestyByType;
         }
+
+        // Semantic contradiction detection at depth > 7
+        if (depth > 7) {
+          const { searchSimilarStatements, generateEmbedding, cosineSimilarity } = await import('@/lib/embeddings');
+          
+          // Store current statement embedding
+          const currentEmbedding = await generateEmbedding(sanitizedMessage);
+          if (currentEmbedding) {
+            // Search for similar past statements
+            const similar = await searchSimilarStatements(db, userId, sanitizedMessage, 10);
+            
+            // Find potential contradictions (moderate similarity = same topic, different stance)
+            for (const item of similar) {
+              if (item.similarity >= 0.5 && item.similarity <= 0.85) {
+                semanticContradiction = {
+                  statement1: item.text,
+                  statement2: sanitizedMessage,
+                };
+                break;
+              }
+            }
+
+            // Store current statement for future contradiction detection
+            const { storeEmbedding } = await import('@/lib/embeddings');
+            storeEmbedding(db, userId, sanitizedMessage, currentEmbedding, { 
+              depth, 
+              sessionDate: new Date().toISOString() 
+            }).catch(() => {});
+          }
+        }
       } catch {
-        // Non-critical — continue without DNA data
+        // Non-critical — continue without DNA data or contradiction
       }
     }
 
-    const systemPrompt = buildSystemPrompt(depth, threadStr, nightMode, dnaProfile);
+    const systemPrompt = buildSystemPrompt(depth, threadStr, nightMode, dnaProfile, semanticContradiction);
     const emotionPrompt = buildEmotionPrompt(sanitizedMessage);
 
     // Try providers with fallback

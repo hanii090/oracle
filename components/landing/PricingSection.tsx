@@ -40,8 +40,16 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
             {['5 sessions per month', 'Basic Thread (last 30 days)', 'Up to depth level 5', 'Sacred question tracking'].map((item, i) => (
               <li key={i} className="text-sm text-text-mid pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-gold" aria-hidden="true">◆</span>{item}</li>
             ))}
-            {['Voice Sorca', 'Excavation Reports', 'Full Thread history'].map((item, i) => (
-              <li key={`disabled-${i}`} className="text-sm text-text-muted pl-5 relative"><span className="absolute left-0 top-1.5 text-[6px] text-text-muted" aria-hidden="true">◆</span><span aria-label={`${item} - not included`}>{item}</span></li>
+            {[
+              { name: 'Voice Sorca', lock: true },
+              { name: 'Excavation Reports', lock: true },
+              { name: 'Full Thread history', lock: true }
+            ].map((item, i) => (
+              <li key={`disabled-${i}`} className="text-sm text-text-muted pl-5 relative flex items-center gap-2">
+                <span className="absolute left-0 top-1.5 text-[6px] text-text-muted" aria-hidden="true">◆</span>
+                <span aria-label={`${item.name} - Philosopher tier only`}>{item.name}</span>
+                {item.lock && <span className="text-[8px] px-1.5 py-0.5 bg-gold/10 text-gold/60 rounded font-courier tracking-wider">PHILOSOPHER</span>}
+              </li>
             ))}
           </ul>
           <button 

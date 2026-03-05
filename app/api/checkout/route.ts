@@ -59,7 +59,13 @@ export async function POST(req: Request) {
     }
 
     if (!priceId) {
-      return NextResponse.json({ error: 'Payment not configured for this tier. Please contact support.' }, { status: 503 });
+      log.warn('Price ID not configured', { tier });
+      return NextResponse.json({ 
+        error: tier === 'practice' 
+          ? 'Clinical Practice subscriptions are coming soon. Please contact hello@sorca.life to join the waitlist.'
+          : 'This subscription tier is not yet available. Please try again later or contact support.',
+        waitlist: tier === 'practice'
+      }, { status: 503 });
     }
 
     const stripe = getStripe(stripeEnv.STRIPE_SECRET_KEY);

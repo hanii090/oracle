@@ -105,8 +105,13 @@ export function TherapistDashboard() {
       return;
     }
     
-    // Only redirect non-therapists after we're sure profile is loaded
-    // isTherapist is derived from profile, so we need profile to be set
+    // Redirect non-therapists to user dashboard
+    if (user && !isTherapist) {
+      router.push('/user-dashboard');
+      return;
+    }
+    
+    // Load dashboard for therapists
     if (user && isTherapist) {
       loadDashboard();
     }

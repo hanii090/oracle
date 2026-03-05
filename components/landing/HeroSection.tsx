@@ -39,10 +39,10 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
             ) : (
               <button
                 onClick={onSignIn}
-                className="text-text-muted hover:text-gold transition-colors font-courier text-xs tracking-widest uppercase"
+                className="text-text-muted hover:text-gold transition-colors font-courier text-xs tracking-widest uppercase border border-text-muted/30 px-4 py-2 rounded hover:border-gold/50"
                 aria-label="Sign in with Google"
               >
-                Enter
+                Sign In
               </button>
             )
           )}
@@ -93,13 +93,13 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
         </div>
 
         <button
-          onClick={onStart}
+          onClick={!user ? onSignIn : onStart}
           className="group relative px-8 py-4 font-cinzel text-sm tracking-[0.2em] text-gold uppercase overflow-hidden border border-gold/30 hover:border-gold transition-all duration-500 rounded-lg hover:shadow-[0_0_30px_rgba(192,57,43,0.2)] z-10"
-          aria-label={!user ? 'Sign in to start' : hasKey === false ? 'Connect API key' : 'Begin Sorca session'}
+          aria-label={!user ? 'Begin free - sign in to start' : hasKey === false ? 'Connect API key' : 'Begin Sorca session'}
         >
           <div className="absolute inset-0 bg-gold/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" aria-hidden="true" />
           <span className="relative z-10">
-            {!user ? "Enter the Void (Sign In)" : hasKey === false ? "Connect API Key to Approach" : "Begin Your Session"}
+            {!user ? "Begin Free" : hasKey === false ? "Connect API Key" : "Begin Session"}
           </span>
         </button>
         {hasKey === false && (
