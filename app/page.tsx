@@ -121,6 +121,14 @@ function HomeContent() {
     checkKey();
   }, []);
 
+  // Auto-start session when ?start=true is in URL (from dashboard)
+  useEffect(() => {
+    if (!loading && user && searchParams.get('start') === 'true' && !sessionStarted) {
+      handleStart();
+      router.replace('/');
+    }
+  }, [loading, user, searchParams, sessionStarted]);
+
   const handleStart = async () => {
     if (!user) {
       await signIn();

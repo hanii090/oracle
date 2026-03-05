@@ -32,10 +32,22 @@ const MEDIUM_SEVERITY_PATTERNS = [
 ];
 
 const CRISIS_RESOURCES = [
-  '🆘 Suicide & Crisis Lifeline: Call or text 988 (US)',
-  '🆘 Crisis Text Line: Text HOME to 741741 (US)',
-  '🆘 Samaritans: Call 116 123 (UK) — free, 24/7',
-  '🆘 International Association for Suicide Prevention: https://www.iasp.info/resources/Crisis_Centres/',
+  '━━━ United States ━━━',
+  '🆘 Suicide & Crisis Lifeline: Call or text 988 — free, 24/7',
+  '🆘 Crisis Text Line: Text HOME to 741741',
+  '',
+  '━━━ United Kingdom ━━━',
+  '🆘 Samaritans: Call 116 123 — free, 24/7, confidential',
+  '🆘 Shout: Text SHOUT to 85258 — free, 24/7',
+  '🆘 Mind Infoline: 0300 123 3393 (Mon-Fri 9am-6pm)',
+  '🆘 Papyrus (under 35): Call 0800 068 4141 or text 07860 039967',
+  '',
+  '━━━ Ireland ━━━',
+  '🆘 Samaritans Ireland: Call 116 123 — free, 24/7',
+  '🆘 Pieta House: Call 1800 247 247 — free, 24/7',
+  '',
+  '━━━ International ━━━',
+  '🆘 Find your local crisis centre: https://www.iasp.info/resources/Crisis_Centres/',
 ];
 
 const SELF_HARM_RESOURCES = [

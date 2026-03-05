@@ -6,7 +6,7 @@ import { useAuth, SessionSummary } from '@/hooks/useAuth';
 import { useTherapy } from '@/hooks/useTherapy';
 import { useRouter } from 'next/navigation';
 import { Stars } from '@/components/Stars';
-import { SessionIcon, HomeworkIcon, BookIcon, AnchorIcon, ConsentIcon, ChevronIcon, CalendarIcon } from '@/components/icons';
+import { SessionIcon, HomeworkIcon, BookIcon, AnchorIcon, ConsentIcon, ChevronIcon, CalendarIcon, ChartIcon, CapsuleIcon, GiftIcon } from '@/components/icons';
 
 interface WeekSummary {
   id: string;
@@ -39,7 +39,7 @@ export function UserDashboard() {
   const { therapyProfile, isInTherapy } = useTherapy();
   const router = useRouter();
   
-  const [activeTab, setActiveTab] = useState<'sessions' | 'summaries' | 'homework' | 'anchors' | 'consent'>('sessions');
+  const [activeTab, setActiveTab] = useState<'sessions' | 'summaries' | 'homework' | 'anchors' | 'report' | 'capsule' | 'gift' | 'consent'>('sessions');
   const [summaries, setSummaries] = useState<WeekSummary[]>([]);
   const [homework, setHomework] = useState<HomeworkAssignment[]>([]);
   const [anchors, setAnchors] = useState<CopingAnchor[]>([]);
@@ -121,6 +121,9 @@ export function UserDashboard() {
     { id: 'summaries', label: 'Week Summaries', Icon: BookIcon, count: summaries.length },
     { id: 'homework', label: 'Homework', Icon: HomeworkIcon, count: homework.filter(h => h.status === 'active').length },
     { id: 'anchors', label: 'Coping Anchors', Icon: AnchorIcon, count: anchors.length },
+    { id: 'report', label: 'Excavation Report', Icon: ChartIcon, count: null },
+    { id: 'capsule', label: 'Time Capsule', Icon: CapsuleIcon, count: null },
+    { id: 'gift', label: 'Question Gift', Icon: GiftIcon, count: null },
     { id: 'consent', label: 'Consent', Icon: ConsentIcon, count: null },
   ] as const;
 
@@ -311,8 +314,18 @@ export function UserDashboard() {
               {anchors.length === 0 ? (
                 <div className="text-center py-12">
                   <AnchorIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
-                  <p className="text-sm text-text-muted">No coping anchors saved yet.</p>
-                  <p className="text-xs text-text-muted mt-2">Save grounding techniques during sessions to access them here.</p>
+                  <p className="text-sm text-text-muted mb-3">No coping anchors saved yet.</p>
+                  <div className="text-xs text-text-muted/70 max-w-md mx-auto space-y-2 mb-6">
+                    <p><strong>How to save anchors:</strong></p>
+                    <p>1. During a session, click the ⚓ anchor button when you feel grounded</p>
+                    <p>2. Or manually add techniques your therapist has taught you</p>
+                  </div>
+                  <a
+                    href="/?anchor=true"
+                    className="inline-block px-6 py-3 border border-teal-500 text-teal-400 font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-500/10"
+                  >
+                    Add Your First Anchor
+                  </a>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -324,6 +337,68 @@ export function UserDashboard() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'report' && (
+            <div>
+              <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
+                Monthly Excavation Report
+              </h2>
+              {profile?.tier === 'free' ? (
+                <div className="text-center py-12">
+                  <ChartIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
+                  <p className="text-sm text-text-muted mb-2">Excavation Reports are available for Philosopher tier.</p>
+                  <p className="text-xs text-text-muted/60">Upgrade to receive monthly insights into your patterns and breakthroughs.</p>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <ChartIcon size={48} className="mx-auto mb-4 text-gold/50" />
+                  <p className="text-sm text-text-muted mb-4">View your monthly excavation report with patterns, beliefs, and insights.</p>
+                  <a
+                    href="/?report=true"
+                    className="inline-block px-6 py-3 border border-gold text-gold font-cinzel text-xs tracking-widest rounded-lg hover:bg-gold/10"
+                  >
+                    View Report
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'capsule' && (
+            <div>
+              <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
+                Time Capsule
+              </h2>
+              <div className="text-center py-8">
+                <CapsuleIcon size={48} className="mx-auto mb-4 text-amber-500/50" />
+                <p className="text-sm text-text-muted mb-4">Send messages to your future self. They&apos;ll arrive when you need them most.</p>
+                <a
+                  href="/?capsule=true"
+                  className="inline-block px-6 py-3 border border-amber-500 text-amber-500 font-cinzel text-xs tracking-widest rounded-lg hover:bg-amber-500/10"
+                >
+                  Create Time Capsule
+                </a>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'gift' && (
+            <div>
+              <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
+                Question Gift
+              </h2>
+              <div className="text-center py-8">
+                <GiftIcon size={48} className="mx-auto mb-4 text-violet-500/50" />
+                <p className="text-sm text-text-muted mb-4">Gift a powerful question to someone you care about. They&apos;ll receive it anonymously.</p>
+                <a
+                  href="/?gift=true"
+                  className="inline-block px-6 py-3 border border-violet-500 text-violet-500 font-cinzel text-xs tracking-widest rounded-lg hover:bg-violet-500/10"
+                >
+                  Send a Question Gift
+                </a>
+              </div>
             </div>
           )}
 
@@ -351,7 +426,7 @@ export function UserDashboard() {
         {/* Quick Actions */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <a
-            href="/"
+            href="/?start=true"
             className="bg-surface border border-border rounded-lg p-4 hover:border-gold/30 transition-colors group text-center"
           >
             <SessionIcon size={24} className="mx-auto mb-2 text-gold/70 group-hover:text-gold" />
