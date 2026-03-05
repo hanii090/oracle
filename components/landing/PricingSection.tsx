@@ -26,7 +26,7 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
         Choose Your <em className="font-cormorant italic font-light text-gold">Plan</em>
       </h2>
       <p className="font-cormorant text-lg text-text-muted mb-16 max-w-2xl">
-        Whether you're in therapy or supporting patients, Sorca has a plan for you. All plans include UK data hosting and GDPR compliance.
+        Whether you&apos;re in therapy or supporting patients, Sorca has a plan for you. All plans include UK data hosting and GDPR compliance.
       </p>
       
       {/* Top 3 tiers */}

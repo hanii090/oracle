@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { useAuth } from '@/hooks/useAuth';
 import { UK_CRISIS_CONTACTS } from '@/lib/risk-assessment';
@@ -42,11 +42,7 @@ export function RelapsePrevention() {
   const [newSupportPerson, setNewSupportPerson] = useState({ name: '', phone: '', howTheyHelp: '' });
   const [newReason, setNewReason] = useState('');
 
-  useEffect(() => {
-    loadPlan();
-  }, [user]);
-
-  const loadPlan = async () => {
+  const loadPlan = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -63,7 +59,11 @@ export function RelapsePrevention() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, getIdToken]);
+
+  useEffect(() => {
+    loadPlan();
+  }, [loadPlan]);
 
   const savePlan = async (updates: Partial<RelapsePlan>) => {
     if (!user) return;

@@ -4,6 +4,7 @@ import { createLogger } from '@/lib/logger';
 import { isAdminConfigured } from '@/lib/firebase-admin';
 import { z } from 'zod';
 import { sanitizeMessage } from '@/lib/safety';
+import { UK_SAFEGUARDING_CONTACTS } from '@/lib/risk-assessment';
 
 const createConcernSchema = z.object({
   patientId: z.string(),
@@ -43,25 +44,6 @@ export interface SafeguardingConcern {
   createdAt: string;
   updatedAt: string;
 }
-
-// UK Local Authority Safeguarding Contacts (sample - would be expanded)
-export const UK_SAFEGUARDING_CONTACTS = {
-  children: {
-    national: 'NSPCC Helpline: 0808 800 5000',
-    emergency: 'Police: 999',
-    advice: 'Local Authority Children\'s Services (check local directory)',
-  },
-  adults: {
-    national: 'Adult Social Care (local authority)',
-    emergency: 'Police: 999',
-    advice: 'Age UK: 0800 678 1602',
-  },
-  domesticAbuse: {
-    national: 'National Domestic Abuse Helpline: 0808 2000 247',
-    emergency: 'Police: 999',
-    menSupport: 'Men\'s Advice Line: 0808 801 0327',
-  },
-};
 
 export async function POST(req: Request) {
   const log = createLogger({ route: '/api/safeguarding', correlationId: crypto.randomUUID() });

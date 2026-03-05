@@ -56,6 +56,25 @@ export interface SafetyPlan {
   reasonsToLive: string[];
 }
 
+// UK Local Authority Safeguarding Contacts
+export const UK_SAFEGUARDING_CONTACTS = {
+  children: {
+    national: 'NSPCC Helpline: 0808 800 5000',
+    emergency: 'Police: 999',
+    advice: 'Local Authority Children\'s Services (check local directory)',
+  },
+  adults: {
+    national: 'Adult Social Care (local authority)',
+    emergency: 'Police: 999',
+    advice: 'Age UK: 0800 678 1602',
+  },
+  domesticAbuse: {
+    national: 'National Domestic Abuse Helpline: 0808 2000 247',
+    emergency: 'Police: 999',
+    menSupport: 'Men\'s Advice Line: 0808 801 0327',
+  },
+};
+
 // UK Crisis Contacts
 export const UK_CRISIS_CONTACTS = [
   { name: 'Samaritans', phone: '116 123', available: '24/7', description: 'Emotional support for anyone in distress' },
