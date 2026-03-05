@@ -27,6 +27,8 @@ const requestSchema = z.object({
   depth: z.number().int().min(1).max(100),
   nightMode: z.boolean(),
   tier: z.enum(['free', 'philosopher', 'pro']),
+  sessionStartTime: z.string().optional(), // ISO timestamp for duration tracking
+  safeMode: z.boolean().optional(), // Client-side safe mode flag
 });
 
 function buildSystemPrompt(
@@ -242,12 +244,54 @@ export async function POST(req: Request) {
       );
     }
 
-    const { message, conversationHistory, threadContext, depth, nightMode, tier } = parsed.data;
+    const { message, conversationHistory, threadContext, depth, nightMode, tier, sessionStartTime, safeMode } = parsed.data;
+
+    // ── Safe mode check — limit depth and add grounding ─────────
+    const SAFE_MODE_MAX_DEPTH = 3;
+    let effectiveDepth = depth;
+    let safeModeActive = safeMode || false;
+    
+    // Check server-side safe mode if not provided by client
+    if (!safeModeActive && isAdminConfigured()) {
+      try {
+        const db = getAdminFirestore();
+        const therapyProfileDoc = await db.collection('therapyProfiles').doc(userId).get();
+        if (therapyProfileDoc.exists && therapyProfileDoc.data()?.safeMode) {
+          safeModeActive = true;
+        }
+      } catch {
+        // Ignore errors, continue without safe mode check
+      }
+    }
+    
+    if (safeModeActive && depth > SAFE_MODE_MAX_DEPTH) {
+      effectiveDepth = SAFE_MODE_MAX_DEPTH;
+      log.info('Safe mode limiting depth', { userId, requestedDepth: depth, effectiveDepth });
+    }
+
+    // ── Session duration warning ────────────────────────────────
+    let durationWarning: string | null = null;
+    if (sessionStartTime) {
+      const sessionDurationMs = Date.now() - new Date(sessionStartTime).getTime();
+      const sessionDurationMin = Math.floor(sessionDurationMs / 60000);
+      
+      if (sessionDurationMin >= 60) {
+        durationWarning = "You've been in session for over an hour. Consider taking a break when you're ready.";
+      } else if (sessionDurationMin >= 45) {
+        durationWarning = "You've been reflecting for 45 minutes. Remember to take care of yourself.";
+      }
+    }
 
     // ── Crisis detection ───────────────────────────────────────
     const crisis = detectCrisis(message);
     if (crisis) {
       log.warn('Crisis content detected', { userId, severity: crisis.severity, category: crisis.category });
+      
+      // Immediately notify therapist for high-severity crisis (fire and forget)
+      if (crisis.severity === 'high' && isAdminConfigured()) {
+        createCrisisAlert(userId, crisis, log);
+      }
+      
       return NextResponse.json({
         question: crisis.safeResponse,
         emotionData: { crisis: true, severity: crisis.severity },
@@ -376,6 +420,9 @@ export async function POST(req: Request) {
       question,
       emotionData: result.emotionData,
       visual: result.visual,
+      durationWarning,
+      safeMode: safeModeActive,
+      effectiveDepth: safeModeActive ? effectiveDepth : undefined,
     });
   } catch (error) {
     log.error('Sorca API error', {}, error);
@@ -467,5 +514,79 @@ async function createPatternAlert(
     log.info('Pattern alerts created', { userId, type: pattern.type, count: therapistsToAlert.length });
   } catch (error) {
     log.error('Failed to create pattern alert', { userId }, error);
+  }
+}
+
+/**
+ * Create URGENT crisis alert for therapists when high-severity crisis detected
+ * This bypasses rate limiting as it's a safety-critical notification
+ */
+async function createCrisisAlert(
+  userId: string,
+  crisis: { severity: string; category: string; safeResponse: string },
+  log: ReturnType<typeof createLogger>
+) {
+  try {
+    const db = getAdminFirestore();
+    
+    // Find therapists with pattern alert consent for this user
+    const consentSnapshot = await db.collection('therapistConsent')
+      .where('patientId', '==', userId)
+      .where('status', '==', 'active')
+      .get();
+
+    if (consentSnapshot.empty) {
+      log.info('No therapist consent for crisis alert', { userId });
+      return;
+    }
+
+    const therapistsToAlert = consentSnapshot.docs
+      .map(doc => doc.data())
+      .filter(consent => consent.permissions?.sharePatternAlerts)
+      .map(consent => consent.therapistId);
+
+    if (therapistsToAlert.length === 0) {
+      log.info('No therapists with pattern alert consent', { userId });
+      return;
+    }
+
+    // Get user display name
+    const userDoc = await db.collection('users').doc(userId).get();
+    const clientName = userDoc.exists ? userDoc.data()?.displayName || 'Client' : 'Client';
+
+    // Create URGENT crisis alerts for each consented therapist
+    for (const therapistId of therapistsToAlert) {
+      const alert = {
+        id: crypto.randomUUID(),
+        clientId: userId,
+        clientName,
+        therapistId,
+        type: 'crisis',
+        message: `⚠️ URGENT: ${clientName} triggered crisis detection (${crisis.category}). Crisis resources were shown. Consider reaching out.`,
+        severity: 'critical',
+        category: crisis.category,
+        acknowledged: false,
+        acknowledgedAt: null,
+        notes: null,
+        createdAt: new Date().toISOString(),
+        urgent: true,
+      };
+
+      await db.collection('patternAlerts').doc(alert.id).set(alert);
+      
+      // Also add to a separate urgent alerts collection for faster querying
+      await db.collection('urgentAlerts').doc(alert.id).set({
+        ...alert,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hour expiry
+      });
+    }
+
+    log.warn('Crisis alerts created for therapists', { 
+      userId, 
+      category: crisis.category, 
+      therapistCount: therapistsToAlert.length 
+    });
+  } catch (error) {
+    log.error('Failed to create crisis alert', { userId }, error);
   }
 }

@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { useAuth, SessionSummary } from '@/hooks/useAuth';
 import { useTherapy } from '@/hooks/useTherapy';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Stars } from '@/components/Stars';
 import { SessionIcon, HomeworkIcon, BookIcon, AnchorIcon, ConsentIcon, ChevronIcon, CalendarIcon, ChartIcon, CapsuleIcon, GiftIcon, SettingsIcon } from '@/components/icons';
 import { TimeCapsule } from '@/components/landing/TimeCapsule';
@@ -153,12 +154,12 @@ export function UserDashboard() {
                 <span>Next session: {formatDate(therapyProfile.nextSessionDate)}</span>
               </div>
             )}
-            <a
+            <Link
               href="/"
               className="text-xs text-text-muted hover:text-gold font-cinzel tracking-widest"
             >
               ← Back to Sorca
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -202,9 +203,9 @@ export function UserDashboard() {
                 <div className="text-center py-12">
                   <SessionIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
                   <p className="text-sm text-text-muted">No sessions yet. Start your first session to begin.</p>
-                  <a href="/" className="inline-block mt-4 px-6 py-2 border border-gold text-gold font-cinzel text-xs tracking-widest rounded-lg hover:bg-gold/10">
+                  <Link href="/" className="inline-block mt-4 px-6 py-2 border border-gold text-gold font-cinzel text-xs tracking-widest rounded-lg hover:bg-gold/10">
                     Start Session
-                  </a>
+                  </Link>
                 </div>
               ) : (
                 <div className="space-y-3 max-h-[500px] overflow-y-auto">
@@ -326,12 +327,12 @@ export function UserDashboard() {
                     <p>1. During a session, click the ⚓ anchor button when you feel grounded</p>
                     <p>2. Or manually add techniques your therapist has taught you</p>
                   </div>
-                  <a
+                  <Link
                     href="/?anchor=true"
                     className="inline-block px-6 py-3 border border-teal-500 text-teal-400 font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-500/10"
                   >
                     Add Your First Anchor
-                  </a>
+                  </Link>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -453,12 +454,12 @@ export function UserDashboard() {
                 <p className="text-sm text-text-muted mb-4">
                   Manage who can see your Sorca data.
                 </p>
-                <a
+                <Link
                   href="/?consent=true"
                   className="inline-block px-6 py-3 border border-gold text-gold font-cinzel text-xs tracking-widest rounded-lg hover:bg-gold/10"
                 >
                   Manage Consent
-                </a>
+                </Link>
               </div>
             </div>
           )}
@@ -466,7 +467,7 @@ export function UserDashboard() {
 
         {/* Quick Actions */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a
+          <Link
             href="/?start=true"
             className="bg-surface border border-border rounded-lg p-4 hover:border-gold/30 transition-colors group text-center"
           >
@@ -475,10 +476,10 @@ export function UserDashboard() {
               New Session
             </h3>
             <p className="text-[10px] text-text-muted">Start a new Sorca session</p>
-          </a>
+          </Link>
 
           {isInTherapy && (
-            <a
+            <Link
               href="/?homework=true"
               className="bg-surface border border-border rounded-lg p-4 hover:border-violet-500/30 transition-colors group text-center"
             >
@@ -487,10 +488,10 @@ export function UserDashboard() {
                 Do Homework
               </h3>
               <p className="text-[10px] text-text-muted">Complete your therapy homework</p>
-            </a>
+            </Link>
           )}
 
-          <a
+          <Link
             href="/?anchor=true"
             className="bg-surface border border-border rounded-lg p-4 hover:border-teal-500/30 transition-colors group text-center"
           >
@@ -499,7 +500,7 @@ export function UserDashboard() {
               Grounding
             </h3>
             <p className="text-[10px] text-text-muted">Access your coping anchors</p>
-          </a>
+          </Link>
         </div>
       </div>
 

@@ -20,6 +20,7 @@ export interface TherapyProfile {
     sharePatternAlerts: boolean;
     shareMoodData: boolean;
   };
+  safeMode: boolean; // Therapist-controlled: limits depth, shows grounding, no escalation
   onboardingCompleted: boolean;
   createdAt: string;
   updatedAt: string;
@@ -38,6 +39,7 @@ const DEFAULT_THERAPY_PROFILE: TherapyProfile = {
     sharePatternAlerts: false,
     shareMoodData: false,
   },
+  safeMode: false,
   onboardingCompleted: false,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
