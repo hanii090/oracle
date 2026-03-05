@@ -228,7 +228,7 @@ export function SessionDebriefPrompt({
               Just back from therapy?
             </h3>
             <p className="text-xs text-text-muted leading-relaxed mb-3">
-              Let's anchor the most important thing before it fades. 
+              Let&apos;s anchor the most important thing before it fades. 
               This takes 2-3 minutes.
             </p>
             <div className="flex gap-2">

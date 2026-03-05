@@ -258,7 +258,7 @@ export function HomeworkCompanion({ onClose }: HomeworkCompanionProps) {
                                 onClick={() => startCheckIn(assignment)}
                                 className="w-full py-2 bg-violet-500/10 border border-violet-500/30 text-violet-400 font-cinzel text-[10px] tracking-widest uppercase rounded hover:bg-violet-500/20 transition-colors"
                               >
-                                Today's Check-in
+                                Today&apos;s Check-in
                               </button>
                             </div>
                           ))}
@@ -429,7 +429,7 @@ export function HomeworkCompanion({ onClose }: HomeworkCompanionProps) {
                 ) : (
                   <div className="text-center py-12">
                     <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                    <p className="text-xs text-text-muted mt-4">Preparing today's question...</p>
+                    <p className="text-xs text-text-muted mt-4">Preparing today&apos;s question...</p>
                   </div>
                 )}
               </motion.div>

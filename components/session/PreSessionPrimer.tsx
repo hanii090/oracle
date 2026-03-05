@@ -154,7 +154,7 @@ export function PreSessionPrimer({ onComplete, onDismiss }: PreSessionPrimerProp
                 exit={{ opacity: 0, x: 20 }}
               >
                 <p className="text-lg text-text-main leading-relaxed mb-6 text-center">
-                  What do you most want to say today that you're afraid you'll forget once you're in the room?
+                  What do you most want to say today that you&apos;re afraid you&apos;ll forget once you&apos;re in the room?
                 </p>
 
                 <textarea
@@ -185,7 +185,7 @@ export function PreSessionPrimer({ onComplete, onDismiss }: PreSessionPrimerProp
               >
                 <div className="bg-raised border border-border rounded-lg p-4 mb-4">
                   <p className="text-xs text-text-muted mb-1">You said:</p>
-                  <p className="text-sm text-text-mid italic">"{initialResponse}"</p>
+                  <p className="text-sm text-text-mid italic">&quot;{initialResponse}&quot;</p>
                 </div>
 
                 <p className="text-lg text-text-main leading-relaxed mb-6 text-center">

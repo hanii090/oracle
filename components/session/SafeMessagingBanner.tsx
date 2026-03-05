@@ -80,7 +80,7 @@ export function SafeMessagingBanner({
               {distressLevel > 0.5 && (
                 <div className="mt-3 pt-3 border-t border-amber-500/20">
                   <p className="text-xs text-amber-400/80 text-center">
-                    💛 You don't have to face this alone. Consider reaching out to someone you trust.
+                    💛 You don&apos;t have to face this alone. Consider reaching out to someone you trust.
                   </p>
                 </div>
               )}
