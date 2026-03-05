@@ -42,31 +42,34 @@ export default async function Image() {
           }}
         />
 
-        {/* Eye symbol */}
+        {/* Spiral symbol - representing the journey inward */}
         <svg
-          viewBox="0 0 120 60"
-          width="160"
-          height="80"
+          viewBox="0 0 120 120"
+          width="140"
+          height="140"
           style={{ marginBottom: 40 }}
         >
-          <path
-            d="M6 30 C30 6 90 6 114 30 C90 54 30 54 6 30 Z"
-            stroke="#c0392b"
-            strokeWidth="1.5"
-            fill="none"
-            opacity="0.6"
-          />
+          {/* Outer circle representing wholeness/journey */}
           <circle
             cx="60"
-            cy="30"
-            r="12"
+            cy="60"
+            r="50"
             stroke="#c0392b"
             strokeWidth="1.5"
             fill="none"
-            opacity="0.8"
+            opacity="0.4"
           />
-          <circle cx="60" cy="30" r="4.5" fill="#c0392b" opacity="0.9" />
-          <circle cx="56" cy="26" r="2" fill="#f5f0e8" opacity="0.6" />
+          {/* Inner spiral representing depth/introspection */}
+          <path
+            d="M60 10 C88 10 110 32 110 60 C110 88 88 110 60 110 C32 110 15 92 15 70 C15 48 32 32 52 32 C72 32 85 48 85 60 C85 72 72 82 60 82 C48 82 38 72 38 62 C38 52 48 45 60 45"
+            stroke="#c0392b"
+            strokeWidth="2.5"
+            fill="none"
+            opacity="0.8"
+            strokeLinecap="round"
+          />
+          {/* Center dot representing self/core truth */}
+          <circle cx="60" cy="60" r="8" fill="#c0392b" opacity="0.9" />
         </svg>
 
         {/* Brand name */}

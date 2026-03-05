@@ -32,10 +32,10 @@ export function PhilosophySection() {
         
         <div className="flex flex-col gap-4" role="list" aria-label="Sorca's four pillars">
           {[
-            { num: 'I', title: 'Never Answer, Only Ask', desc: 'Every response is a question. Not a platitude. Not a suggestion. A question that cuts to what you actually need to face.' },
-            { num: 'II', title: 'Memory as Mirror', desc: "Sorca remembers everything you've said across all sessions. It surfaces patterns you can't see yourself." },
-            { num: 'III', title: 'Progressive Depth', desc: "Questions start surface-level and spiral deeper. By question 7, you're in territory you've never examined." },
-            { num: 'IV', title: 'The Evolution Map', desc: 'Your thinking is tracked over time. Sorca shows you how your beliefs, fears, and values have shifted.' }
+            { num: 'I', title: 'Never Answer, Only Ask', desc: 'Every response is a question — not comfort, not advice, not reassurance. Just the question you\'ve been avoiding. The one that makes your chest tighten. The one that, once asked, cannot be unheard. This is where courage begins.' },
+            { num: 'II', title: 'Memory as Mirror', desc: "Sorca remembers everything you've said across all sessions. It surfaces patterns you can't see yourself — the stories you tell, the words you repeat, the truths you circle but never land on." },
+            { num: 'III', title: 'Progressive Depth', desc: "Questions start surface-level and spiral deeper. By question 7, you're in territory you've never examined. By question 10, you're meeting parts of yourself you forgot existed." },
+            { num: 'IV', title: 'The Evolution Map', desc: 'Your thinking is tracked over time. Sorca shows you how your beliefs, fears, and values have shifted — proof that you are not stuck, that change is happening, even when it feels invisible.' }
           ].map((pillar) => (
             <div key={pillar.num} role="listitem" className="bg-surface border border-border border-l-2 border-l-gold p-8 relative overflow-hidden group hover:bg-raised hover:border-gold transition-colors rounded-lg">
               <div className="absolute right-6 top-1/2 -translate-y-1/2 font-cinzel text-5xl font-black text-border group-hover:text-gold/10 transition-colors" aria-hidden="true">

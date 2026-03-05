@@ -44,3 +44,4 @@ export { PlayIcon } from './PlayIcon';
 export { PauseIcon } from './PauseIcon';
 export { BellIcon } from './BellIcon';
 export { HeartIcon } from './HeartIcon';
+export { VisionIcon } from './VisionIcon';

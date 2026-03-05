@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { SorcaLogo, MusicIcon, EyeIcon, ThreadIcon, BoltIcon, NightIcon, SessionIcon, HomeworkIcon, PrimerIcon } from '@/components/icons';
+import { SorcaLogo, MusicIcon, VisionIcon, ThreadIcon, BoltIcon, NightIcon, SessionIcon, HomeworkIcon, PrimerIcon } from '@/components/icons';
 
 const FEATURES = [
   { 
@@ -19,7 +19,7 @@ const FEATURES = [
     color: 'crimson-bright' 
   },
   { 
-    Icon: EyeIcon, 
+    Icon: VisionIcon, 
     title: 'Visual Breakthroughs', 
     desc: 'When you reach a psychological breakthrough, the engine generates a massive, abstract visual metaphor of your realization in real-time.',
     emotional: 'See your truth',

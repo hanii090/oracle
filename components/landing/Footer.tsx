@@ -28,6 +28,9 @@ export function Footer() {
         <Link href="/for-therapists" className="text-xs text-text-muted hover:text-gold transition-colors font-courier tracking-widest uppercase">
           For Therapists
         </Link>
+        <Link href="/blog" className="text-xs text-text-muted hover:text-gold transition-colors font-courier tracking-widest uppercase">
+          Blog
+        </Link>
       </nav>
 
       <nav className="flex justify-center gap-6" aria-label="Legal">

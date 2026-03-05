@@ -1,4 +1,4 @@
-import { IconProps, defaultIconProps } from './types';
+import { IconProps } from './types';
 
 export function SorcaLogo({ size = 24, strokeWidth = 1.5, className, ...props }: IconProps) {
   return (
@@ -14,13 +14,15 @@ export function SorcaLogo({ size = 24, strokeWidth = 1.5, className, ...props }:
       className={className}
       {...props}
     >
+      {/* Outer circle representing wholeness/journey */}
       <circle cx="12" cy="12" r="10" opacity="0.3" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
-      <path d="M12 2v4" />
-      <path d="M12 18v4" />
-      <path d="M2 12h4" />
-      <path d="M18 12h4" />
+      {/* Inner spiral representing depth/introspection */}
+      <path 
+        d="M12 2 C18 2 22 6 22 12 C22 18 18 22 12 22 C6 22 3 18 3 14 C3 10 6 7 10 7 C14 7 16 10 16 12 C16 14 14 16 12 16 C10 16 9 14 9 13 C9 12 10 11 12 11" 
+        opacity="0.8"
+      />
+      {/* Center dot representing self/core truth */}
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
     </svg>
   );
 }

@@ -2,7 +2,7 @@
 
 import { motion } from 'motion/react';
 import { useState } from 'react';
-import { NightIcon, BoltIcon, SorcaLogo, BookIcon, TherapistIcon, EyeIcon, HeartIcon, AnchorIcon, ThreadIcon } from '@/components/icons';
+import { NightIcon, BoltIcon, SorcaLogo, BookIcon, TherapistIcon, VisionIcon, HeartIcon, AnchorIcon, ThreadIcon } from '@/components/icons';
 import type { ComponentType } from 'react';
 import type { IconProps } from '@/components/icons';
 
@@ -33,12 +33,12 @@ const REVIEWS: Review[] = [
     emotionalTag: "Life-changing clarity",
   },
   {
-    quote: "The Pattern of the Week feature is terrifying in the best way. Last week it told me: 'You use competence as a hiding place.' I've been thinking about that sentence for six days straight.",
-    author: "Ava Chen",
-    role: "Executive Coach",
-    depth: "Pattern Engine user",
-    Icon: SorcaLogo,
-    emotionalTag: "Self-discovery",
+    quote: "My partner lives 4,000 miles away. We do Sorca sessions together at midnight — same question, different continents. It's become our ritual. We've never felt closer, even across the distance.",
+    author: "Mia & Daniel",
+    role: "Long-distance couple",
+    depth: "Shared sessions weekly",
+    Icon: HeartIcon,
+    emotionalTag: "Love across distance",
   },
   {
     quote: "My Mirror Letter made me cry. Not because it was sad. Because it was me — actually me — saying things I'd been circling for months. I screenshot it and read it every morning.",
@@ -61,7 +61,7 @@ const REVIEWS: Review[] = [
     author: "Sophie Laurent",
     role: "Filmmaker",
     depth: "Night session convert",
-    Icon: EyeIcon,
+    Icon: VisionIcon,
     emotionalTag: "Transformative",
   },
   {
@@ -69,7 +69,7 @@ const REVIEWS: Review[] = [
     author: "Rachel Torres",
     role: "Teacher & Single Mother",
     depth: "6 months daily use",
-    Icon: HeartIcon,
+    Icon: SorcaLogo,
     emotionalTag: "Healing journey",
   },
   {
@@ -110,7 +110,7 @@ export function ReviewsSection() {
         What They <em className="font-cormorant italic font-light text-gold">Discovered</em>
       </h2>
       <p className="font-cormorant text-lg text-text-muted mb-16 max-w-2xl">
-        Every person who enters Sorca leaves knowing something they didn&apos;t know they knew. These are their words.
+        Every person who enters Sorca leaves knowing something they didn&apos;t know they knew. These are their words — from long-distance relationships held together by midnight sessions, to grief finally given voice, to the courage found at 3am.
       </p>
 
       {/* Featured review */}
@@ -142,7 +142,12 @@ export function ReviewsSection() {
                   {REVIEWS[activeIndex].role}
                 </span>
               </div>
-              <div className="ml-auto hidden md:block">
+              <div className="ml-auto hidden md:flex items-center gap-3">
+                {REVIEWS[activeIndex].emotionalTag && (
+                  <span className="font-courier text-[10px] text-crimson-bright/80 tracking-widest uppercase border border-crimson/20 px-3 py-1 rounded-full">
+                    {REVIEWS[activeIndex].emotionalTag}
+                  </span>
+                )}
                 <span className="font-courier text-[10px] text-gold/60 tracking-widest uppercase border border-gold/20 px-3 py-1 rounded-full">
                   {REVIEWS[activeIndex].depth}
                 </span>

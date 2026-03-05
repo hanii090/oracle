@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'motion/react';
-import { HelpIcon, ChartIcon, ThreadIcon, MusicIcon, NightIcon, VoiceIcon, EyeIcon, BoltIcon, ExportIcon, FireIcon, CloseIcon } from '@/components/icons';
+import { HelpIcon, ChartIcon, ThreadIcon, MusicIcon, NightIcon, VoiceIcon, VisionIcon, BoltIcon, ExportIcon, FireIcon, CloseIcon } from '@/components/icons';
 import type { ComponentType } from 'react';
 import type { IconProps } from '@/components/icons';
 
@@ -42,7 +42,7 @@ const helpItems: { Icon: ComponentType<IconProps>; label: string; desc: string }
     desc: 'Speak your truth aloud and hear Sorca\'s questions. Philosopher tier.',
   },
   {
-    Icon: EyeIcon,
+    Icon: VisionIcon,
     label: 'Visual Breakthroughs',
     desc: 'AI-generated abstract visuals during emotional peaks. Philosopher tier.',
   },

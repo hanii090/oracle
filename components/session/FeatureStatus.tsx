@@ -1,7 +1,7 @@
 'use client';
 
 import { Tooltip } from '@/components/ui/Tooltip';
-import { ThreadIcon, MusicIcon, BoltIcon, EyeIcon, ConsentIcon } from '@/components/icons';
+import { ThreadIcon, MusicIcon, BoltIcon, VisionIcon, ConsentIcon } from '@/components/icons';
 
 interface FeatureStatusProps {
   pastThreadLength: number;
@@ -48,7 +48,7 @@ export function FeatureStatus({ pastThreadLength, depth, isBreakthrough, tier = 
               ? 'border-violet/30 text-violet-bright animate-pulse'
               : 'border-border text-text-muted/40'
         }`}>
-          <EyeIcon size={10} /> Visuals {tier === 'free' ? <ConsentIcon size={8} /> : isBreakthrough ? 'Triggered' : 'Standby'}
+          <VisionIcon size={10} /> Visuals {tier === 'free' ? <ConsentIcon size={8} /> : isBreakthrough ? 'Triggered' : 'Standby'}
         </div>
       </Tooltip>
     </div>

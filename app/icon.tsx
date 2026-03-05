@@ -23,23 +23,27 @@ export default function Icon() {
         }}
       >
         <svg viewBox="0 0 32 32" width="32" height="32">
-          <path
-            d="M3 16 C8 6 24 6 29 16 C24 26 8 26 3 16 Z"
-            stroke="#c0392b"
-            strokeWidth="1"
-            fill="none"
-            opacity="0.7"
-          />
+          {/* Outer circle representing wholeness/journey */}
           <circle
             cx="16"
             cy="16"
-            r="4"
+            r="11"
             stroke="#c0392b"
             strokeWidth="1"
             fill="none"
-            opacity="0.8"
+            opacity="0.4"
           />
-          <circle cx="16" cy="16" r="1.5" fill="#c0392b" opacity="0.9" />
+          {/* Inner spiral representing depth/introspection */}
+          <path
+            d="M16 5 C22 5 27 10 27 16 C27 22 22 27 16 27 C10 27 6 23 6 18 C6 13 10 10 14 10 C18 10 21 13 21 16 C21 19 18 21 16 21 C14 21 12 19 12 17 C12 15 14 14 16 14"
+            stroke="#c0392b"
+            strokeWidth="1.2"
+            fill="none"
+            opacity="0.8"
+            strokeLinecap="round"
+          />
+          {/* Center dot representing self/core truth */}
+          <circle cx="16" cy="16" r="2" fill="#c0392b" opacity="0.9" />
         </svg>
       </div>
     ),
