@@ -12,6 +12,7 @@ import { TimeCapsule } from '@/components/landing/TimeCapsule';
 import { QuestionGift } from '@/components/landing/QuestionGift';
 import { ExcavationReportSection } from '@/components/landing/ExcavationReport';
 import { AccountSettings } from '@/components/AccountSettings';
+import { HomeworkJourney } from '@/components/homework/HomeworkJourney';
 
 interface WeekSummary {
   id: string;
@@ -22,6 +23,19 @@ interface WeekSummary {
   createdAt: string;
 }
 
+interface JourneyDay {
+  theme: string;
+  question: string;
+  followUp: string;
+  grounding?: string;
+}
+
+interface CheckIn {
+  dayNumber: number;
+  response: string;
+  timestamp: string;
+}
+
 interface HomeworkAssignment {
   id: string;
   topic: string;
@@ -29,6 +43,12 @@ interface HomeworkAssignment {
   status: 'active' | 'completed' | 'expired';
   completedDays: number;
   durationDays: number;
+  startDate: string;
+  endDate: string;
+  journeyPlan?: Record<string, JourneyDay>;
+  openingMessage?: string;
+  closingMessage?: string;
+  checkIns: CheckIn[];
   createdAt: string;
 }
 
@@ -88,6 +108,21 @@ export function UserDashboard() {
       setLoading(false);
     }
   }, [user, getIdToken, loadSessions]);
+
+  const loadHomework = useCallback(async () => {
+    if (!user) return;
+    try {
+      const token = await getIdToken();
+      const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const homeworkRes = await fetch('/api/homework', { headers });
+      if (homeworkRes.ok) {
+        const data = await homeworkRes.json();
+        setHomework(data.assignments || []);
+      }
+    } catch (e) {
+      console.error('Failed to load homework:', e);
+    }
+  }, [user, getIdToken]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -281,17 +316,23 @@ export function UserDashboard() {
                   )}
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {homework.map((hw) => (
+                <div className="space-y-4">
+                  {/* Active homework with journey - show interactive component */}
+                  {homework.filter(hw => hw.status === 'active' && hw.journeyPlan).map((hw) => (
+                    <HomeworkJourney
+                      key={hw.id}
+                      assignment={hw}
+                      onCheckInComplete={() => loadHomework()}
+                    />
+                  ))}
+
+                  {/* Active homework without journey - show simple card */}
+                  {homework.filter(hw => hw.status === 'active' && !hw.journeyPlan).map((hw) => (
                     <div key={hw.id} className="p-4 bg-raised border border-border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-cinzel text-sm text-text-main">{hw.topic}</span>
-                        <span className={`text-[9px] px-2 py-0.5 rounded ${
-                          hw.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' :
-                          hw.status === 'completed' ? 'bg-blue-500/10 text-blue-400' :
-                          'bg-text-muted/10 text-text-muted'
-                        }`}>
-                          {hw.status}
+                        <span className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">
+                          active
                         </span>
                       </div>
                       <p className="text-xs text-text-mid mb-2">{hw.description}</p>
@@ -308,6 +349,33 @@ export function UserDashboard() {
                       </div>
                     </div>
                   ))}
+
+                  {/* Completed/expired homework */}
+                  {homework.filter(hw => hw.status !== 'active').length > 0 && (
+                    <details className="group">
+                      <summary className="text-xs text-text-muted cursor-pointer hover:text-text-mid">
+                        Past homework ({homework.filter(hw => hw.status !== 'active').length})
+                      </summary>
+                      <div className="mt-3 space-y-2">
+                        {homework.filter(hw => hw.status !== 'active').map((hw) => (
+                          <div key={hw.id} className="p-3 bg-surface/50 border border-border rounded-lg opacity-70">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-cinzel text-xs text-text-main">{hw.topic}</span>
+                              <span className={`text-[9px] px-2 py-0.5 rounded ${
+                                hw.status === 'completed' ? 'bg-blue-500/10 text-blue-400' :
+                                'bg-text-muted/10 text-text-muted'
+                              }`}>
+                                {hw.status}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-text-muted">
+                              {hw.completedDays}/{hw.durationDays} days completed
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  )}
                 </div>
               )}
             </div>

@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/excavation",
       "schedule": "0 9 1 * *"
+    },
+    {
+      "path": "/api/cron/weekly-summary",
+      "schedule": "0 9 * * 0"
+    },
+    {
+      "path": "/api/cron/session-prep",
+      "schedule": "*/15 * * * *"
     }
   ]
 }

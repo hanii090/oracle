@@ -39,11 +39,22 @@ interface Alert {
   createdAt: string;
 }
 
+interface WeekAtGlance {
+  practiceMoodTrend: string;
+  moodBreakdown: { improving: number; stable: number; declining: number; fluctuating: number };
+  averageHomeworkCompletion: number | null;
+  topThemes: Array<{ theme: string; count: number }>;
+  clientsNeedingAttention: Array<{ id: string; name: string; reason: string }>;
+  totalAlerts: number;
+  activeClients: number;
+}
+
 interface DashboardData {
   clients: Client[];
   totalClients: number;
   upcomingSessions: Client[];
   recentAlerts: Alert[];
+  weekAtGlance?: WeekAtGlance;
 }
 
 export function TherapistDashboard() {
@@ -162,6 +173,91 @@ export function TherapistDashboard() {
             </a>
           </div>
         </div>
+
+        {/* Week at a Glance */}
+        {data?.weekAtGlance && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-teal-900/20 to-violet-900/20 border border-teal-500/30 rounded-lg p-6 mb-6"
+          >
+            <h2 className="font-cinzel text-sm text-teal-400 tracking-wider uppercase mb-4">
+              Week at a Glance
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              {/* Mood Trend */}
+              <div className="bg-surface/50 rounded-lg p-4 text-center">
+                <div className="text-2xl mb-1">
+                  {data.weekAtGlance.practiceMoodTrend === 'improving' ? '📈' :
+                   data.weekAtGlance.practiceMoodTrend === 'declining' ? '📉' :
+                   data.weekAtGlance.practiceMoodTrend === 'stable' ? '➡️' : '📊'}
+                </div>
+                <p className="text-xs text-text-muted">Practice Mood</p>
+                <p className="text-sm text-text-main capitalize">{data.weekAtGlance.practiceMoodTrend}</p>
+              </div>
+
+              {/* Homework Completion */}
+              <div className="bg-surface/50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-cinzel text-emerald-400">
+                  {data.weekAtGlance.averageHomeworkCompletion ?? '—'}%
+                </div>
+                <p className="text-xs text-text-muted">Avg Homework</p>
+              </div>
+
+              {/* Active Clients */}
+              <div className="bg-surface/50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-cinzel text-blue-400">
+                  {data.weekAtGlance.activeClients}/{data.totalClients}
+                </div>
+                <p className="text-xs text-text-muted">Active This Week</p>
+              </div>
+
+              {/* Alerts */}
+              <div className="bg-surface/50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-cinzel text-amber-400">
+                  {data.weekAtGlance.totalAlerts}
+                </div>
+                <p className="text-xs text-text-muted">Alerts</p>
+              </div>
+            </div>
+
+            {/* Theme Cloud & Needs Attention */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Top Themes */}
+              {data.weekAtGlance.topThemes.length > 0 && (
+                <div className="bg-surface/30 rounded-lg p-3">
+                  <p className="text-[10px] text-text-muted uppercase tracking-wider mb-2">Common Themes</p>
+                  <div className="flex flex-wrap gap-1">
+                    {data.weekAtGlance.topThemes.map((t, i) => (
+                      <span
+                        key={i}
+                        className="text-xs px-2 py-0.5 bg-violet-500/20 text-violet-300 rounded"
+                        style={{ fontSize: `${Math.max(10, 12 + t.count)}px` }}
+                      >
+                        {t.theme}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Clients Needing Attention */}
+              {data.weekAtGlance.clientsNeedingAttention.length > 0 && (
+                <div className="bg-amber-900/20 border border-amber-500/20 rounded-lg p-3">
+                  <p className="text-[10px] text-amber-400 uppercase tracking-wider mb-2">Needs Attention</p>
+                  <div className="space-y-1">
+                    {data.weekAtGlance.clientsNeedingAttention.map((c, i) => (
+                      <div key={i} className="flex items-center justify-between text-xs">
+                        <span className="text-text-main">{c.name}</span>
+                        <span className="text-text-muted">{c.reason}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Upcoming Sessions & Alerts */}

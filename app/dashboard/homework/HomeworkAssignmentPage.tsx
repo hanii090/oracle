@@ -81,6 +81,9 @@ export function HomeworkAssignmentPage() {
   const [duration, setDuration] = useState(7);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [journeyPreview, setJourneyPreview] = useState<Record<string, { theme: string; question: string }> | null>(null);
+  const [generatingPreview, setGeneratingPreview] = useState(false);
+  const [useJourney, setUseJourney] = useState(true);
 
   const loadClients = useCallback(async () => {
     try {
@@ -113,6 +116,38 @@ export function HomeworkAssignmentPage() {
     }
   }, [user, isTherapist, authLoading, router, loadClients]);
 
+  const generatePreview = async () => {
+    const topic = selectedTemplate?.title || customTopic;
+    if (!topic.trim()) return;
+
+    setGeneratingPreview(true);
+    try {
+      const token = await getIdToken();
+      const res = await fetch('/api/therapist/homework-journey', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          topic,
+          durationDays: duration,
+          clientContext: customDescription || undefined,
+          assign: false,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setJourneyPreview(data.journeyPlan);
+      }
+    } catch (e) {
+      console.error('Failed to generate preview:', e);
+    } finally {
+      setGeneratingPreview(false);
+    }
+  };
+
   const handleAssign = async () => {
     if (!selectedClient) return;
     if (!selectedTemplate && !customTopic.trim()) return;
@@ -120,19 +155,34 @@ export function HomeworkAssignmentPage() {
     setSubmitting(true);
     try {
       const token = await getIdToken();
-      const res = await fetch('/api/therapist/assign-homework', {
+      const topic = selectedTemplate?.title || customTopic;
+
+      // Use journey API if enabled, otherwise use basic assignment
+      const endpoint = useJourney ? '/api/therapist/homework-journey' : '/api/therapist/assign-homework';
+      const body = useJourney
+        ? {
+            topic,
+            clientId: selectedClient.id,
+            durationDays: duration,
+            clientContext: customDescription || undefined,
+            templateId: selectedTemplate?.id,
+            assign: true,
+          }
+        : {
+            clientId: selectedClient.id,
+            topic,
+            description: selectedTemplate?.description || customDescription,
+            durationDays: duration,
+            customQuestions: selectedTemplate?.questions || undefined,
+          };
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          clientId: selectedClient.id,
-          topic: selectedTemplate?.title || customTopic,
-          description: selectedTemplate?.description || customDescription,
-          durationDays: duration,
-          customQuestions: selectedTemplate?.questions || undefined,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (res.ok) {
@@ -144,6 +194,7 @@ export function HomeworkAssignmentPage() {
           setCustomTopic('');
           setCustomDescription('');
           setDuration(7);
+          setJourneyPreview(null);
         }, 2000);
       }
     } catch (e) {
@@ -303,14 +354,64 @@ export function HomeworkAssignmentPage() {
                 </div>
               </div>
 
+              {/* AI Journey Toggle */}
+              <div className="bg-surface border border-border rounded-lg p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h2 className="font-cinzel text-sm text-text-main">AI Conversational Journey</h2>
+                    <p className="text-[10px] text-text-muted">Generate adaptive daily questions</p>
+                  </div>
+                  <button
+                    onClick={() => setUseJourney(!useJourney)}
+                    className={`w-12 h-6 rounded-full transition-colors ${
+                      useJourney ? 'bg-violet-500' : 'bg-raised'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                      useJourney ? 'translate-x-6' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                </div>
+
+                {useJourney && (selectedTemplate || customTopic.trim()) && (
+                  <button
+                    onClick={generatePreview}
+                    disabled={generatingPreview}
+                    className="w-full py-2 border border-violet-500/50 text-violet-400 text-xs rounded-lg hover:bg-violet-500/10 transition-colors disabled:opacity-50"
+                  >
+                    {generatingPreview ? 'Generating Preview...' : '✨ Preview Journey'}
+                  </button>
+                )}
+
+                {journeyPreview && (
+                  <div className="mt-4 space-y-2 max-h-48 overflow-y-auto">
+                    {Object.entries(journeyPreview).slice(0, 3).map(([day, content]) => (
+                      <div key={day} className="bg-raised rounded p-2">
+                        <p className="text-[10px] text-violet-400 uppercase">{day}: {content.theme}</p>
+                        <p className="text-xs text-text-mid">{content.question}</p>
+                      </div>
+                    ))}
+                    {Object.keys(journeyPreview).length > 3 && (
+                      <p className="text-[10px] text-text-muted text-center">
+                        +{Object.keys(journeyPreview).length - 3} more days...
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Submit */}
               <button
                 onClick={handleAssign}
                 disabled={!selectedClient || (!selectedTemplate && !customTopic.trim()) || submitting}
                 className="w-full py-4 bg-violet-500 text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-violet-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Assigning...' : 'Assign Homework'}
+                {submitting ? 'Assigning...' : useJourney ? 'Generate & Assign Journey' : 'Assign Homework'}
               </button>
+
+              <p className="text-center text-[10px] text-text-muted">
+                ⏱️ Takes ~2 minutes to complete
+              </p>
             </div>
           </div>
         )}

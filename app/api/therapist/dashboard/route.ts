@@ -108,11 +108,96 @@ export async function GET(req: Request) {
       .sort((a, b) => new Date(a.nextSession!).getTime() - new Date(b.nextSession!).getTime())
       .slice(0, 5);
 
+    // ── Week at a Glance Metrics ─────────────────────────────────
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    
+    // Aggregate mood trends from week summaries
+    const moodTrends: string[] = [];
+    const allThemes: string[] = [];
+    let totalHomeworkCompletion = 0;
+    let clientsWithHomework = 0;
+    let clientsNeedingAttention: Array<{ id: string; name: string; reason: string }> = [];
+
+    for (const client of clients) {
+      // Collect mood trends
+      if (client.weekSummary?.moodTrend) {
+        moodTrends.push(client.weekSummary.moodTrend);
+      }
+      
+      // Collect themes
+      if (client.weekSummary?.themes) {
+        allThemes.push(...client.weekSummary.themes);
+      }
+      
+      // Aggregate homework completion
+      if (client.homeworkCompletionRate !== null) {
+        totalHomeworkCompletion += client.homeworkCompletionRate;
+        clientsWithHomework++;
+      }
+      
+      // Identify clients needing attention
+      if (client.homeworkCompletionRate !== null && client.homeworkCompletionRate < 30) {
+        clientsNeedingAttention.push({
+          id: client.id,
+          name: client.displayName,
+          reason: 'Low homework completion',
+        });
+      }
+    }
+
+    // Check for clients with recent alerts
+    const alertClientIds = new Set(recentAlerts.map(a => a.clientId));
+    for (const clientId of alertClientIds) {
+      const client = clients.find(c => c.id === clientId);
+      if (client && !clientsNeedingAttention.find(c => c.id === clientId)) {
+        clientsNeedingAttention.push({
+          id: clientId,
+          name: client.displayName,
+          reason: 'Recent alert',
+        });
+      }
+    }
+
+    // Calculate practice-wide mood trend
+    const moodCounts = { improving: 0, stable: 0, declining: 0, fluctuating: 0 };
+    for (const mood of moodTrends) {
+      if (mood in moodCounts) {
+        moodCounts[mood as keyof typeof moodCounts]++;
+      }
+    }
+    const practiceMoodTrend = moodTrends.length > 0
+      ? Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0][0]
+      : 'unknown';
+
+    // Calculate theme frequency for word cloud
+    const themeCounts: Record<string, number> = {};
+    for (const theme of allThemes) {
+      const normalized = theme.toLowerCase().trim();
+      themeCounts[normalized] = (themeCounts[normalized] || 0) + 1;
+    }
+    const topThemes = Object.entries(themeCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([theme, count]) => ({ theme, count }));
+
+    const weekAtGlance = {
+      practiceMoodTrend,
+      moodBreakdown: moodCounts,
+      averageHomeworkCompletion: clientsWithHomework > 0 
+        ? Math.round(totalHomeworkCompletion / clientsWithHomework) 
+        : null,
+      topThemes,
+      clientsNeedingAttention: clientsNeedingAttention.slice(0, 5),
+      totalAlerts: recentAlerts.length,
+      activeClients: clients.filter(c => c.weekSummary !== null).length,
+    };
+
     return NextResponse.json({
       clients,
       totalClients: clients.length,
       upcomingSessions,
       recentAlerts,
+      weekAtGlance,
     });
   } catch (error) {
     log.error('Therapist dashboard error', {}, error);
