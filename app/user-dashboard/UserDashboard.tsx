@@ -13,6 +13,7 @@ import { QuestionGift } from '@/components/landing/QuestionGift';
 import { ExcavationReportSection } from '@/components/landing/ExcavationReport';
 import { AccountSettings } from '@/components/AccountSettings';
 import { HomeworkJourney } from '@/components/homework/HomeworkJourney';
+import { Footer } from '@/components/landing/Footer';
 
 interface WeekSummary {
   id: string;
@@ -64,7 +65,10 @@ export function UserDashboard() {
   const { therapyProfile, isInTherapy } = useTherapy();
   const router = useRouter();
   
-  const [activeTab, setActiveTab] = useState<'sessions' | 'summaries' | 'homework' | 'anchors' | 'report' | 'capsule' | 'gift' | 'settings' | 'consent'>('sessions');
+  const [activeTab, setActiveTab] = useState<'sessions' | 'summaries' | 'homework' | 'anchors' | 'consent'>('sessions');
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showCapsuleModal, setShowCapsuleModal] = useState(false);
+  const [showGiftModal, setShowGiftModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [summaries, setSummaries] = useState<WeekSummary[]>([]);
   const [homework, setHomework] = useState<HomeworkAssignment[]>([]);
@@ -162,10 +166,6 @@ export function UserDashboard() {
     { id: 'summaries', label: 'Week Summaries', Icon: BookIcon, count: summaries.length },
     { id: 'homework', label: 'Homework', Icon: HomeworkIcon, count: homework.filter(h => h.status === 'active').length },
     { id: 'anchors', label: 'Coping Anchors', Icon: AnchorIcon, count: anchors.length },
-    { id: 'report', label: 'Excavation Report', Icon: ChartIcon, count: null },
-    { id: 'capsule', label: 'Time Capsule', Icon: CapsuleIcon, count: null },
-    { id: 'gift', label: 'Question Gift', Icon: GiftIcon, count: null },
-    { id: 'settings', label: 'Settings', Icon: SettingsIcon, count: null },
     { id: 'consent', label: 'Consent', Icon: ConsentIcon, count: null },
   ] as const;
 
@@ -189,6 +189,13 @@ export function UserDashboard() {
                 <span>Next session: {formatDate(therapyProfile.nextSessionDate)}</span>
               </div>
             )}
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2 rounded-lg bg-surface border border-border hover:border-gold/30 transition-colors"
+              title="Settings"
+            >
+              <SettingsIcon size={18} className="text-text-muted hover:text-gold" />
+            </button>
             <Link
               href="/"
               className="text-xs text-text-muted hover:text-gold font-cinzel tracking-widest"
@@ -415,102 +422,6 @@ export function UserDashboard() {
             </div>
           )}
 
-          {activeTab === 'report' && (
-            <div>
-              {profile?.tier === 'free' ? (
-                <div className="text-center py-12">
-                  <ChartIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
-                  <p className="text-sm text-text-muted mb-2">Excavation Reports are available for Philosopher tier.</p>
-                  <p className="text-xs text-text-muted/60">Upgrade to receive monthly insights into your patterns and breakthroughs.</p>
-                </div>
-              ) : (
-                <ExcavationReportSection />
-              )}
-            </div>
-          )}
-
-          {activeTab === 'capsule' && (
-            <div>
-              {profile?.tier === 'free' ? (
-                <div className="text-center py-12">
-                  <CapsuleIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
-                  <p className="text-sm text-text-muted mb-2">Time Capsule is available for Philosopher tier.</p>
-                  <p className="text-xs text-text-muted/60">Upgrade to send messages to your future self.</p>
-                </div>
-              ) : (
-                <TimeCapsule />
-              )}
-            </div>
-          )}
-
-          {activeTab === 'gift' && (
-            <div>
-              {profile?.tier === 'free' ? (
-                <div className="text-center py-12">
-                  <GiftIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
-                  <p className="text-sm text-text-muted mb-2">Question Gift is available for Philosopher tier.</p>
-                  <p className="text-xs text-text-muted/60">Upgrade to gift powerful questions to others.</p>
-                </div>
-              ) : (
-                <QuestionGift />
-              )}
-            </div>
-          )}
-
-          {activeTab === 'settings' && (
-            <div>
-              <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-6">
-                Account Settings
-              </h2>
-              
-              {/* Profile Info */}
-              <div className="bg-raised border border-border rounded-lg p-6 mb-6">
-                <h3 className="font-cinzel text-xs text-text-muted tracking-widest uppercase mb-4">Profile</h3>
-                <div className="flex items-center gap-4">
-                  {user?.photoURL && (
-                    <img src={user.photoURL} alt="" className="w-12 h-12 rounded-full border border-border" />
-                  )}
-                  <div>
-                    <p className="text-sm text-text-main font-medium">{user?.displayName || 'Seeker'}</p>
-                    <p className="text-xs text-text-muted">{user?.email}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Subscription */}
-              <div className="bg-raised border border-border rounded-lg p-6 mb-6">
-                <h3 className="font-cinzel text-xs text-text-muted tracking-widest uppercase mb-4">Subscription</h3>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-text-main capitalize">{profile?.tier || 'free'} Tier</p>
-                    <p className="text-xs text-text-muted">
-                      {profile?.tier === 'free' ? 'Limited features' : 'Full access to all features'}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowSettings(true)}
-                    className="px-4 py-2 border border-gold text-gold font-cinzel text-xs tracking-widest rounded-lg hover:bg-gold/10"
-                  >
-                    Manage Billing
-                  </button>
-                </div>
-              </div>
-
-              {/* Danger Zone */}
-              <div className="bg-raised border border-red-500/20 rounded-lg p-6">
-                <h3 className="font-cinzel text-xs text-red-400 tracking-widest uppercase mb-4">Danger Zone</h3>
-                <p className="text-xs text-text-muted mb-4">
-                  Permanently delete your account and all associated data. This action cannot be undone.
-                </p>
-                <button
-                  onClick={() => setShowSettings(true)}
-                  className="px-4 py-2 border border-red-500/50 text-red-400 font-cinzel text-xs tracking-widest rounded-lg hover:bg-red-500/10"
-                >
-                  Delete Account
-                </button>
-              </div>
-            </div>
-          )}
 
           {activeTab === 'consent' && (
             <div>
@@ -570,11 +481,153 @@ export function UserDashboard() {
             <p className="text-[10px] text-text-muted">Access your coping anchors</p>
           </Link>
         </div>
+
+        {/* Analytics & Insights Section */}
+        <div className="mt-8">
+          <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
+            Insights & Tools
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Excavation Report Card */}
+            <button
+              onClick={() => profile?.tier !== 'free' && setShowReportModal(true)}
+              disabled={profile?.tier === 'free'}
+              className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${
+                profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-gold/30 cursor-pointer'
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <ChartIcon size={20} className="text-gold/70" />
+                <h3 className="font-cinzel text-sm text-text-main">Excavation Report</h3>
+              </div>
+              <p className="text-xs text-text-muted mb-3">
+                Monthly insights into your patterns, breakthroughs, and growth areas.
+              </p>
+              {profile?.tier === 'free' ? (
+                <span className="text-[10px] text-gold/60">Upgrade to Philosopher</span>
+              ) : (
+                <span className="text-[10px] text-gold">View Full Report →</span>
+              )}
+            </button>
+
+            {/* Time Capsule Card */}
+            <button
+              onClick={() => profile?.tier !== 'free' && setShowCapsuleModal(true)}
+              disabled={profile?.tier === 'free'}
+              className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${
+                profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-violet-500/30 cursor-pointer'
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <CapsuleIcon size={20} className="text-violet-400/70" />
+                <h3 className="font-cinzel text-sm text-text-main">Time Capsule</h3>
+              </div>
+              <p className="text-xs text-text-muted mb-3">
+                Send messages to your future self. Receive them when you need them most.
+              </p>
+              {profile?.tier === 'free' ? (
+                <span className="text-[10px] text-violet-400/60">Upgrade to Philosopher</span>
+              ) : (
+                <span className="text-[10px] text-violet-400">Create Capsule →</span>
+              )}
+            </button>
+
+            {/* Question Gift Card */}
+            <button
+              onClick={() => profile?.tier !== 'free' && setShowGiftModal(true)}
+              disabled={profile?.tier === 'free'}
+              className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${
+                profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-teal-500/30 cursor-pointer'
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <GiftIcon size={20} className="text-teal-400/70" />
+                <h3 className="font-cinzel text-sm text-text-main">Question Gift</h3>
+              </div>
+              <p className="text-xs text-text-muted mb-3">
+                Gift a powerful question to someone you care about.
+              </p>
+              {profile?.tier === 'free' ? (
+                <span className="text-[10px] text-teal-400/60">Upgrade to Philosopher</span>
+              ) : (
+                <span className="text-[10px] text-teal-400">Send Gift →</span>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
+
+      <Footer />
 
       {/* Account Settings Modal */}
       {showSettings && (
         <AccountSettings onClose={() => setShowSettings(false)} />
+      )}
+
+      {/* Excavation Report Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-border rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-cinzel text-lg text-text-main">Excavation Report</h2>
+              <button
+                onClick={() => setShowReportModal(false)}
+                className="text-text-muted hover:text-text-main"
+              >
+                ✕
+              </button>
+            </div>
+            <ExcavationReportSection />
+          </motion.div>
+        </div>
+      )}
+
+      {/* Time Capsule Modal */}
+      {showCapsuleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-cinzel text-lg text-text-main">Time Capsule</h2>
+              <button
+                onClick={() => setShowCapsuleModal(false)}
+                className="text-text-muted hover:text-text-main"
+              >
+                ✕
+              </button>
+            </div>
+            <TimeCapsule />
+          </motion.div>
+        </div>
+      )}
+
+      {/* Question Gift Modal */}
+      {showGiftModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-cinzel text-lg text-text-main">Question Gift</h2>
+              <button
+                onClick={() => setShowGiftModal(false)}
+                className="text-text-muted hover:text-text-main"
+              >
+                ✕
+              </button>
+            </div>
+            <QuestionGift />
+          </motion.div>
+        </div>
       )}
     </main>
   );

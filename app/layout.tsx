@@ -156,6 +156,57 @@ export default function RootLayout({
             }),
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: [
+                {
+                  "@type": "Question",
+                  name: "What is Sorca?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Sorca is a Socratic AI that responds only with questions. It helps therapists, coaches, and individuals achieve radical self-discovery through deep, reflective questioning rather than giving advice or answers.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "How does Sorca help therapists?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Sorca provides therapists with a dashboard showing client progress, homework completion (75% vs 20-30% with traditional worksheets), pattern alerts, and session prep briefs. It operates in the 167 hours between weekly sessions.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "Is Sorca a replacement for therapy?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "No. Sorca is not therapy and does not provide medical or psychological advice. It is a reflective tool that deepens self-discovery through Socratic questioning, designed to complement professional mental health services.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "Is Sorca GDPR compliant?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Yes. Sorca is fully GDPR compliant and ICO registered. All data sharing requires explicit opt-in consent, patients control what is shared with therapists, and consent is revocable at any time.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "What is the homework completion rate with Sorca?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Studies show 75% homework completion with AI-assisted conversational homework, compared to 20-30% with traditional paper worksheets. Sorca converts homework into a 7-day conversational journey.",
+                  },
+                },
+              ],
+            }),
+          }}
+        />
         <div className="fixed inset-0 z-50 pointer-events-none opacity-[0.04] mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
         <Providers>
           {children}

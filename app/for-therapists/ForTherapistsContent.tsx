@@ -67,7 +67,7 @@ const PRICING = {
 };
 
 export function ForTherapistsContent() {
-  const { user, loading, signIn, logOut, getIdToken } = useAuth();
+  const { user, loading, signIn, logOut, getIdToken, isTherapist } = useAuth();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [showCredentialModal, setShowCredentialModal] = useState(false);
   const [credentials, setCredentials] = useState({
@@ -150,20 +150,34 @@ export function ForTherapistsContent() {
         <div className="flex items-center gap-4">
           {!loading && (
             user ? (
-              <div className="flex items-center gap-4">
-                <a
-                  href="/dashboard"
-                  className="text-teal-400 hover:text-teal-300 transition-colors font-cinzel text-xs tracking-widest uppercase"
-                >
-                  Dashboard
-                </a>
-                <button
-                  onClick={() => logOut()}
-                  className="text-text-muted hover:text-teal-400 transition-colors font-courier text-xs tracking-widest uppercase"
-                >
-                  Sign Out
-                </button>
-              </div>
+              isTherapist ? (
+                <div className="flex items-center gap-4">
+                  <a
+                    href="/dashboard"
+                    className="text-teal-400 hover:text-teal-300 transition-colors font-cinzel text-xs tracking-widest uppercase"
+                  >
+                    Practice Dashboard
+                  </a>
+                  <button
+                    onClick={() => logOut()}
+                    className="text-text-muted hover:text-teal-400 transition-colors font-courier text-xs tracking-widest uppercase"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-4">
+                  <span className="text-xs text-text-muted">
+                    Signed in as {user.displayName?.split(' ')[0] || 'User'}
+                  </span>
+                  <button
+                    onClick={() => logOut()}
+                    className="text-text-muted hover:text-teal-400 transition-colors font-courier text-xs tracking-widest uppercase"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              )
             ) : (
               <button
                 onClick={() => signIn()}
