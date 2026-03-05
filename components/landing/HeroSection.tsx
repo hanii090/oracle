@@ -54,7 +54,7 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192,57,43,0.04)_0%,transparent_60%)] pointer-events-none" aria-hidden="true" />
         
         <div className="font-cinzel text-[11px] tracking-[0.4em] uppercase text-gold mb-6 relative z-10">
-          The question that changes everything
+          AI-Powered Therapy Support · UK Based
         </div>
         
         <h1 id="hero-title" className="font-cinzel font-black text-6xl md:text-8xl lg:text-9xl tracking-[0.15em] leading-none text-transparent bg-clip-text bg-gradient-to-b from-gold-bright via-gold to-gold/40 mb-6">
@@ -62,15 +62,15 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
         </h1>
 
         <p className="font-cormorant text-lg md:text-xl text-gold/80 mb-8 relative z-10">
-          &ldquo;I thought I had a career problem. By depth 7, I realised I had a permission problem.&rdquo;
+          &ldquo;Between my weekly sessions, Sorca helped me actually do my homework. My therapist noticed the difference.&rdquo;
         </p>
         
         <p className="font-cormorant italic text-xl md:text-2xl text-text-mid max-w-2xl mb-6 leading-relaxed">
-          You come with a problem. Sorca asks questions — devastating, surgical, impossibly precise questions — until you find the truth yourself. No advice. No answers. Just the question you&apos;ve been avoiding.
+          The AI companion for people in therapy. Sorca fills the gap between sessions — helping you complete homework, track your mood, and arrive at your next appointment ready to go deeper.
         </p>
 
         <p className="font-courier text-[10px] tracking-[0.2em] uppercase text-text-muted mb-8 max-w-lg">
-          Used by therapists, coaches, founders, and anyone brave enough to face themselves
+          NHS-aligned outcome measures · GDPR compliant · UK data hosting · Used by therapists across the UK
         </p>
 
         {/* Social Proof */}
@@ -87,8 +87,8 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
             ))}
           </div>
           <div className="text-left">
-            <div className="font-cinzel text-sm text-gold">3,000+ seekers</div>
-            <div className="font-courier text-[10px] text-text-muted tracking-wider">Average depth reached: 8.4</div>
+            <div className="font-cinzel text-sm text-gold">3,000+ patients supported</div>
+            <div className="font-courier text-[10px] text-text-muted tracking-wider">75% homework completion rate</div>
           </div>
         </div>
 

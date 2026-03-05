@@ -7,10 +7,11 @@ import type { IconProps } from '@/components/icons';
 
 const THERAPY_FEATURES: { Icon: ComponentType<IconProps>; title: string; desc: string; forPatient: boolean; forTherapist?: boolean }[] = [
   {
-    Icon: SessionIcon,
-    title: 'Session Debrief',
-    desc: "Anchor your therapy session's key insight before it fades. One question, one moment, remembered forever.",
+    Icon: ChartIcon,
+    title: 'PHQ-9 & GAD-7 Tracking',
+    desc: 'NHS-standard outcome measures built in. Track your depression and anxiety scores over time with validated questionnaires.',
     forPatient: true,
+    forTherapist: true,
   },
   {
     Icon: HomeworkIcon,
@@ -20,35 +21,35 @@ const THERAPY_FEATURES: { Icon: ComponentType<IconProps>; title: string; desc: s
   },
   {
     Icon: PrimerIcon,
-    title: 'Pre-Session Primer',
-    desc: "What do you most want to say today? Sorca asks 1 hour before your session so you arrive ready.",
-    forPatient: true,
-  },
-  {
-    Icon: AnchorIcon,
-    title: 'Coping Anchors',
-    desc: 'Store the techniques your therapist teaches. Access them instantly when you need grounding.',
-    forPatient: true,
-  },
-  {
-    Icon: ChartIcon,
-    title: 'Week Summary',
-    desc: 'Every Sunday, a one-page digest of what you processed. You read it. Your therapist reads it. Both arrive knowing something true.',
+    title: 'Daily Mood Check-ins',
+    desc: 'Quick daily mood tracking with personalised insights. Patterns shared with your therapist (with consent).',
     forPatient: true,
     forTherapist: true,
   },
   {
+    Icon: AnchorIcon,
+    title: 'Grounding & Coping Tools',
+    desc: 'Evidence-based techniques like box breathing, body scans, and 5-4-3-2-1 grounding. Access them instantly when you need support.',
+    forPatient: true,
+  },
+  {
+    Icon: BookIcon,
+    title: 'Psychoeducation Library',
+    desc: 'Learn about CBT, anxiety, depression, and sleep hygiene. Bite-sized content approved by clinical psychologists.',
+    forPatient: true,
+  },
+  {
     Icon: SafeIcon,
-    title: 'Safe Messaging Mode',
-    desc: 'When distress escalates, Sorca shifts to grounding. No depth beyond level 3. Crisis resources always visible.',
+    title: 'Relapse Prevention Plan',
+    desc: 'Build your personal toolkit: warning signs, coping strategies, support network, and reasons to stay well.',
     forPatient: true,
   },
 ];
 
 const STATS = [
   { value: '75%', label: 'Homework completion with AI support', source: 'NHS UK Study, 2025' },
-  { value: '6 days', label: 'Between weekly therapy sessions', source: 'Where Sorca lives' },
-  { value: '~100M', label: 'People in therapy without between-session support', source: 'Global estimate' },
+  { value: 'PHQ-9', label: 'NHS-standard depression measure', source: 'IAPT compliant' },
+  { value: 'GAD-7', label: 'NHS-standard anxiety measure', source: 'IAPT compliant' },
 ];
 
 export function TherapySection() {
@@ -67,13 +68,13 @@ export function TherapySection() {
       </div>
 
       <h2 id="therapy-heading" className="font-cinzel font-semibold text-3xl md:text-5xl mb-6 text-text-main">
-        The Space Between <em className="font-cormorant italic font-light text-teal-400">Sessions</em>
+        NHS-Aligned <em className="font-cormorant italic font-light text-teal-400">Therapy Support</em>
       </h2>
 
       <p className="text-lg text-text-mid leading-relaxed max-w-3xl mb-12">
-        Therapy is one hour a week. The other 167 hours, people are on their own — with the thoughts that came up, 
-        the homework they probably won&apos;t do, and no one to ask them the follow-up question. 
-        <strong className="text-teal-400"> That gap is where Sorca belongs.</strong>
+        Sorca bridges the gap between weekly therapy sessions with NHS-standard outcome measures, 
+        evidence-based coping tools, and AI-powered homework support. 
+        <strong className="text-teal-400">Built for UK therapists and their patients.</strong>
       </p>
 
       {/* Stats */}

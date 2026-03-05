@@ -494,8 +494,21 @@ export function TherapistDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4"
+          className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4"
         >
+          <a
+            href="/dashboard/outcomes"
+            className="bg-surface border border-border rounded-lg p-4 hover:border-teal-500/30 transition-colors group"
+          >
+            <svg className="w-6 h-6 mb-2 text-teal-400/70 group-hover:text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <h3 className="font-cinzel text-sm text-text-main group-hover:text-teal-400 transition-colors">
+              Outcome Measures
+            </h3>
+            <p className="text-[10px] text-text-muted">PHQ-9 & GAD-7 tracking</p>
+          </a>
+
           <a
             href="/dashboard/homework"
             className="bg-surface border border-border rounded-lg p-4 hover:border-violet-500/30 transition-colors group"
@@ -504,7 +517,7 @@ export function TherapistDashboard() {
             <h3 className="font-cinzel text-sm text-text-main group-hover:text-violet-400 transition-colors">
               Assign Homework
             </h3>
-            <p className="text-[10px] text-text-muted">Set conversational homework for clients</p>
+            <p className="text-[10px] text-text-muted">Set conversational homework</p>
           </a>
 
           <a
@@ -526,7 +539,7 @@ export function TherapistDashboard() {
             <h3 className="font-cinzel text-sm text-text-main group-hover:text-gold transition-colors">
               Practice Settings
             </h3>
-            <p className="text-[10px] text-text-muted">Manage your practice account</p>
+            <p className="text-[10px] text-text-muted">Manage your practice</p>
           </a>
         </motion.div>
 

@@ -17,10 +17,19 @@ export function Footer() {
         SORCA
       </div>
       <p className="font-cormorant italic text-sm text-text-muted mb-6 max-w-md mx-auto">
-        The AI that never gives answers — only the questions you&apos;ve been avoiding.
+        AI-powered therapy support for patients and therapists across the UK.
       </p>
-      <p className="text-xs text-text-muted tracking-[0.1em] mb-8">© {new Date().getFullYear()} Sorca. All rights reserved.</p>
+      <p className="text-xs text-text-muted tracking-[0.1em] mb-8">© {new Date().getFullYear()} Sorca. All rights reserved. UK Data Hosting · GDPR Compliant</p>
       
+      <nav className="flex flex-wrap justify-center gap-6 mb-6" aria-label="Main navigation">
+        <Link href="/refer" className="text-xs text-teal-400 hover:text-teal-300 transition-colors font-courier tracking-widest uppercase">
+          Self-Referral
+        </Link>
+        <Link href="/for-therapists" className="text-xs text-text-muted hover:text-gold transition-colors font-courier tracking-widest uppercase">
+          For Therapists
+        </Link>
+      </nav>
+
       <nav className="flex justify-center gap-6" aria-label="Legal">
         <Link href="/terms" className="text-xs text-text-muted hover:text-gold transition-colors font-courier tracking-widest uppercase">
           Terms
