@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
-import { verifyAuth } from '@/lib/auth-middleware';
+import { verifyAuth, getAdminFirestore } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
-import { getAdminFirestore } from '@/lib/firebase-admin';
+import { isAdminConfigured } from '@/lib/firebase-admin';
 
 /**
  * Mirror Letter — Feature 13
@@ -49,6 +49,10 @@ export async function POST(req: Request) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: 'Service not configured' }, { status: 500 });
+    }
+
+    if (!isAdminConfigured()) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
     }
 
     const adminDb = getAdminFirestore();

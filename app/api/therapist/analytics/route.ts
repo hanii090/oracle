@@ -47,12 +47,6 @@ export async function GET(req: Request) {
 
     const db = getAdminFirestore();
 
-    // Verify therapist role
-    const therapistDoc = await db.collection('users').doc(therapistId).get();
-    if (!therapistDoc.exists || (therapistDoc.data()?.role !== 'therapist' && therapistDoc.data()?.tier !== 'practice')) {
-      return NextResponse.json({ error: 'Therapist access required' }, { status: 403 });
-    }
-
     // Get all active consents
     const consentsSnapshot = await db.collection('therapistConsent')
       .where('therapistId', '==', therapistId)

@@ -58,9 +58,6 @@ export async function POST(req: Request) {
     // Get therapist data for invite
     const therapistDoc = await db.collection('users').doc(therapistId).get();
     const therapistData = therapistDoc.data();
-    if (therapistData?.role !== 'therapist' && therapistData?.tier !== 'practice') {
-      return NextResponse.json({ error: 'Therapist access required' }, { status: 403 });
-    }
 
     // Check client limit (10 for practice tier)
     const existingConsents = await db.collection('therapistConsent')
@@ -193,8 +190,8 @@ export async function GET(req: Request) {
       });
     }
 
-    // Otherwise, require auth and list therapist's invites
-    const authResult = await verifyAuth(req);
+    // Otherwise, require therapist auth and list therapist's invites
+    const authResult = await verifyTherapist(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId: therapistId } = authResult;
 

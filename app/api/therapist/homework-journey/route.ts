@@ -102,7 +102,7 @@ export async function POST(req: Request) {
       .replace('{context}', clientContext || 'No specific context provided');
 
     const result = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
