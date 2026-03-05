@@ -356,19 +356,29 @@ function HomeContent() {
         />
       )}
 
-      {/* Therapist Dashboard Link */}
-      {isTherapist && !sessionStarted && (
+      {/* Dashboard Links */}
+      {!sessionStarted && user && (
         <a
-          href="/dashboard"
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-teal-500 text-void px-4 py-3 rounded-lg shadow-lg hover:bg-teal-400 transition-colors font-cinzel text-sm tracking-widest"
+          href={isTherapist ? "/dashboard" : "/user-dashboard"}
+          className={`fixed bottom-6 right-6 z-40 flex items-center gap-2 ${isTherapist ? 'bg-teal-500 hover:bg-teal-400' : 'bg-gold hover:bg-gold/90'} text-void px-4 py-3 rounded-lg shadow-lg transition-colors font-cinzel text-sm tracking-widest`}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            {isTherapist ? (
+              <>
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </>
+            ) : (
+              <>
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M3 9h18" />
+                <path d="M9 21V9" />
+              </>
+            )}
           </svg>
-          Dashboard
+          {isTherapist ? 'Practice Dashboard' : 'My Dashboard'}
         </a>
       )}
     </main>

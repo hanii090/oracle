@@ -76,13 +76,7 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
         {/* Social Proof */}
         <div className="flex items-center gap-6 mb-12 relative z-10">
           <div className="flex -space-x-3">
-            {[
-              'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face',
-              'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face',
-              'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face',
-              'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face',
-              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&crop=face',
-            ].map((src, i) => (
+            {['/avatars/1.webp', '/avatars/2.webp', '/avatars/3.webp', '/avatars/4.webp', '/avatars/5.webp'].map((src, i) => (
               <img 
                 key={i}
                 src={src}
