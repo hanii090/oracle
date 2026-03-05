@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/auth-middleware';
+import { verifyTherapist, getAdminFirestore } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
-import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase-admin';
+import { isAdminConfigured } from '@/lib/firebase-admin';
 
 /**
  * Audit Export API — generates compliance reports for therapists
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
   const log = createLogger({ route: '/api/therapist/audit-export', correlationId: crypto.randomUUID() });
 
   try {
-    const authResult = await verifyAuth(req);
+    const authResult = await verifyTherapist(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId: therapistId } = authResult;
 

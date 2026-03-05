@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/auth-middleware';
+import { verifyTherapist, getAdminFirestore } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
-import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase-admin';
+import { isAdminConfigured } from '@/lib/firebase-admin';
 
 /**
  * Safe Mode API — allows therapists to toggle safe mode for high-risk clients
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   const log = createLogger({ route: '/api/therapist/safe-mode', correlationId: crypto.randomUUID() });
 
   try {
-    const authResult = await verifyAuth(req);
+    const authResult = await verifyTherapist(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId: therapistId } = authResult;
 
@@ -104,7 +104,7 @@ export async function GET(req: Request) {
   const log = createLogger({ route: '/api/therapist/safe-mode', correlationId: crypto.randomUUID() });
 
   try {
-    const authResult = await verifyAuth(req);
+    const authResult = await verifyTherapist(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 

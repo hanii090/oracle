@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/auth-middleware';
+import { verifyTherapist } from '@/lib/auth-middleware';
 import { HOMEWORK_TEMPLATES, TEMPLATE_CATEGORIES, getTemplatesByCategory, getTemplateById } from '@/lib/homework-templates';
 
 /**
@@ -12,7 +12,7 @@ import { HOMEWORK_TEMPLATES, TEMPLATE_CATEGORIES, getTemplatesByCategory, getTem
 
 export async function GET(req: Request) {
   try {
-    const authResult = await verifyAuth(req);
+    const authResult = await verifyTherapist(req);
     if (authResult instanceof NextResponse) return authResult;
 
     const url = new URL(req.url);

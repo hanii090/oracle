@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/auth-middleware';
+import { verifyTherapist, getAdminFirestore } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
-import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase-admin';
+import { isAdminConfigured } from '@/lib/firebase-admin';
 
 export async function GET(req: Request) {
   const log = createLogger({ route: '/api/therapist/dashboard', correlationId: crypto.randomUUID() });
 
   try {
-    const authResult = await verifyAuth(req);
+    const authResult = await verifyTherapist(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 

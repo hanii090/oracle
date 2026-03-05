@@ -70,6 +70,12 @@ export function UserDashboard() {
   const [showCapsuleModal, setShowCapsuleModal] = useState(false);
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAddAnchor, setShowAddAnchor] = useState(false);
+  const [newAnchorName, setNewAnchorName] = useState('');
+  const [newAnchorTechnique, setNewAnchorTechnique] = useState('');
+  const [savingAnchor, setSavingAnchor] = useState(false);
+  const [consents, setConsents] = useState<Array<{ id: string; therapistName: string; permissions: Record<string, boolean>; createdAt: string }>>([]);
+  const [loadingConsents, setLoadingConsents] = useState(false);
   const [summaries, setSummaries] = useState<WeekSummary[]>([]);
   const [homework, setHomework] = useState<HomeworkAssignment[]>([]);
   const [anchors, setAnchors] = useState<CopingAnchor[]>([]);
@@ -151,6 +157,60 @@ export function UserDashboard() {
     const endDate = new Date(end);
     return `${startDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
   };
+
+  const handleSaveAnchor = async () => {
+    if (!newAnchorName.trim() || !newAnchorTechnique.trim()) return;
+    setSavingAnchor(true);
+    try {
+      const token = await getIdToken();
+      const res = await fetch('/api/coping-anchor', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          name: newAnchorName,
+          technique: newAnchorTechnique,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAnchors(prev => [...prev, data.anchor]);
+        setNewAnchorName('');
+        setNewAnchorTechnique('');
+        setShowAddAnchor(false);
+      }
+    } catch (e) {
+      console.error('Failed to save anchor:', e);
+    } finally {
+      setSavingAnchor(false);
+    }
+  };
+
+  const loadConsents = async () => {
+    setLoadingConsents(true);
+    try {
+      const token = await getIdToken();
+      const res = await fetch('/api/consent', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setConsents(data.consents || []);
+      }
+    } catch (e) {
+      console.error('Failed to load consents:', e);
+    } finally {
+      setLoadingConsents(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'consent' && user) {
+      loadConsents();
+    }
+  }, [activeTab, user]);
 
   if (authLoading || loading) {
     return (
@@ -390,10 +450,58 @@ export function UserDashboard() {
 
           {activeTab === 'anchors' && (
             <div>
-              <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
-                Coping Anchors
-              </h2>
-              {anchors.length === 0 ? (
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase">
+                  Coping Anchors
+                </h2>
+                {anchors.length > 0 && !showAddAnchor && (
+                  <button
+                    onClick={() => setShowAddAnchor(true)}
+                    className="text-xs text-teal-400 hover:text-teal-300 font-cinzel tracking-widest"
+                  >
+                    + Add Anchor
+                  </button>
+                )}
+              </div>
+
+              {showAddAnchor && (
+                <div className="bg-raised border border-teal-500/30 rounded-lg p-4 mb-4">
+                  <h3 className="font-cinzel text-sm text-teal-400 mb-3">Add New Anchor</h3>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={newAnchorName}
+                      onChange={(e) => setNewAnchorName(e.target.value)}
+                      placeholder="Anchor name (e.g., Box Breathing)"
+                      className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal-500/50 focus:outline-none"
+                    />
+                    <textarea
+                      value={newAnchorTechnique}
+                      onChange={(e) => setNewAnchorTechnique(e.target.value)}
+                      placeholder="Describe the technique..."
+                      rows={3}
+                      className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal-500/50 focus:outline-none resize-none"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleSaveAnchor}
+                        disabled={savingAnchor || !newAnchorName.trim() || !newAnchorTechnique.trim()}
+                        className="px-4 py-2 bg-teal-500 text-void font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {savingAnchor ? 'Saving...' : 'Save Anchor'}
+                      </button>
+                      <button
+                        onClick={() => { setShowAddAnchor(false); setNewAnchorName(''); setNewAnchorTechnique(''); }}
+                        className="px-4 py-2 border border-border text-text-muted font-cinzel text-xs tracking-widest rounded-lg hover:border-teal-500/30"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {anchors.length === 0 && !showAddAnchor ? (
                 <div className="text-center py-12">
                   <AnchorIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
                   <p className="text-sm text-text-muted mb-3">No coping anchors saved yet.</p>
@@ -402,14 +510,14 @@ export function UserDashboard() {
                     <p>1. During a session, click the ⚓ anchor button when you feel grounded</p>
                     <p>2. Or manually add techniques your therapist has taught you</p>
                   </div>
-                  <Link
-                    href="/?anchor=true"
+                  <button
+                    onClick={() => setShowAddAnchor(true)}
                     className="inline-block px-6 py-3 border border-teal-500 text-teal-400 font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-500/10"
                   >
                     Add Your First Anchor
-                  </Link>
+                  </button>
                 </div>
-              ) : (
+              ) : anchors.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {anchors.map((anchor) => (
                     <div key={anchor.id} className="p-4 bg-raised border border-border rounded-lg">
@@ -428,18 +536,52 @@ export function UserDashboard() {
               <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
                 Therapist Consent
               </h2>
-              <div className="text-center py-8">
-                <ConsentIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
-                <p className="text-sm text-text-muted mb-4">
-                  Manage who can see your Sorca data.
-                </p>
-                <Link
-                  href="/?consent=true"
-                  className="inline-block px-6 py-3 border border-gold text-gold font-cinzel text-xs tracking-widest rounded-lg hover:bg-gold/10"
-                >
-                  Manage Consent
-                </Link>
-              </div>
+              <p className="text-sm text-text-muted mb-6">
+                Manage who can see your Sorca data. Your therapist needs your consent to view your sessions and progress.
+              </p>
+
+              {loadingConsents ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : consents.length === 0 ? (
+                <div className="text-center py-8">
+                  <ConsentIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
+                  <p className="text-sm text-text-muted mb-4">
+                    No active consents. If your therapist has sent you an invite link, click it to grant consent.
+                  </p>
+                  <p className="text-xs text-text-muted/70">
+                    Your therapist will share a link like: sorca.life/consent?invite=XXXXXX
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {consents.map((consent) => (
+                    <div key={consent.id} className="bg-raised border border-border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-cinzel text-sm text-gold">{consent.therapistName}</h3>
+                        <span className="text-[10px] text-text-muted">
+                          Since {new Date(consent.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {consent.permissions.shareWeekSummary && (
+                          <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded">Week Summary</span>
+                        )}
+                        {consent.permissions.shareHomeworkProgress && (
+                          <span className="text-[10px] bg-violet-500/10 text-violet-400 px-2 py-1 rounded">Homework</span>
+                        )}
+                        {consent.permissions.sharePatternAlerts && (
+                          <span className="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-1 rounded">Alerts</span>
+                        )}
+                        {consent.permissions.shareMoodData && (
+                          <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded">Mood</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </motion.div>

@@ -38,6 +38,7 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  profileLoaded: boolean;
   authError: string | null;
   sessions: SessionSummary[];
   signIn: () => Promise<void>;
@@ -340,10 +341,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearAuthError = () => setAuthError(null);
 
-  const isTherapist = profile?.role === 'therapist' || profile?.tier === 'practice';
+  const profileLoaded = !loading && user !== null && profile !== null;
+  const isTherapist = profileLoaded && (profile?.role === 'therapist' || profile?.tier === 'practice');
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, authError, sessions, signIn, logOut, getIdToken, incrementSession, clearAuthError, saveSession, loadSessions, verifySubscription, isTherapist }}>
+    <AuthContext.Provider value={{ user, profile, loading, profileLoaded, authError, sessions, signIn, logOut, getIdToken, incrementSession, clearAuthError, saveSession, loadSessions, verifySubscription, isTherapist }}>
       {children}
     </AuthContext.Provider>
   );

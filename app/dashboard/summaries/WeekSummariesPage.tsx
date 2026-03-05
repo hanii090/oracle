@@ -26,7 +26,7 @@ interface WeekSummary {
 }
 
 export function WeekSummariesPage() {
-  const { user, isTherapist, loading: authLoading, getIdToken } = useAuth();
+  const { user, profileLoaded, isTherapist, loading: authLoading, getIdToken } = useAuth();
   const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -71,18 +71,23 @@ export function WeekSummariesPage() {
   }, [getIdToken]);
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (authLoading) return;
+    
+    if (!user) {
       router.push('/');
       return;
     }
-    if (!authLoading && user && !isTherapist) {
+    
+    // Wait for profile to load before making therapist decision
+    if (!profileLoaded) return;
+    
+    if (!isTherapist) {
       router.push('/');
       return;
     }
-    if (user && isTherapist) {
-      loadClients();
-    }
-  }, [user, isTherapist, authLoading, router, loadClients]);
+    
+    loadClients();
+  }, [user, profileLoaded, isTherapist, authLoading, router, loadClients]);
 
   useEffect(() => {
     if (selectedClient) {

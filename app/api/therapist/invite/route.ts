@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/auth-middleware';
+import { verifyAuth, verifyTherapist, getAdminFirestore } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
-import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase-admin';
+import { isAdminConfigured } from '@/lib/firebase-admin';
 
 /**
  * Client Invite API — allows therapists to invite clients via email
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   const log = createLogger({ route: '/api/therapist/invite', correlationId: crypto.randomUUID() });
 
   try {
-    const authResult = await verifyAuth(req);
+    const authResult = await verifyTherapist(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId: therapistId } = authResult;
 
@@ -55,12 +55,8 @@ export async function POST(req: Request) {
 
     const db = getAdminFirestore();
 
-    // Verify therapist role and tier
+    // Get therapist data for invite
     const therapistDoc = await db.collection('users').doc(therapistId).get();
-    if (!therapistDoc.exists) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
     const therapistData = therapistDoc.data();
     if (therapistData?.role !== 'therapist' && therapistData?.tier !== 'practice') {
       return NextResponse.json({ error: 'Therapist access required' }, { status: 403 });
@@ -157,15 +153,50 @@ export async function GET(req: Request) {
   const log = createLogger({ route: '/api/therapist/invite', correlationId: crypto.randomUUID() });
 
   try {
-    const authResult = await verifyAuth(req);
-    if (authResult instanceof NextResponse) return authResult;
-    const { userId: therapistId } = authResult;
+    const url = new URL(req.url);
+    const inviteCode = url.searchParams.get('code');
 
     if (!isAdminConfigured()) {
       return NextResponse.json({ invites: [] });
     }
 
     const db = getAdminFirestore();
+
+    // If invite code is provided, fetch that specific invite (no auth required - for clients)
+    if (inviteCode) {
+      const inviteSnapshot = await db.collection('clientInvites')
+        .where('inviteCode', '==', inviteCode.toUpperCase())
+        .where('status', '==', 'pending')
+        .limit(1)
+        .get();
+
+      if (inviteSnapshot.empty) {
+        return NextResponse.json({ error: 'Invalid or expired invite code' }, { status: 404 });
+      }
+
+      const data = inviteSnapshot.docs[0].data();
+      
+      // Check if expired
+      if (new Date(data.expiresAt) < new Date()) {
+        return NextResponse.json({ error: 'This invite has expired' }, { status: 410 });
+      }
+
+      return NextResponse.json({
+        invite: {
+          id: data.id,
+          therapistName: data.therapistName,
+          therapistEmail: data.therapistEmail,
+          message: data.message,
+          defaultPermissions: data.defaultPermissions,
+          expiresAt: data.expiresAt,
+        },
+      });
+    }
+
+    // Otherwise, require auth and list therapist's invites
+    const authResult = await verifyAuth(req);
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId: therapistId } = authResult;
 
     // Get all invites for this therapist
     const invitesSnapshot = await db.collection('clientInvites')
@@ -211,7 +242,7 @@ export async function DELETE(req: Request) {
   const log = createLogger({ route: '/api/therapist/invite', correlationId: crypto.randomUUID() });
 
   try {
-    const authResult = await verifyAuth(req);
+    const authResult = await verifyTherapist(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId: therapistId } = authResult;
 

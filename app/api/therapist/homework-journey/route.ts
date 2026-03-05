@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
-import { verifyAuth } from '@/lib/auth-middleware';
+import { verifyTherapist, getAdminFirestore } from '@/lib/auth-middleware';
 import { sanitizeMessage } from '@/lib/safety';
 import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
-import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase-admin';
+import { isAdminConfigured } from '@/lib/firebase-admin';
 
 /**
  * Homework Journey Generator API
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
   const log = createLogger({ route: '/api/therapist/homework-journey', correlationId: crypto.randomUUID() });
 
   try {
-    const authResult = await verifyAuth(req);
+    const authResult = await verifyTherapist(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId: therapistId } = authResult;
 

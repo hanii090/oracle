@@ -40,6 +40,95 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     // Determine request type
+    // Accept invite by code
+    if (body.inviteCode) {
+      const { inviteCode, permissions } = body;
+
+      if (!isAdminConfigured()) {
+        return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+      }
+
+      const db = getAdminFirestore();
+
+      // Find the invite
+      const inviteSnapshot = await db.collection('clientInvites')
+        .where('inviteCode', '==', inviteCode.toUpperCase())
+        .where('status', '==', 'pending')
+        .limit(1)
+        .get();
+
+      if (inviteSnapshot.empty) {
+        return NextResponse.json({ error: 'Invalid or expired invite code' }, { status: 404 });
+      }
+
+      const inviteDoc = inviteSnapshot.docs[0];
+      const inviteData = inviteDoc.data();
+
+      // Check if expired
+      if (new Date(inviteData.expiresAt) < new Date()) {
+        return NextResponse.json({ error: 'This invite has expired' }, { status: 410 });
+      }
+
+      const therapistId = inviteData.therapistId;
+
+      // Check therapist's client limit
+      const therapistDoc = await db.collection('users').doc(therapistId).get();
+      const therapistData = therapistDoc.exists ? therapistDoc.data() : null;
+      const therapistTier = therapistData?.tier || 'free';
+
+      if (therapistTier === 'practice') {
+        const existingConsents = await db.collection('therapistConsent')
+          .where('therapistId', '==', therapistId)
+          .where('status', '==', 'active')
+          .get();
+
+        const CLIENT_LIMIT = 10;
+        if (existingConsents.size >= CLIENT_LIMIT) {
+          return NextResponse.json(
+            { error: 'Your therapist has reached their client limit.' },
+            { status: 403 }
+          );
+        }
+      }
+
+      const consentId = crypto.randomUUID();
+      const now = new Date().toISOString();
+
+      const consent = {
+        id: consentId,
+        patientId: userId,
+        therapistId,
+        therapistName: inviteData.therapistName,
+        therapistEmail: inviteData.therapistEmail || null,
+        permissions: permissions || inviteData.defaultPermissions,
+        status: 'active',
+        grantedAt: now,
+        updatedAt: now,
+        revokedAt: null,
+        inviteId: inviteData.id,
+      };
+
+      await db.collection('therapistConsent').doc(consentId).set(consent);
+
+      // Update invite status
+      await inviteDoc.ref.update({
+        status: 'accepted',
+        acceptedAt: now,
+        acceptedBy: userId,
+      });
+
+      log.info('Consent granted via invite', { userId, therapistId, consentId });
+
+      return NextResponse.json({
+        consent: {
+          id: consentId,
+          therapistName: inviteData.therapistName,
+          permissions: consent.permissions,
+        },
+        message: 'Consent granted successfully',
+      });
+    }
+
     if (body.therapistId) {
       // Grant new consent
       const parsed = grantConsentSchema.safeParse(body);

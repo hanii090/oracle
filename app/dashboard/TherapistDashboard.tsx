@@ -58,7 +58,7 @@ interface DashboardData {
 }
 
 export function TherapistDashboard() {
-  const { user, isTherapist, loading: authLoading, getIdToken } = useAuth();
+  const { user, profile, profileLoaded, isTherapist, loading: authLoading, getIdToken } = useAuth();
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,6 +66,12 @@ export function TherapistDashboard() {
   const [showAlertPanel, setShowAlertPanel] = useState(false);
   const [sessionPrep, setSessionPrep] = useState<{ clientName: string; prepBrief: string; data: Record<string, unknown> } | null>(null);
   const [prepLoading, setPrepLoading] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteName, setInviteName] = useState('');
+  const [inviteSubmitting, setInviteSubmitting] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   const loadSessionPrep = async (clientId: string) => {
     setPrepLoading(true);
@@ -116,17 +122,18 @@ export function TherapistDashboard() {
       return;
     }
     
+    // Wait for profile to load before making therapist decision
+    if (!profileLoaded) return;
+    
     // Redirect non-therapists to user dashboard
-    if (user && !isTherapist) {
+    if (!isTherapist) {
       router.push('/user-dashboard');
       return;
     }
     
     // Load dashboard for therapists
-    if (user && isTherapist) {
-      loadDashboard();
-    }
-  }, [user, isTherapist, authLoading, router, loadDashboard]);
+    loadDashboard();
+  }, [user, isTherapist, profileLoaded, authLoading, router, loadDashboard]);
 
   if (authLoading || loading) {
     return (
@@ -139,6 +146,50 @@ export function TherapistDashboard() {
   if (!isTherapist) {
     return null;
   }
+
+  const handleCreateInvite = async () => {
+    if (!inviteEmail.trim()) return;
+    setInviteSubmitting(true);
+    try {
+      const token = await getIdToken();
+      const res = await fetch('/api/therapist/invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          clientEmail: inviteEmail,
+          clientName: inviteName || undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setInviteLink(data.invite.inviteLink);
+      }
+    } catch (e) {
+      console.error('Failed to create invite:', e);
+    } finally {
+      setInviteSubmitting(false);
+    }
+  };
+
+  const handleCopyInviteLink = async () => {
+    if (inviteLink) {
+      await navigator.clipboard.writeText(inviteLink);
+      setInviteCopied(true);
+      setTimeout(() => setInviteCopied(false), 2000);
+    }
+  };
+
+  const closeInviteModal = () => {
+    setShowInviteModal(false);
+    setInviteEmail('');
+    setInviteName('');
+    setInviteLink(null);
+    setInviteCopied(false);
+    loadDashboard();
+  };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -423,10 +474,16 @@ export function TherapistDashboard() {
               <div className="text-center py-12">
                 <TherapistIcon size={48} className="mx-auto mb-4 text-text-muted/50" />
                 <h3 className="font-cinzel text-sm text-text-main mb-2">No clients yet</h3>
-                <p className="text-xs text-text-muted max-w-sm mx-auto">
+                <p className="text-xs text-text-muted max-w-sm mx-auto mb-4">
                   When your clients grant you consent in Sorca, they&apos;ll appear here. 
                   Share the link to your practice and invite them to connect.
                 </p>
+                <button
+                  onClick={() => setShowInviteModal(true)}
+                  className="px-4 py-2 bg-teal-500 text-void font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-400"
+                >
+                  Invite Your First Client
+                </button>
               </div>
             )}
           </motion.div>
@@ -513,6 +570,83 @@ export function TherapistDashboard() {
         isOpen={showAlertPanel} 
         onClose={() => setShowAlertPanel(false)} 
       />
+
+      {/* Invite Client Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-void/80 backdrop-blur-sm" onClick={closeInviteModal}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-teal-500/30 rounded-lg p-6 max-w-md w-full mx-4"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-cinzel text-lg text-teal-400">Invite Client</h2>
+              <button onClick={closeInviteModal} className="text-text-muted hover:text-gold">✕</button>
+            </div>
+
+            {inviteLink ? (
+              <div>
+                <p className="text-sm text-text-mid mb-4">
+                  Share this link with your client to connect:
+                </p>
+                <div className="flex items-center gap-2 mb-4">
+                  <input
+                    type="text"
+                    value={inviteLink}
+                    readOnly
+                    className="flex-1 bg-raised border border-border rounded px-3 py-2 text-xs text-text-main"
+                  />
+                  <button
+                    onClick={handleCopyInviteLink}
+                    className="px-3 py-2 bg-teal-500 text-void rounded hover:bg-teal-400 text-xs font-cinzel"
+                  >
+                    {inviteCopied ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+                <button
+                  onClick={closeInviteModal}
+                  className="w-full py-2 border border-border text-text-muted font-cinzel text-xs tracking-widest rounded-lg hover:border-teal-500/30"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="Client email address"
+                  className="w-full bg-raised border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal-500/50 focus:outline-none"
+                />
+                <input
+                  type="text"
+                  value={inviteName}
+                  onChange={(e) => setInviteName(e.target.value)}
+                  placeholder="Client name (optional)"
+                  className="w-full bg-raised border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal-500/50 focus:outline-none"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCreateInvite}
+                    disabled={inviteSubmitting || !inviteEmail.trim()}
+                    className="flex-1 py-2 bg-teal-500 text-void font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {inviteSubmitting ? 'Creating...' : 'Create Invite'}
+                  </button>
+                  <button
+                    onClick={closeInviteModal}
+                    className="px-4 py-2 border border-border text-text-muted font-cinzel text-xs tracking-widest rounded-lg hover:border-teal-500/30"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      )}
     </main>
   );
 }

@@ -73,3 +73,52 @@ export async function verifyAuth(req: Request): Promise<AuthResult | NextRespons
     );
   }
 }
+
+interface TherapistAuthResult extends AuthResult {
+  tier: string;
+}
+
+/**
+ * Verify that the authenticated user is a therapist (has practice tier or therapist role).
+ * Returns the user ID and tier, or a NextResponse error.
+ *
+ * Usage in API routes:
+ * ```ts
+ * const auth = await verifyTherapist(req);
+ * if (auth instanceof NextResponse) return auth;
+ * const { userId, tier } = auth;
+ * ```
+ */
+export async function verifyTherapist(req: Request): Promise<TherapistAuthResult | NextResponse> {
+  const authResult = await verifyAuth(req);
+  if (authResult instanceof NextResponse) return authResult;
+
+  const { userId, email } = authResult;
+
+  if (!isAdminConfigured()) {
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+  }
+
+  const db = getAdminFirestore();
+  const userDoc = await db.collection('users').doc(userId).get();
+
+  if (!userDoc.exists) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  }
+
+  const userData = userDoc.data();
+  const isTherapist = userData?.role === 'therapist' || userData?.tier === 'practice';
+
+  if (!isTherapist) {
+    return NextResponse.json(
+      { error: 'Therapist access required. You must have a practice subscription.' },
+      { status: 403 }
+    );
+  }
+
+  return {
+    userId,
+    email,
+    tier: userData?.tier || 'practice',
+  };
+}

@@ -70,7 +70,7 @@ const HOMEWORK_TEMPLATES: HomeworkTemplate[] = [
 ];
 
 export function HomeworkAssignmentPage() {
-  const { user, isTherapist, loading: authLoading, getIdToken } = useAuth();
+  const { user, profileLoaded, isTherapist, loading: authLoading, getIdToken } = useAuth();
   const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,18 +103,23 @@ export function HomeworkAssignmentPage() {
   }, [getIdToken]);
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (authLoading) return;
+    
+    if (!user) {
       router.push('/');
       return;
     }
-    if (!authLoading && user && !isTherapist) {
+    
+    // Wait for profile to load before making therapist decision
+    if (!profileLoaded) return;
+    
+    if (!isTherapist) {
       router.push('/');
       return;
     }
-    if (user && isTherapist) {
-      loadClients();
-    }
-  }, [user, isTherapist, authLoading, router, loadClients]);
+    
+    loadClients();
+  }, [user, profileLoaded, isTherapist, authLoading, router, loadClients]);
 
   const generatePreview = async () => {
     const topic = selectedTemplate?.title || customTopic;
