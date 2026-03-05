@@ -38,34 +38,66 @@ export function VoiceSorca({ onTranscript, sorcaText, enabled, onSilenceDetected
 
   // Check support synchronously via lazy initializer (avoids setState in effect)
   const isSupported = useRef(false);
+  const voicesLoadedRef = useRef(false);
+  const [voicesReady, setVoicesReady] = useState(false);
+
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     isSupported.current = !!SpeechRecognition && 'speechSynthesis' in window;
+
+    // Fix voice distortion: Wait for voices to load before speaking
+    if ('speechSynthesis' in window) {
+      const loadVoices = () => {
+        const voices = speechSynthesis.getVoices();
+        if (voices.length > 0) {
+          voicesLoadedRef.current = true;
+          setVoicesReady(true);
+        }
+      };
+
+      // Try to load voices immediately
+      loadVoices();
+
+      // Also listen for voiceschanged event (required for some browsers)
+      speechSynthesis.onvoiceschanged = loadVoices;
+
+      return () => {
+        speechSynthesis.onvoiceschanged = null;
+      };
+    }
   }, []);
 
-  // Speak Sorca's questions
+  // Speak Sorca's questions - fixed to wait for voices and handle AudioContext properly
   useEffect(() => {
-    if (!enabled || !sorcaText || !('speechSynthesis' in window)) return;
+    if (!enabled || !sorcaText || !('speechSynthesis' in window) || !voicesReady) return;
 
-    const utterance = new SpeechSynthesisUtterance(sorcaText);
-    utterance.rate = 0.85;
-    utterance.pitch = 0.8;
-    utterance.volume = 0.7;
+    // Cancel any ongoing speech first to prevent overlap/distortion
+    speechSynthesis.cancel();
 
-    // Try to use a deeper/more mysterious voice
-    const voices = speechSynthesis.getVoices();
-    const preferred = voices.find(v => v.name.includes('Daniel') || v.name.includes('Samantha') || v.lang === 'en-GB');
-    if (preferred) utterance.voice = preferred;
+    // Small delay to ensure clean audio state
+    const speakTimeout = setTimeout(() => {
+      const utterance = new SpeechSynthesisUtterance(sorcaText);
+      utterance.rate = 0.85;
+      utterance.pitch = 0.8;
+      utterance.volume = 0.7;
 
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
+      // Try to use a deeper/more mysterious voice
+      const voices = speechSynthesis.getVoices();
+      const preferred = voices.find(v => v.name.includes('Daniel') || v.name.includes('Samantha') || v.lang === 'en-GB');
+      if (preferred) utterance.voice = preferred;
 
-    speechSynthesis.speak(utterance);
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+
+      speechSynthesis.speak(utterance);
+    }, 100);
 
     return () => {
+      clearTimeout(speakTimeout);
       speechSynthesis.cancel();
     };
-  }, [sorcaText, enabled]);
+  }, [sorcaText, enabled, voicesReady]);
 
   // Silence detection loop using AudioContext AnalyserNode
   const startSilenceDetection = useCallback(async () => {

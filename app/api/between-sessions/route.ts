@@ -143,17 +143,48 @@ export async function GET(req: Request) {
     const days = parseInt(url.searchParams.get('days') || '7');
     const contentId = url.searchParams.get('contentId');
 
-    // Return specific content
-    if (type === 'content' && contentId) {
-      const content = PSYCHOEDUCATION_CONTENT[contentId as keyof typeof PSYCHOEDUCATION_CONTENT];
-      if (!content) {
-        return NextResponse.json({ error: 'Content not found' }, { status: 404 });
-      }
-      return NextResponse.json({ content });
-    }
-
-    // Return all content
+    // Psychoeducation content requires Plus+ tier (philosopher, pro, practice)
+    // Grounding exercises remain free for all users
     if (type === 'content') {
+      // Check tier for psychoeducation content
+      if (!isAdminConfigured()) {
+        // If no DB, only return grounding exercises (free feature)
+        return NextResponse.json({
+          content: [],
+          exercises: GROUNDING_EXERCISES,
+          tierRequired: true,
+        });
+      }
+
+      const db = getAdminFirestore();
+      const userDoc = await db.doc(`users/${userId}`).get();
+      const tier = userDoc.exists ? userDoc.data()?.tier || 'free' : 'free';
+
+      // Free tier only gets grounding exercises
+      if (tier === 'free') {
+        if (contentId) {
+          return NextResponse.json(
+            { error: 'Psychoeducation library requires Patient Plus or higher subscription', exercises: GROUNDING_EXERCISES },
+            { status: 403 }
+          );
+        }
+        return NextResponse.json({
+          content: [],
+          exercises: GROUNDING_EXERCISES,
+          tierRequired: true,
+          message: 'Upgrade to Patient Plus to access the full psychoeducation library',
+        });
+      }
+
+      // Paid tiers get full content
+      if (contentId) {
+        const content = PSYCHOEDUCATION_CONTENT[contentId as keyof typeof PSYCHOEDUCATION_CONTENT];
+        if (!content) {
+          return NextResponse.json({ error: 'Content not found' }, { status: 404 });
+        }
+        return NextResponse.json({ content });
+      }
+
       return NextResponse.json({
         content: Object.values(PSYCHOEDUCATION_CONTENT),
         exercises: GROUNDING_EXERCISES,

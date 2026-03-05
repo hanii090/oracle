@@ -49,6 +49,20 @@ export async function POST(req: Request) {
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 
+    // Tier gating: Homework companion is a Plus+ feature (philosopher, pro, practice)
+    if (isAdminConfigured()) {
+      const db = getAdminFirestore();
+      const userDoc = await db.doc(`users/${userId}`).get();
+      const tier = userDoc.exists ? userDoc.data()?.tier || 'free' : 'free';
+      
+      if (tier === 'free') {
+        return NextResponse.json(
+          { error: 'Homework companion requires Patient Plus or higher subscription' },
+          { status: 403 }
+        );
+      }
+    }
+
     const body = await req.json();
     
     // Determine if this is a create or check-in request
@@ -158,6 +172,17 @@ export async function GET(req: Request) {
     }
 
     const db = getAdminFirestore();
+
+    // Tier gating: Homework companion is a Plus+ feature (philosopher, pro, practice)
+    const userDoc = await db.doc(`users/${userId}`).get();
+    const tier = userDoc.exists ? userDoc.data()?.tier || 'free' : 'free';
+    
+    if (tier === 'free') {
+      return NextResponse.json(
+        { error: 'Homework companion requires Patient Plus or higher subscription', assignments: [] },
+        { status: 403 }
+      );
+    }
 
     if (assignmentId) {
       // Get specific assignment

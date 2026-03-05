@@ -49,7 +49,17 @@ export async function GET(req: Request) {
       return NextResponse.json({ plan: null });
     }
 
+    // Tier gating: Relapse prevention is a Plus+ feature (philosopher, pro, practice)
     const db = getAdminFirestore();
+    const userDoc = await db.doc(`users/${userId}`).get();
+    const tier = userDoc.exists ? userDoc.data()?.tier || 'free' : 'free';
+    
+    if (tier === 'free') {
+      return NextResponse.json(
+        { error: 'Relapse prevention plan requires Patient Plus or higher subscription' },
+        { status: 403 }
+      );
+    }
     const planDoc = await db.collection('relapsePlans').doc(userId).get();
 
     if (!planDoc.exists) {
@@ -98,7 +108,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
     }
 
+    // Tier gating: Relapse prevention is a Plus+ feature (philosopher, pro, practice)
     const db = getAdminFirestore();
+    const userDoc = await db.doc(`users/${userId}`).get();
+    const tier = userDoc.exists ? userDoc.data()?.tier || 'free' : 'free';
+    
+    if (tier === 'free') {
+      return NextResponse.json(
+        { error: 'Relapse prevention plan requires Patient Plus or higher subscription' },
+        { status: 403 }
+      );
+    }
+
     const planRef = db.collection('relapsePlans').doc(userId);
     const existingDoc = await planRef.get();
     const existingPlan = existingDoc.exists ? existingDoc.data() as RelapsePlan : null;

@@ -14,8 +14,16 @@ export function BookIcon({ size = 24, strokeWidth = 1.5, className, ...props }: 
       className={className}
       {...props}
     >
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      {/* Open book with pages fanning - knowledge spreading */}
+      <path d="M12 6c-2 0-4 .5-6 1.5V19c2-.8 4-1 6-1" />
+      <path d="M12 6c2 0 4 .5 6 1.5V19c-2-.8-4-1-6-1" />
+      <path d="M12 6V18" strokeOpacity="0.4" />
+      {/* Light rays suggesting enlightenment */}
+      <path d="M12 3v1" strokeOpacity="0.5" />
+      <path d="M8 4l.5.8" strokeOpacity="0.4" />
+      <path d="M16 4l-.5.8" strokeOpacity="0.4" />
+      {/* Gentle bookmark */}
+      <path d="M15 8v4l-1.5-1-1.5 1V8" strokeOpacity="0.6" fill="none" />
     </svg>
   );
 }

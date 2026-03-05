@@ -33,6 +33,17 @@ export async function POST(req: Request) {
 
     const db = getAdminFirestore();
 
+    // Tier gating: Week summaries is a Plus+ feature (philosopher, pro, practice)
+    const userDoc = await db.doc(`users/${userId}`).get();
+    const tier = userDoc.exists ? userDoc.data()?.tier || 'free' : 'free';
+    
+    if (tier === 'free') {
+      return NextResponse.json(
+        { error: 'Week summaries require Patient Plus or higher subscription' },
+        { status: 403 }
+      );
+    }
+
     // Get this week's sessions
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const sessionsSnapshot = await db.collection('users')
@@ -169,6 +180,19 @@ export async function GET(req: Request) {
     }
 
     const db = getAdminFirestore();
+
+    // Tier gating for patient requests (therapist requests have their own consent checks)
+    if (!asTherapist) {
+      const userDoc = await db.doc(`users/${userId}`).get();
+      const tier = userDoc.exists ? userDoc.data()?.tier || 'free' : 'free';
+      
+      if (tier === 'free') {
+        return NextResponse.json(
+          { error: 'Week summaries require Patient Plus or higher subscription', summaries: [] },
+          { status: 403 }
+        );
+      }
+    }
 
     // If therapist requesting client data
     if (asTherapist && clientId) {

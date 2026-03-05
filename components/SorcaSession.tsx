@@ -683,7 +683,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
               <VoiceSorca
                 onTranscript={handleVoiceTranscript}
                 sorcaText={lastSorcaText}
-                enabled={profile?.tier !== "free"}
+                enabled={profile?.tier === "pro" || profile?.tier === "practice"}
                 onSilenceDetected={handleSilenceDetected}
                 onSilenceData={handleSilenceData}
               />

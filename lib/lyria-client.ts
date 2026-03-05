@@ -75,7 +75,15 @@ export class LyriaFoleyEngine {
 
     try {
       const ai = new GoogleGenAI({ apiKey });
+      
+      // Fix audio distortion: Create AudioContext with proper initialization
+      // AudioContext must be created after user interaction and resumed properly
       this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      
+      // Resume AudioContext if it's in suspended state (browser autoplay policy)
+      if (this.audioCtx.state === 'suspended') {
+        await this.audioCtx.resume();
+      }
 
       const keyInstruction = this.personalKey
         ? ` All music should be rooted in ${KEY_TO_MUSICAL[this.personalKey.key] || this.personalKey.key}, with ${this.personalKey.mode} mode.`
@@ -168,8 +176,19 @@ export class LyriaFoleyEngine {
     }
   }
 
-  private queueAudio(pcm: Float32Array) {
+  private async queueAudio(pcm: Float32Array) {
     if (!this.audioCtx) return;
+    
+    // Ensure AudioContext is running before playing audio
+    if (this.audioCtx.state === 'suspended') {
+      try {
+        await this.audioCtx.resume();
+      } catch {
+        // Context resume failed, skip this audio chunk
+        return;
+      }
+    }
+    
     const buffer = this.audioCtx.createBuffer(1, pcm.length, 24000);
     buffer.getChannelData(0).set(pcm);
     const source = this.audioCtx.createBufferSource();
@@ -178,7 +197,8 @@ export class LyriaFoleyEngine {
     
     const currentTime = this.audioCtx.currentTime;
     if (this.nextPlayTime < currentTime) {
-      this.nextPlayTime = currentTime;
+      // Add small buffer to prevent audio glitches from timing issues
+      this.nextPlayTime = currentTime + 0.01;
     }
     source.start(this.nextPlayTime);
     this.nextPlayTime += buffer.duration;

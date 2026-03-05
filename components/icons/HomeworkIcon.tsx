@@ -14,11 +14,16 @@ export function HomeworkIcon({ size = 24, strokeWidth = 1.5, className, ...props
       className={className}
       {...props}
     >
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <path d="M14 2v6h6" />
-      <path d="M8 13h8" />
-      <path d="M8 17h8" />
-      <path d="M8 9h2" />
+      {/* Open journal/notebook with organic curves */}
+      <path d="M4 19.5c0-1.4 1.1-2.5 2.5-2.5H12" />
+      <path d="M4 4.5C4 3.1 5.1 2 6.5 2H12v15H6.5C5.1 17 4 18.1 4 19.5V4.5z" />
+      <path d="M12 2h5.5C18.9 2 20 3.1 20 4.5v15c0-1.4-1.1-2.5-2.5-2.5H12" />
+      {/* Pen/quill suggesting writing/reflection */}
+      <path d="M15 7l3-3" strokeOpacity="0.7" />
+      <path d="M18 4l1.5 1.5" strokeOpacity="0.7" />
+      {/* Gentle checkmarks for progress */}
+      <path d="M7 10l1 1 2-2" strokeOpacity="0.6" />
+      <path d="M7 14l1 1 2-2" strokeOpacity="0.6" />
     </svg>
   );
 }

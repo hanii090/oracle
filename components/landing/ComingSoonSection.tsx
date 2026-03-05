@@ -9,7 +9,14 @@ import { motion } from 'motion/react';
 
 const COMING_SOON = [
   {
-    icon: '🏢',
+    icon: '�️',
+    title: 'Premium Voice (ElevenLabs)',
+    desc: 'Ultra-realistic AI voice for Sorca sessions. Natural conversation flow with emotional intelligence. No more robotic text-to-speech.',
+    tag: 'Patient Pro · Q2 2026',
+    color: 'violet',
+  },
+  {
+    icon: '�🏢',
     title: 'Sorca for Teams',
     desc: 'Leadership teams do weekly Sorca sessions on a shared theme. Each member answers privately. Sorca aggregates anonymised patterns. Not therapy. Not consulting. Something new.',
     tag: 'B2B · Q3 2026',
