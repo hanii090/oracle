@@ -49,7 +49,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showDepthLimit, setShowDepthLimit] = useState(false);
   const [nightMode, setNightMode] = useState(false);
-  const [lastOracleText, setLastOracleText] = useState<string | undefined>();
+  const [lastSorcaText, setLastSorcaText] = useState<string | undefined>();
   const [showShareCard, setShowShareCard] = useState(false);
   const [avoidedReminder, setAvoidedReminder] = useState<{
     question: string;
@@ -105,15 +105,17 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
     recordSession,
   } = useOnboarding();
 
-  // #22 Night Oracle auto-detection (midnight–5am) — paid tiers only
+  // #22 Night mode banner (midnight–5am) — paid tiers only
+  // Shows explanation banner but does NOT auto-enable night mode for new sessions
   useEffect(() => {
     if (profile?.tier === 'free') return;
+    if (viewSession) return; // Don't show for past sessions
     const hour = new Date().getHours();
     if (hour >= 0 && hour < 5) {
-      setNightMode(true);
+      // Only show the night banner explanation, don't auto-activate night mode
       showNightExplanation();
     }
-  }, [showNightExplanation, profile?.tier]);
+  }, [showNightExplanation, profile?.tier, viewSession]);
 
   // Therapy feature auto-detection
   useEffect(() => {
@@ -189,7 +191,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
 
     const greeting = "What truth are you avoiding today?";
     setMessages([{ id: crypto.randomUUID(), role: "assistant", content: greeting, depth: 1 }]);
-    setLastOracleText(greeting);
+    setLastSorcaText(greeting);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -201,7 +203,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
     if (entering) {
       const eolGreeting = "What do you want them to remember about you?";
       setMessages([{ id: crypto.randomUUID(), role: "assistant", content: eolGreeting, depth: 1 }]);
-      setLastOracleText(eolGreeting);
+      setLastSorcaText(eolGreeting);
       setDepth(1);
       setPastThread([]);
     }
@@ -379,7 +381,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
 
     const greeting = "What truth are you avoiding today?";
     setMessages([{ id: crypto.randomUUID(), role: "assistant", content: greeting, depth: 1 }]);
-    setLastOracleText(greeting);
+    setLastSorcaText(greeting);
     setPastThread([]);
     setDepth(1);
     setShowResetConfirm(false);
@@ -429,7 +431,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
           },
           body: JSON.stringify({
             action: 'assign',
-            firstMessage: input,
+            openingMessage: input,
           }),
         });
         if (keyRes.ok) {
@@ -532,7 +534,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
       };
 
       setMessages((prev) => [...prev, oracleMsg]);
-      setLastOracleText(question);
+      setLastSorcaText(question);
       setDepth(newDepth);
 
       // Save to thread
@@ -680,7 +682,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
               )}
               <VoiceSorca
                 onTranscript={handleVoiceTranscript}
-                oracleText={lastOracleText}
+                sorcaText={lastSorcaText}
                 enabled={profile?.tier !== "free"}
                 onSilenceDetected={handleSilenceDetected}
                 onSilenceData={handleSilenceData}

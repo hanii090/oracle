@@ -76,18 +76,24 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
         {/* Social Proof */}
         <div className="flex items-center gap-6 mb-12 relative z-10">
           <div className="flex -space-x-3">
-            {['E', 'J', 'A', 'M', 'S'].map((initial, i) => (
-              <div 
-                key={i} 
-                className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/20 via-crimson/10 to-gold/5 border-2 border-gold/30 flex items-center justify-center shadow-[0_0_15px_rgba(192,57,43,0.15)] hover:shadow-[0_0_20px_rgba(192,57,43,0.3)] transition-shadow"
+            {[
+              'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face',
+              'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face',
+              'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face',
+              'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face',
+              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&crop=face',
+            ].map((src, i) => (
+              <img 
+                key={i}
+                src={src}
+                alt=""
+                className="w-10 h-10 rounded-full border-2 border-gold/30 object-cover shadow-[0_0_15px_rgba(192,57,43,0.15)] hover:shadow-[0_0_20px_rgba(192,57,43,0.3)] transition-shadow"
                 style={{ animationDelay: `${i * 0.1}s` }}
-              >
-                <span className="font-cinzel text-xs text-gold font-semibold">{initial}</span>
-              </div>
+              />
             ))}
           </div>
           <div className="text-left">
-            <div className="font-cinzel text-sm text-gold">10,000+ seekers</div>
+            <div className="font-cinzel text-sm text-gold">3,000+ seekers</div>
             <div className="font-courier text-[10px] text-text-muted tracking-wider">Average depth reached: 8.4</div>
           </div>
         </div>

@@ -58,43 +58,42 @@ export function useTherapy() {
     }
 
     let unsubscribe: (() => void) | null = null;
+    let mounted = true;
 
     const loadProfile = async () => {
-      // Try Firestore first
+      // Always load from localStorage first for immediate data
+      const local = localStorage.getItem(`${THERAPY_PROFILE_KEY}_${user.uid}`);
+      if (local && mounted) {
+        try {
+          setTherapyProfile(JSON.parse(local));
+        } catch {
+          // Invalid localStorage data, ignore
+        }
+      }
+
+      // Try Firestore for real-time sync (may fail if auth not ready)
       if (isFirebaseConfigured && db) {
         try {
           const docRef = doc(db, 'therapyProfiles', user.uid);
           
           // Real-time listener for therapy profile
           unsubscribe = onSnapshot(docRef, (snap) => {
+            if (!mounted) return;
             if (snap.exists()) {
               const data = snap.data() as TherapyProfile;
               setTherapyProfile(data);
               localStorage.setItem(`${THERAPY_PROFILE_KEY}_${user.uid}`, JSON.stringify(data));
-            } else {
-              // No profile yet - check localStorage
-              const local = localStorage.getItem(`${THERAPY_PROFILE_KEY}_${user.uid}`);
-              if (local) {
-                try {
-                  setTherapyProfile(JSON.parse(local));
-                } catch {
-                  setTherapyProfile(null);
-                }
-              }
             }
             setLoading(false);
           }, (error) => {
-            console.error('Therapy profile snapshot error:', error);
-            // Fall back to localStorage
-            const local = localStorage.getItem(`${THERAPY_PROFILE_KEY}_${user.uid}`);
-            if (local) {
-              try {
-                setTherapyProfile(JSON.parse(local));
-              } catch {
-                setTherapyProfile(null);
-              }
+            // Permission errors are expected if user just signed in or profile doesn't exist yet
+            // This is not a critical error - localStorage fallback is already loaded
+            if (error.code !== 'permission-denied') {
+              console.error('Therapy profile snapshot error:', error);
             }
-            setLoading(false);
+            if (mounted) {
+              setLoading(false);
+            }
           });
           return;
         } catch (e) {
@@ -102,21 +101,15 @@ export function useTherapy() {
         }
       }
 
-      // Fallback to localStorage
-      const local = localStorage.getItem(`${THERAPY_PROFILE_KEY}_${user.uid}`);
-      if (local) {
-        try {
-          setTherapyProfile(JSON.parse(local));
-        } catch {
-          setTherapyProfile(null);
-        }
+      if (mounted) {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadProfile();
 
     return () => {
+      mounted = false;
       if (unsubscribe) unsubscribe();
     };
   }, [user]);

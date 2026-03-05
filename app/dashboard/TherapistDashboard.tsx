@@ -97,14 +97,16 @@ export function TherapistDashboard() {
   }, [getIdToken]);
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    // Wait for auth to fully load before making redirect decisions
+    if (authLoading) return;
+    
+    if (!user) {
       router.push('/');
       return;
     }
-    if (!authLoading && user && !isTherapist) {
-      router.push('/');
-      return;
-    }
+    
+    // Only redirect non-therapists after we're sure profile is loaded
+    // isTherapist is derived from profile, so we need profile to be set
     if (user && isTherapist) {
       loadDashboard();
     }

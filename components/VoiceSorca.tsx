@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface VoiceSorcaProps {
   onTranscript: (text: string) => void;
-  oracleText?: string;
+  sorcaText?: string;
   enabled: boolean;
   onSilenceDetected?: () => void;
   onSilenceData?: (data: { totalSpeechMs: number; totalSilenceMs: number; pauses: { durationMs: number; timestamp: number }[] }) => void;
@@ -17,7 +17,7 @@ interface VoiceSorcaProps {
  * Features 03 & 10: Silence Detection + Silence Score tracking.
  * Uses AudioContext AnalyserNode to detect pauses ≥4 seconds mid-answer.
  */
-export function VoiceSorca({ onTranscript, oracleText, enabled, onSilenceDetected, onSilenceData }: VoiceSorcaProps) {
+export function VoiceSorca({ onTranscript, sorcaText, enabled, onSilenceDetected, onSilenceData }: VoiceSorcaProps) {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [silenceMessage, setSilenceMessage] = useState(false);
@@ -43,11 +43,11 @@ export function VoiceSorca({ onTranscript, oracleText, enabled, onSilenceDetecte
     isSupported.current = !!SpeechRecognition && 'speechSynthesis' in window;
   }, []);
 
-  // Speak Oracle's questions
+  // Speak Sorca's questions
   useEffect(() => {
-    if (!enabled || !oracleText || !('speechSynthesis' in window)) return;
+    if (!enabled || !sorcaText || !('speechSynthesis' in window)) return;
 
-    const utterance = new SpeechSynthesisUtterance(oracleText);
+    const utterance = new SpeechSynthesisUtterance(sorcaText);
     utterance.rate = 0.85;
     utterance.pitch = 0.8;
     utterance.volume = 0.7;
@@ -65,7 +65,7 @@ export function VoiceSorca({ onTranscript, oracleText, enabled, onSilenceDetecte
     return () => {
       speechSynthesis.cancel();
     };
-  }, [oracleText, enabled]);
+  }, [sorcaText, enabled]);
 
   // Silence detection loop using AudioContext AnalyserNode
   const startSilenceDetection = useCallback(async () => {
