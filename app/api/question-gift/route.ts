@@ -31,11 +31,58 @@ export async function POST(req: Request) {
   const log = createLogger({ route: '/api/question-gift', correlationId: crypto.randomUUID() });
 
   try {
+    const { action, recipientName, giftId, answer } = await req.json();
+
+    // Actions that don't require authentication (for gift recipients)
+    if (action === 'open' || action === 'answer') {
+      const adminDb = getAdminFirestore();
+      const giftsRef = adminDb.collection('questionGifts');
+
+      if (action === 'open') {
+        if (!giftId) {
+          return NextResponse.json({ error: 'Gift ID required' }, { status: 400 });
+        }
+
+        const snap = await giftsRef.where('id', '==', giftId).limit(1).get();
+        if (snap.empty) {
+          return NextResponse.json({ error: 'Gift not found' }, { status: 404 });
+        }
+
+        const data = snap.docs[0].data();
+        await snap.docs[0].ref.update({ opened: true, openedAt: new Date().toISOString() });
+
+        return NextResponse.json({
+          gift: {
+            id: data.id,
+            question: data.question,
+            recipientName: data.recipientName,
+            opened: true,
+          },
+        });
+      }
+
+      if (action === 'answer') {
+        if (!giftId || !answer) {
+          return NextResponse.json({ error: 'Gift ID and answer required' }, { status: 400 });
+        }
+
+        const snap = await giftsRef.where('id', '==', giftId).limit(1).get();
+        if (snap.empty) {
+          return NextResponse.json({ error: 'Gift not found' }, { status: 404 });
+        }
+
+        await snap.docs[0].ref.update({ answer, answeredAt: new Date().toISOString() });
+
+        return NextResponse.json({
+          message: 'Your answer has been saved. The person who sent this will be notified.',
+        });
+      }
+    }
+
+    // Actions that require authentication (for gift senders)
     const authResult = await verifyAuth(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
-
-    const { action, recipientName, giftId, answer } = await req.json();
 
     const adminDb = getAdminFirestore();
     const giftsRef = adminDb.collection('questionGifts');
@@ -89,44 +136,6 @@ export async function POST(req: Request) {
           shareUrl: `/gift/${gift.id}`,
           visual,
         },
-      });
-
-    } else if (action === 'open') {
-      if (!giftId) {
-        return NextResponse.json({ error: 'Gift ID required' }, { status: 400 });
-      }
-
-      const snap = await giftsRef.where('id', '==', giftId).limit(1).get();
-      if (snap.empty) {
-        return NextResponse.json({ error: 'Gift not found' }, { status: 404 });
-      }
-
-      const data = snap.docs[0].data();
-      await snap.docs[0].ref.update({ opened: true, openedAt: new Date().toISOString() });
-
-      return NextResponse.json({
-        gift: {
-          id: data.id,
-          question: data.question,
-          recipientName: data.recipientName,
-          opened: true,
-        },
-      });
-
-    } else if (action === 'answer') {
-      if (!giftId || !answer) {
-        return NextResponse.json({ error: 'Gift ID and answer required' }, { status: 400 });
-      }
-
-      const snap = await giftsRef.where('id', '==', giftId).limit(1).get();
-      if (snap.empty) {
-        return NextResponse.json({ error: 'Gift not found' }, { status: 404 });
-      }
-
-      await snap.docs[0].ref.update({ answer, answeredAt: new Date().toISOString() });
-
-      return NextResponse.json({
-        message: 'Your answer has been saved. The person who sent this will be notified.',
       });
 
     } else if (action === 'list') {
