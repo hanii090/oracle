@@ -7,6 +7,7 @@ import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { useLyriaFoley } from "@/hooks/useLyriaFoley";
 import { useAuth, SessionMessage } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useTherapy } from "@/hooks/useTherapy";
 
 // Extracted components (#8 — break monolith into focused components)
 import { SessionHeader } from "@/components/session/SessionHeader";
@@ -28,6 +29,13 @@ import { ShareCard } from "@/components/session/ShareCard";
 import { DepthToast } from "@/components/session/DepthToast";
 import AvoidedQuestionNotification from "@/components/session/AvoidedQuestionNotification";
 import { EndOfLifeToggle, MemoryPortraitOverlay, ThreadArchiveModal, EolSessionTools } from "@/components/session/EndOfLifeMode";
+
+// Therapy support components
+import { SafeMessagingBanner } from "@/components/session/SafeMessagingBanner";
+import { SessionDebriefMode } from "@/components/session/SessionDebriefMode";
+import { HomeworkCompanion } from "@/components/session/HomeworkCompanion";
+import { PreSessionPrimer } from "@/components/session/PreSessionPrimer";
+import { CopingAnchor } from "@/components/session/CopingAnchor";
 
 export function SorcaSession({ onExit, viewSession }: { onExit: () => void; viewSession?: { messages: SessionMessage[]; maxDepth: number; createdAt: string } | null }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -55,6 +63,13 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
   const [ambientPortrait, setAmbientPortrait] = useState<{ description: string; palette: string[] } | null>(null);
   const [showPortrait, setShowPortrait] = useState(false);
 
+  // Therapy mode state
+  const [showSessionDebrief, setShowSessionDebrief] = useState(false);
+  const [showHomework, setShowHomework] = useState(false);
+  const [showPreSessionPrimer, setShowPreSessionPrimer] = useState(false);
+  const [showCopingAnchor, setShowCopingAnchor] = useState(false);
+  const [safeMessagingMode, setSafeMessagingMode] = useState(false);
+
   // End of Life mode state
   const [eolMode, setEolMode] = useState(false);
   const [memoryPortrait, setMemoryPortrait] = useState<{
@@ -71,6 +86,12 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { steerMusic, triggerBreakthrough } = useLyriaFoley(true);
   const { user: authUser, profile, saveSession, loadSessions, getIdToken } = useAuth();
+  const { 
+    therapyProfile, 
+    isInTherapy, 
+    isWithin24HoursOfSession, 
+    isWithin1HourOfSession 
+  } = useTherapy();
   const {
     showWelcome,
     showNightBanner,
@@ -93,6 +114,21 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
       showNightExplanation();
     }
   }, [showNightExplanation, profile?.tier]);
+
+  // Therapy feature auto-detection
+  useEffect(() => {
+    if (!isInTherapy || viewSession) return;
+    
+    // Show Pre-Session Primer 1 hour before therapy
+    if (isWithin1HourOfSession()) {
+      setShowPreSessionPrimer(true);
+    }
+    
+    // Show Session Debrief within 24 hours after therapy
+    if (isWithin24HoursOfSession()) {
+      setShowSessionDebrief(true);
+    }
+  }, [isInTherapy, viewSession, isWithin1HourOfSession, isWithin24HoursOfSession]);
 
   // Handle viewing a past session (read-only mode)
   useEffect(() => {
@@ -604,6 +640,36 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
               />
             </div>
             <div className="flex items-center gap-2">
+              {/* Therapy Tools */}
+              {isInTherapy && !eolMode && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setShowHomework(true)}
+                    className="p-1.5 rounded hover:bg-teal-500/10 text-teal-400/60 hover:text-teal-400 transition-colors"
+                    title="Homework"
+                    aria-label="Open homework companion"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 2v6h6" />
+                      <path d="M8 13h8" />
+                      <path d="M8 17h8" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setShowCopingAnchor(true)}
+                    className="p-1.5 rounded hover:bg-emerald-500/10 text-emerald-400/60 hover:text-emerald-400 transition-colors"
+                    title="Coping Anchors"
+                    aria-label="Open coping anchors"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="5" r="3" />
+                      <path d="M12 8v13" />
+                      <path d="M5 12H2a10 10 0 0 0 20 0h-3" />
+                    </svg>
+                  </button>
+                </div>
+              )}
               {eolMode && (
                 <EolSessionTools
                   onGeneratePortrait={handleGenerateMemoryPortrait}
@@ -752,6 +818,38 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
             </p>
           </div>
         </motion.div>
+      )}
+
+      {/* Therapy Support Components */}
+      <SafeMessagingBanner 
+        isActive={safeMessagingMode} 
+        distressLevel={0.7} 
+        onDismiss={() => setSafeMessagingMode(false)} 
+      />
+
+      {showSessionDebrief && authUser && (
+        <SessionDebriefMode 
+          onClose={() => setShowSessionDebrief(false)} 
+          onComplete={(keyInsight) => {
+            console.log('Session debrief completed:', keyInsight);
+            setShowSessionDebrief(false);
+          }}
+        />
+      )}
+
+      {showHomework && authUser && (
+        <HomeworkCompanion onClose={() => setShowHomework(false)} />
+      )}
+
+      {showPreSessionPrimer && authUser && (
+        <PreSessionPrimer 
+          onComplete={() => setShowPreSessionPrimer(false)}
+          onDismiss={() => setShowPreSessionPrimer(false)} 
+        />
+      )}
+
+      {showCopingAnchor && authUser && (
+        <CopingAnchor onClose={() => setShowCopingAnchor(false)} />
       )}
     </motion.div>
   );

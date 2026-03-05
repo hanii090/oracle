@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
+import { getAuth, type Auth } from 'firebase-admin/auth';
 
 let adminApp: App | null = null;
 let adminDb: Firestore | null = null;
@@ -162,4 +163,11 @@ export function getAdminFirestore(): Firestore {
   if (adminDb) return adminDb;
   adminDb = getFirestore(getAdminApp());
   return adminDb;
+}
+
+/**
+ * Get server-side Auth instance for user management.
+ */
+export function getAdminAuth(): Auth {
+  return getAuth(getAdminApp());
 }

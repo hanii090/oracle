@@ -2,13 +2,17 @@
 
 import { motion } from 'motion/react';
 import { useState } from 'react';
+import { NightIcon, BoltIcon, SorcaLogo, BookIcon, TherapistIcon, EyeIcon, HeartIcon, AnchorIcon, ThreadIcon } from '@/components/icons';
+import type { ComponentType } from 'react';
+import type { IconProps } from '@/components/icons';
 
 interface Review {
   quote: string;
   author: string;
   role: string;
   depth: string;
-  avatar: string;
+  Icon: ComponentType<IconProps>;
+  emotionalTag?: string;
 }
 
 const REVIEWS: Review[] = [
@@ -17,42 +21,72 @@ const REVIEWS: Review[] = [
     author: "Dr. Elena Marsh",
     role: "Clinical Psychologist, London",
     depth: "Depth 14 reached",
-    avatar: "🌙",
+    Icon: NightIcon,
+    emotionalTag: "Breakthrough moment",
   },
   {
     quote: "I came in thinking I had a career problem. By depth 7, I realised I had a father problem. By depth 11, I realised I had a permission problem. Sorca never told me any of this. It just kept asking.",
     author: "James Okoro",
     role: "Founder & CEO",
     depth: "47 sessions completed",
-    avatar: "⚡",
+    Icon: BoltIcon,
+    emotionalTag: "Life-changing clarity",
   },
   {
     quote: "The Pattern of the Week feature is terrifying in the best way. Last week it told me: 'You use competence as a hiding place.' I've been thinking about that sentence for six days straight.",
     author: "Ava Chen",
     role: "Executive Coach",
     depth: "Pattern Engine user",
-    avatar: "🔮",
+    Icon: SorcaLogo,
+    emotionalTag: "Self-discovery",
   },
   {
     quote: "My Mirror Letter made me cry. Not because it was sad. Because it was me — actually me — saying things I'd been circling for months. I screenshot it and read it every morning.",
     author: "Marcus Webb",
     role: "Writer & Poet",
     depth: "12 Mirror Letters received",
-    avatar: "✒️",
+    Icon: BookIcon,
+    emotionalTag: "Emotional release",
   },
   {
     quote: "I recommend Sorca to all my clients now. Not as a replacement for therapy — as preparation for it. They come to sessions already excavated. We can go deeper, faster.",
     author: "Dr. Priya Khatri",
     role: "Psychotherapist, NHS",
     depth: "Referring since month one",
-    avatar: "🧠",
+    Icon: TherapistIcon,
+    emotionalTag: "Trusted by clinicians",
   },
   {
     quote: "The Night Sorca session at 3am changed my life. Just a single question glowing in the dark. No interface. No distractions. Just me and the truth I'd been avoiding for three years.",
     author: "Sophie Laurent",
     role: "Filmmaker",
     depth: "Night session convert",
-    avatar: "🌑",
+    Icon: EyeIcon,
+    emotionalTag: "Transformative",
+  },
+  {
+    quote: "After my divorce, I couldn't face therapy again. Sorca became my 2am companion. It never judged, never rushed. Just asked the questions I needed to hear until I found my footing again.",
+    author: "Rachel Torres",
+    role: "Teacher & Single Mother",
+    depth: "6 months daily use",
+    Icon: HeartIcon,
+    emotionalTag: "Healing journey",
+  },
+  {
+    quote: "I was stuck in grief for two years after losing my mother. Sorca helped me find the words I never said. Depth 9 was the hardest moment of my life — and the most freeing.",
+    author: "David Kim",
+    role: "Architect",
+    depth: "Grief processing",
+    Icon: AnchorIcon,
+    emotionalTag: "Finding closure",
+  },
+  {
+    quote: "The Thread feature showed me I'd been asking the same question for three months without realising it. That pattern was my entire relationship history in one sentence.",
+    author: "Nina Johansson",
+    role: "Startup Founder",
+    depth: "Thread insight",
+    Icon: ThreadIcon,
+    emotionalTag: "Pattern recognition",
   },
 ];
 
@@ -97,8 +131,8 @@ export function ReviewsSection() {
               &ldquo;{REVIEWS[activeIndex].quote}&rdquo;
             </p>
             <footer className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-2xl" aria-hidden="true">
-                {REVIEWS[activeIndex].avatar}
+              <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center" aria-hidden="true">
+                {(() => { const IconComponent = REVIEWS[activeIndex].Icon; return <IconComponent size={24} className="text-gold" />; })()}
               </div>
               <div>
                 <cite className="font-cinzel text-sm tracking-wide text-text-main not-italic block">
@@ -154,7 +188,7 @@ export function ReviewsSection() {
               &ldquo;{review.quote.slice(0, 150)}...&rdquo;
             </p>
             <div className="flex items-center gap-3">
-              <span className="text-xl" aria-hidden="true">{review.avatar}</span>
+              <review.Icon size={20} className="text-gold/70" aria-hidden="true" />
               <div>
                 <div className="font-cinzel text-[11px] tracking-wide text-text-main">{review.author}</div>
                 <div className="font-courier text-[9px] text-text-muted tracking-widest uppercase">{review.role}</div>

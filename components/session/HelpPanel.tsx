@@ -1,60 +1,63 @@
 'use client';
 
 import { motion, AnimatePresence } from 'motion/react';
+import { HelpIcon, ChartIcon, ThreadIcon, MusicIcon, NightIcon, VoiceIcon, EyeIcon, BoltIcon, ExportIcon, FireIcon, CloseIcon } from '@/components/icons';
+import type { ComponentType } from 'react';
+import type { IconProps } from '@/components/icons';
 
 interface HelpPanelProps {
   show: boolean;
   onClose: () => void;
 }
 
-const helpItems = [
+const helpItems: { Icon: ComponentType<IconProps>; label: string; desc: string }[] = [
   {
-    icon: '💬',
+    Icon: HelpIcon,
     label: 'How It Works',
     desc: 'Type your truth. Sorca responds only with questions — never answers, never advice.',
   },
   {
-    icon: '📊',
+    Icon: ChartIcon,
     label: 'Depth Levels',
     desc: 'Each exchange goes deeper. Depth 5+ gets personal. Depth 7+ triggers Confrontation.',
   },
   {
-    icon: '🧵',
+    Icon: ThreadIcon,
     label: 'The Thread',
     desc: 'Cross-session memory. Sorca remembers your past conversations and patterns.',
   },
   {
-    icon: '🎵',
+    Icon: MusicIcon,
     label: 'Lyria Music',
     desc: 'Real-time ambient music that reacts to the emotional weight of your words.',
   },
   {
-    icon: '🌙',
+    Icon: NightIcon,
     label: 'Night Sorca',
     desc: 'Midnight–5am stripped-back mode. Questions shortened to 12 words. Auto-activates.',
   },
   {
-    icon: '🎙️',
+    Icon: VoiceIcon,
     label: 'Voice Sorca',
     desc: 'Speak your truth aloud and hear Sorca\'s questions. Philosopher tier.',
   },
   {
-    icon: '👁️',
+    Icon: EyeIcon,
     label: 'Visual Breakthroughs',
     desc: 'AI-generated abstract visuals during emotional peaks. Philosopher tier.',
   },
   {
-    icon: '⚡',
+    Icon: BoltIcon,
     label: 'Confrontation',
     desc: 'At Depth 7+, Sorca surfaces your own contradictions from past statements.',
   },
   {
-    icon: '⬇️ 📋',
+    Icon: ExportIcon,
     label: 'Export Session',
     desc: 'Download your session as Markdown or copy it to clipboard.',
   },
   {
-    icon: '🔥',
+    Icon: FireIcon,
     label: 'Streaks',
     desc: 'Return daily to build your streak. Consecutive days deepen Sorca\'s awareness.',
   },
@@ -98,7 +101,7 @@ export function HelpPanel({ show, onClose }: HelpPanelProps) {
             <div className="space-y-4">
               {helpItems.map((item) => (
                 <div key={item.label} className="flex gap-3 p-3 rounded-lg bg-raised/50 border border-border/50">
-                  <span className="text-lg shrink-0" aria-hidden="true">{item.icon}</span>
+                  <item.Icon size={18} className="shrink-0 text-gold/70" aria-hidden="true" />
                   <div>
                     <div className="font-cinzel text-[11px] tracking-[0.1em] text-text-main mb-1">{item.label}</div>
                     <div className="font-cormorant text-text-mid text-sm leading-relaxed">{item.desc}</div>

@@ -19,6 +19,7 @@ const serverSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PRICE_ID_PHILOSOPHER: z.string().optional(),
   STRIPE_PRICE_ID_PRO: z.string().optional(),
+  STRIPE_PRICE_ID_PRACTICE: z.string().optional(),
 
   // AI (server-only — no NEXT_PUBLIC_ prefix)
   GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
@@ -65,6 +66,7 @@ const stripeSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().min(1, 'STRIPE_WEBHOOK_SECRET is required'),
   STRIPE_PRICE_ID_PHILOSOPHER: z.string().min(1, 'STRIPE_PRICE_ID_PHILOSOPHER is required'),
   STRIPE_PRICE_ID_PRO: z.string().min(1, 'STRIPE_PRICE_ID_PRO is required'),
+  STRIPE_PRICE_ID_PRACTICE: z.string().optional(),
 });
 
 export type StripeEnv = z.infer<typeof stripeSchema>;

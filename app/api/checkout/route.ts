@@ -52,6 +52,8 @@ export async function POST(req: Request) {
       priceId = stripeEnv.STRIPE_PRICE_ID_PHILOSOPHER;
     } else if (tier === 'pro') {
       priceId = stripeEnv.STRIPE_PRICE_ID_PRO;
+    } else if (tier === 'practice') {
+      priceId = stripeEnv.STRIPE_PRICE_ID_PRACTICE || '';
     } else {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 });
     }

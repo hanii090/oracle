@@ -29,6 +29,9 @@ import { QuestionGift } from '@/components/landing/QuestionGift';
 import { ComingSoonSection } from '@/components/landing/ComingSoonSection';
 import { ExcavationReportSection } from '@/components/landing/ExcavationReport';
 import { EndOfLifeSection } from '@/components/landing/EndOfLifeSection';
+import { TherapySection } from '@/components/landing/TherapySection';
+import { TherapyOnboarding } from '@/components/landing/TherapyOnboarding';
+import { useTherapy } from '@/hooks/useTherapy';
 
 // Code-split OracleSession — loads only when a session starts (#15)
 const SorcaSession = lazy(() =>
@@ -38,7 +41,8 @@ const SorcaSession = lazy(() =>
 function HomeContent() {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [hasKey, setHasKey] = useState<boolean | null>(null);
-  const { user, profile, loading, authError, sessions, signIn, logOut, getIdToken, incrementSession, clearAuthError, loadSessions, verifySubscription } = useAuth();
+  const { user, profile, loading, authError, sessions, signIn, logOut, getIdToken, incrementSession, clearAuthError, loadSessions, verifySubscription, isTherapist } = useAuth();
+  const { therapyProfile, showTherapyOnboarding, startTherapyOnboarding, dismissTherapyOnboarding, completeTherapyOnboarding } = useTherapy();
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [viewingSession, setViewingSession] = useState<SessionSummary | null>(null);
   const upgradeProcessedRef = useRef(false);
@@ -47,6 +51,18 @@ function HomeContent() {
   const router = useRouter();
 
   const [upgradePending, setUpgradePending] = useState(false);
+  const [showTherapyOnboardingModal, setShowTherapyOnboardingModal] = useState(false);
+
+  // Trigger therapy onboarding for new users who haven't completed it
+  useEffect(() => {
+    if (user && !loading && !therapyProfile && showTherapyOnboarding && !sessionStarted) {
+      // Delay to avoid showing immediately on page load
+      const timer = setTimeout(() => {
+        setShowTherapyOnboardingModal(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [user, loading, therapyProfile, showTherapyOnboarding, sessionStarted]);
 
   // #1 FIX: Don't trust URL params for tier upgrades.
   // The webhook handles the actual upgrade server-side.
@@ -291,6 +307,9 @@ function HomeContent() {
 
             <PhilosophySection />
             <FeaturesSection />
+            
+            {/* Therapy Section - show for all visitors */}
+            <TherapySection />
 
             {/* Social proof — Reviews & Companies */}
             <ReviewsSection />
@@ -328,6 +347,30 @@ function HomeContent() {
         error={authError || checkoutError}
         onClose={() => { clearAuthError(); setCheckoutError(null); }}
       />
+
+      {/* Therapy Onboarding Modal */}
+      {showTherapyOnboardingModal && (
+        <TherapyOnboarding
+          onComplete={() => setShowTherapyOnboardingModal(false)}
+          onSkip={() => setShowTherapyOnboardingModal(false)}
+        />
+      )}
+
+      {/* Therapist Dashboard Link */}
+      {isTherapist && !sessionStarted && (
+        <a
+          href="/dashboard"
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-teal-500 text-void px-4 py-3 rounded-lg shadow-lg hover:bg-teal-400 transition-colors font-cinzel text-sm tracking-widest"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          Dashboard
+        </a>
+      )}
     </main>
   );
 }

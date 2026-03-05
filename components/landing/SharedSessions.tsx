@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '@/hooks/useAuth';
+import { TeamIcon, ThreadIcon } from '@/components/icons';
 
 /**
  * Shared Sessions — Feature 15
@@ -120,7 +121,7 @@ export function SharedSessions() {
         <AnimatePresence mode="wait">
           {state === 'intro' && (
             <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-8 text-center">
-              <span className="text-4xl mb-4 block" aria-hidden="true">👥</span>
+              <TeamIcon size={40} className="mx-auto mb-4 text-gold" aria-hidden="true" />
               <h3 className="font-cinzel text-sm tracking-[0.15em] text-gold uppercase mb-3">Shared Session</h3>
               <p className="font-cormorant italic text-base text-text-mid mb-6 max-w-md mx-auto">
                 Two people. Same questions. Neither sees the other&apos;s answers until both have responded. What you discover about each other might change everything.
@@ -151,7 +152,7 @@ export function SharedSessions() {
 
           {state === 'create' && (
             <motion.div key="create" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-8 text-center">
-              <span className="text-4xl mb-4 block" aria-hidden="true">🔗</span>
+              <ThreadIcon size={40} className="mx-auto mb-4 text-gold" aria-hidden="true" />
               <h3 className="font-cinzel text-sm tracking-[0.15em] text-gold uppercase mb-3">Share This Code</h3>
               <div className="bg-raised border border-gold/20 rounded-lg px-8 py-4 inline-block mb-4">
                 <span className="font-cinzel text-3xl tracking-[0.3em] text-gold">{inviteCode}</span>

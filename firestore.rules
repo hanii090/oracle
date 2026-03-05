@@ -27,5 +27,128 @@ service cloud.firestore {
     match /threads/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // THERAPY EDITION: Phase 1 & 2 Collections
+    // ═══════════════════════════════════════════════════════════════
+
+    // Therapy profiles - extends user profile with therapy-specific data
+    match /therapyProfiles/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Homework assignments - patients can read/write their own
+    match /homeworkAssignments/{assignmentId} {
+      allow read: if request.auth != null 
+                  && (resource.data.patientId == request.auth.uid 
+                      || resource.data.therapistId == request.auth.uid);
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null 
+                            && (resource.data.patientId == request.auth.uid 
+                                || resource.data.therapistId == request.auth.uid);
+    }
+
+    // Week summaries - patient-owned, therapist can read with consent
+    match /weekSummaries/{userId}/weeks/{weekId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Coping anchors - therapist-set strategies for patients
+    match /copingAnchors/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Safe messaging mode flags
+    match /safeModeFlags/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // Only server can write safe mode flags (via Admin SDK)
+      allow write: if false;
+    }
+
+    // Session debriefs - post-therapy reflections
+    match /sessionDebriefs/{userId}/debriefs/{debriefId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Pre-session primers
+    match /preSessionPrimers/{userId}/primers/{primerId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Question DNA profiles (honesty by question type)
+    match /questionDna/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // Server-side updates only
+      allow write: if false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // THERAPIST COLLECTIONS (Phase 2)
+    // ═══════════════════════════════════════════════════════════════
+
+    // Therapist profiles
+    match /therapists/{therapistId} {
+      allow read: if request.auth != null && request.auth.uid == therapistId;
+      allow write: if request.auth != null && request.auth.uid == therapistId
+                   && !request.resource.data.diff(resource.data).affectedKeys()
+                       .hasAny(['verified', 'licenseVerified']);
+    }
+
+    // Practice records
+    match /practices/{practiceId} {
+      allow read: if request.auth != null 
+                  && resource.data.therapistIds.hasAny([request.auth.uid]);
+      allow write: if request.auth != null 
+                   && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Consent records - critical for GDPR compliance
+    match /therapistConsent/{consentId} {
+      // Patient can read/write their own consent
+      allow read: if request.auth != null 
+                  && (resource.data.patientId == request.auth.uid 
+                      || resource.data.therapistId == request.auth.uid);
+      // Only patient can grant/revoke consent
+      allow write: if request.auth != null 
+                   && request.resource.data.patientId == request.auth.uid;
+    }
+
+    // Consent audit log - append-only for compliance
+    match /consentAuditLog/{logId} {
+      allow read: if request.auth != null 
+                  && (resource.data.patientId == request.auth.uid 
+                      || resource.data.therapistId == request.auth.uid);
+      // Server-side only writes
+      allow write: if false;
+    }
+
+    // Pattern alerts for therapists
+    match /patternAlerts/{alertId} {
+      allow read: if request.auth != null 
+                  && resource.data.therapistId == request.auth.uid;
+      // Server-side only
+      allow write: if false;
+    }
+
+    // Progress milestones
+    match /progressMilestones/{userId}/milestones/{milestoneId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // Server-side only
+      allow write: if false;
+    }
+
+    // Discharge archives
+    match /dischargeArchives/{archiveId} {
+      allow read: if request.auth != null 
+                  && resource.data.patientId == request.auth.uid;
+      // Server-side only creation
+      allow write: if false;
+    }
+
+    // Mood tracking data
+    match /moodTracking/{userId}/entries/{entryId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
   }
 }

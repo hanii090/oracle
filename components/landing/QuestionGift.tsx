@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '@/hooks/useAuth';
+import { GiftIcon, StarIcon, CopyIcon, CheckIcon } from '@/components/icons';
 
 /**
  * Question Gift — Feature 16
@@ -104,7 +105,7 @@ export function QuestionGift() {
         <AnimatePresence mode="wait">
           {state === 'intro' && (
             <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-8 text-center">
-              <span className="text-4xl mb-4 block" aria-hidden="true">🎁</span>
+              <GiftIcon size={40} className="mx-auto mb-4 text-gold" aria-hidden="true" />
               <h3 className="font-cinzel text-sm tracking-[0.15em] text-gold uppercase mb-3">The Question Gift</h3>
               <p className="font-cormorant italic text-base text-text-mid mb-6 max-w-md mx-auto">
                 Send someone a Sorca question — the kind that changes a conversation. They can answer it privately or respond to you. A new way to connect deeply.
@@ -144,7 +145,7 @@ export function QuestionGift() {
             <motion.div key="created" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="p-8 text-center">
               <div className="bg-raised border border-gold/20 rounded-lg p-8 mb-6 relative overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold/30 via-gold to-gold/30" />
-                <span className="text-3xl mb-4 block" aria-hidden="true">✨</span>
+                <StarIcon size={32} className="mx-auto mb-4 text-gold" aria-hidden="true" />
                 <p className="font-cormorant italic text-xl text-text-main leading-relaxed mb-4">
                   &ldquo;{gift.question}&rdquo;
                 </p>
@@ -156,7 +157,7 @@ export function QuestionGift() {
                 onClick={copyLink}
                 className="px-6 py-3 border border-gold text-gold font-cinzel text-xs tracking-widest uppercase rounded-lg hover:bg-gold/10 transition-colors mb-3"
               >
-                {copied ? '✓ Link Copied!' : '📋 Copy Share Link'}
+                {copied ? <><CheckIcon size={14} className="inline mr-1" /> Link Copied!</> : <><CopyIcon size={14} className="inline mr-1" /> Copy Share Link</>}
               </button>
               <br />
               <button
@@ -178,7 +179,7 @@ export function QuestionGift() {
                   {gifts.map((g) => (
                     <div key={g.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
                       <div className="flex items-center gap-3">
-                        <span className="text-xl">{g.answered ? '💌' : g.opened ? '📬' : '🎁'}</span>
+                        <GiftIcon size={20} className={g.answered ? 'text-green-400' : g.opened ? 'text-gold/60' : 'text-gold'} />
                         <div>
                           <p className="font-cormorant italic text-sm text-text-mid truncate max-w-[250px]">&ldquo;{g.question}&rdquo;</p>
                           <div className="font-courier text-[9px] text-text-muted tracking-widest uppercase">

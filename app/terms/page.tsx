@@ -39,8 +39,18 @@ export default function TermsPage() {
             <h2 className="font-cinzel text-xl text-text-main mb-4">4. Subscription Tiers</h2>
             <p><strong>Seeker (Free):</strong> 5 sessions per month, up to depth level 5.</p>
             <p><strong>Philosopher (£12/month):</strong> Unlimited sessions, all depth levels, additional features.</p>
-            <p><strong>Sorca Pro (£49/month):</strong> Professional tier with client management (coming soon).</p>
+            <p><strong>Sorca Pro (£49/month):</strong> Professional tier with client management.</p>
+            <p><strong>Clinical Practice (£59/month per therapist):</strong> Therapist dashboard, homework assignment, week summaries, pattern alerts, and 10 client accounts.</p>
             <p>Subscriptions are billed through Stripe. You may cancel at any time. Refunds are handled on a case-by-case basis.</p>
+          </section>
+
+          <section>
+            <h2 className="font-cinzel text-xl text-text-main mb-4">4a. Therapy Edition Terms</h2>
+            <p><strong>Not Therapy:</strong> Sorca is NOT a therapist, therapy service, or medical device. It is a reflective questioning tool designed to support (not replace) professional therapy. It does not diagnose, treat, or provide clinical advice.</p>
+            <p><strong>No Clinical Relationship:</strong> Use of Sorca does not create a therapeutic or clinical relationship between you and Sorca, its creators, or any affiliated therapists.</p>
+            <p><strong>Therapist Consent:</strong> If you share data with a therapist through Sorca, you do so voluntarily. Consent is granular (you choose what to share), explicit (opt-in only), revocable (withdraw anytime), and audited (logged for compliance).</p>
+            <p><strong>Therapist Responsibilities:</strong> Therapists using the Practice tier are responsible for: maintaining their own professional licensing; obtaining appropriate client consent outside of Sorca; not relying solely on Sorca data for clinical decisions; and following their professional body&apos;s guidelines.</p>
+            <p><strong>Safe Messaging Mode:</strong> Sorca includes automatic distress detection. This is a safety feature, not clinical assessment. Users in distress are shown grounding resources and encouraged to contact professionals. Sorca does not provide crisis counselling.</p>
           </section>
 
           <section>

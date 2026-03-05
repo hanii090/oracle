@@ -2,21 +2,30 @@
 
 import { useCallback, useState } from 'react';
 import type { Message } from './session/ChatMessage';
-import type { SessionSummary } from '@/hooks/useAuth';
+import type { SessionSummary, Tier } from '@/hooks/useAuth';
+import { WarningIcon, ExportIcon, CopyIcon, DeleteIcon } from '@/components/icons';
 
 interface SessionExportProps {
   messages: Message[];
   depth: number;
   allSessions?: SessionSummary[];
+  userId?: string;
+  userTier?: Tier;
+  getIdToken?: () => Promise<string | null>;
 }
 
 /**
  * Session export — download as Markdown, copy to clipboard, or full Thread PDF export.
  * Feature 14: Thread Export — full export of entire Thread as formatted document.
+ * GDPR Compliance: Full data export (JSON) and delete functionality.
  */
-export function SessionExport({ messages, depth, allSessions }: SessionExportProps) {
+export function SessionExport({ messages, depth, allSessions, userId, userTier, getIdToken }: SessionExportProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [showGdprMenu, setShowGdprMenu] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   const generateMarkdown = useCallback(() => {
     const date = new Date().toLocaleDateString('en-GB', {
@@ -127,6 +136,94 @@ export function SessionExport({ messages, depth, allSessions }: SessionExportPro
     setShowMenu(false);
   }, [generateMarkdown]);
 
+  // GDPR: Full JSON data export
+  const handleGdprExport = useCallback(async () => {
+    setExporting(true);
+    try {
+      const exportData = {
+        exportedAt: new Date().toISOString(),
+        exportVersion: '1.0',
+        gdprCompliant: true,
+        userData: {
+          userId: userId || 'anonymous',
+          tier: userTier || 'free',
+        },
+        sessions: allSessions || [],
+        currentSession: {
+          messages,
+          depth,
+          exportedAt: new Date().toISOString(),
+        },
+        metadata: {
+          totalSessions: allSessions?.length || 0,
+          totalMessages: allSessions?.reduce((sum, s) => sum + s.messageCount, 0) || messages.length,
+          deepestLevel: Math.max(depth, ...(allSessions?.map(s => s.maxDepth) || [])),
+          dataCategories: [
+            'session_messages',
+            'depth_levels',
+            'timestamps',
+          ],
+        },
+        rights: {
+          portability: 'This data export fulfills GDPR Article 20 - Right to Data Portability',
+          erasure: 'You may request complete data deletion at any time',
+          format: 'JSON (machine-readable)',
+        },
+      };
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sorca-gdpr-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+      setShowGdprMenu(false);
+    }
+  }, [userId, userTier, allSessions, messages, depth]);
+
+  // GDPR: Delete all user data
+  const handleDeleteAllData = useCallback(async () => {
+    if (deleteConfirmText !== 'DELETE' || !getIdToken) return;
+    
+    setDeleting(true);
+    try {
+      const token = await getIdToken();
+      const res = await fetch('/api/account/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (res.ok) {
+        // Clear local storage
+        if (userId) {
+          localStorage.removeItem(`sorca_profile_${userId}`);
+          localStorage.removeItem(`sorca_sessions_${userId}`);
+          localStorage.removeItem(`sorca_therapy_profile_${userId}`);
+        }
+        localStorage.removeItem('sorca_thread');
+        localStorage.removeItem('sorca_user_id');
+        
+        // Redirect to home
+        window.location.href = '/';
+      } else {
+        console.error('Failed to delete data');
+      }
+    } catch (e) {
+      console.error('Delete error:', e);
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  }, [deleteConfirmText, getIdToken, userId]);
+
   const handleFullThreadExport = useCallback(async () => {
     setExporting(true);
     try {
@@ -209,7 +306,108 @@ export function SessionExport({ messages, depth, allSessions }: SessionExportPro
             {exporting ? '...' : '🧵 Full Thread'}
           </button>
         )}
+        
+        {/* GDPR Data Management */}
+        {userId && (
+          <div className="relative">
+            <button
+              onClick={() => setShowGdprMenu(!showGdprMenu)}
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-border text-text-muted hover:border-gold/30 hover:text-gold transition-all duration-300"
+              aria-label="Data privacy options"
+              title="Your Data (GDPR)"
+            >
+              🔐
+            </button>
+
+            {showGdprMenu && (
+              <div className="absolute right-0 top-full mt-2 w-64 bg-surface border border-border rounded-lg shadow-lg z-50 overflow-hidden">
+                <div className="p-3 border-b border-border">
+                  <p className="font-cinzel text-[10px] text-gold tracking-wider uppercase">
+                    Your Data Rights
+                  </p>
+                  <p className="text-[10px] text-text-muted mt-1">
+                    GDPR Article 15, 17, 20 compliant
+                  </p>
+                </div>
+                
+                <button
+                  onClick={handleGdprExport}
+                  disabled={exporting}
+                  className="w-full px-3 py-2.5 text-left hover:bg-raised transition-colors flex items-center gap-2"
+                >
+                  <span>📦</span>
+                  <div>
+                    <p className="text-xs text-text-main">Export All Data</p>
+                    <p className="text-[10px] text-text-muted">Download as JSON</p>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => { setShowGdprMenu(false); setShowDeleteConfirm(true); }}
+                  className="w-full px-3 py-2.5 text-left hover:bg-red-900/10 transition-colors flex items-center gap-2 border-t border-border"
+                >
+                  <span>🗑️</span>
+                  <div>
+                    <p className="text-xs text-red-400">Delete All Data</p>
+                    <p className="text-[10px] text-text-muted">Permanent erasure</p>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-void/90 backdrop-blur-sm">
+          <div className="w-full max-w-md mx-4 bg-surface border border-red-500/30 rounded-lg p-6">
+            <div className="text-center mb-6">
+              <WarningIcon size={48} className="mx-auto mb-4 text-red-400" />
+              <h3 className="font-cinzel text-lg text-red-400 mb-2">
+                Delete All Your Data?
+              </h3>
+              <p className="text-sm text-text-muted leading-relaxed">
+                This will permanently delete all your sessions, beliefs, patterns, 
+                therapy data, and account information. This cannot be undone.
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-xs text-text-muted font-cinzel tracking-wider mb-2">
+                Type DELETE to confirm
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="DELETE"
+                className="w-full bg-raised border border-border rounded-lg px-4 py-3 text-text-main text-sm placeholder:text-text-muted/50 focus:outline-none focus:border-red-500 transition-colors"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
+                className="flex-1 py-3 border border-border text-text-muted font-cinzel text-xs tracking-widest uppercase rounded-lg hover:border-gold/30 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAllData}
+                disabled={deleteConfirmText !== 'DELETE' || deleting}
+                className="flex-1 py-3 bg-red-500/10 border border-red-500 text-red-400 font-cinzel text-xs tracking-widest uppercase rounded-lg hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleting ? 'Deleting...' : 'Delete Forever'}
+              </button>
+            </div>
+
+            <p className="text-[10px] text-text-muted text-center mt-4">
+              Per GDPR Article 17 — Right to Erasure
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

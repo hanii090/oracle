@@ -121,3 +121,253 @@ export function sanitizeMessage(message: string): string {
 
   return sanitized.trim();
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SAFE MESSAGING MODE — Therapy Edition Feature
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface SafeMessagingState {
+  isActive: boolean;
+  activatedAt: string | null;
+  reason: 'therapist_flagged' | 'distress_detected' | 'user_requested' | null;
+  distressLevel: number; // 0-1 scale
+  consecutiveDistressMessages: number;
+}
+
+const DISTRESS_ESCALATION_PATTERNS = [
+  /\b(can'?t\s+(cope|handle|take|do\s+this|go\s+on)|falling\s+apart|losing\s+(it|my\s+mind)|breaking\s+down)\b/i,
+  /\b(overwhelmed|desperate|hopeless|helpless|worthless|useless)\b/i,
+  /\b(no\s+(one|body)\s+(cares|understands|listens)|completely\s+alone|all\s+alone)\b/i,
+  /\b(everything\s+is\s+(wrong|falling\s+apart|too\s+much)|nothing\s+(works|helps|matters))\b/i,
+  /\b(can'?t\s+(sleep|eat|think|function|breathe)|panic|anxiety\s+attack|spiraling)\b/i,
+  /\b(scared|terrified|afraid)\s+(of\s+(myself|everything|the\s+future))/i,
+  /\b(don'?t\s+know\s+what\s+to\s+do|don'?t\s+know\s+how\s+to\s+continue)\b/i,
+];
+
+const GROUNDING_PROMPTS = [
+  "Let's pause here. Can you name three things you can see right now?",
+  "Before we go further — take a breath. What's one thing that feels solid right now?",
+  "I hear you. Let's slow down. What's something in your immediate environment that feels safe?",
+  "This sounds really hard. Can you feel your feet on the ground? Let's start there.",
+  "Let's take a moment. What's one small thing you did for yourself today?",
+];
+
+const SAFE_MODE_RESOURCES = [
+  '💛 Samaritans: Call 116 123 (UK) — free, 24/7, confidential',
+  '💛 Crisis Text Line: Text SHOUT to 85258 (UK)',
+  '💛 Mind Infoline: 0300 123 3393 (UK)',
+  '💛 SAMHSA Helpline: 1-800-662-4357 (US)',
+];
+
+/**
+ * Detect escalating distress in a message for Safe Messaging Mode.
+ * Returns a distress score (0-1) based on pattern matches.
+ */
+export function detectDistressLevel(message: string): number {
+  const trimmed = message.trim().toLowerCase();
+  if (!trimmed) return 0;
+
+  let matchCount = 0;
+  for (const pattern of DISTRESS_ESCALATION_PATTERNS) {
+    if (pattern.test(trimmed)) {
+      matchCount++;
+    }
+  }
+
+  // Normalize to 0-1 scale, with diminishing returns
+  return Math.min(1, matchCount * 0.25);
+}
+
+/**
+ * Check if Safe Messaging Mode should be activated based on conversation history.
+ * Activates when:
+ * - 3+ consecutive messages with distress level > 0.3
+ * - Any single message with distress level > 0.7
+ * - Therapist has flagged the user
+ */
+export function shouldActivateSafeMode(
+  currentDistress: number,
+  consecutiveDistressCount: number,
+  therapistFlagged?: boolean
+): boolean {
+  if (therapistFlagged) return true;
+  if (currentDistress > 0.7) return true;
+  if (consecutiveDistressCount >= 3 && currentDistress > 0.3) return true;
+  return false;
+}
+
+/**
+ * Get a grounding prompt for Safe Messaging Mode.
+ * These redirect toward grounding and coping instead of depth escalation.
+ */
+export function getGroundingPrompt(): string {
+  return GROUNDING_PROMPTS[Math.floor(Math.random() * GROUNDING_PROMPTS.length)];
+}
+
+/**
+ * Get Safe Mode resources for display.
+ */
+export function getSafeModeResources(): string[] {
+  return SAFE_MODE_RESOURCES;
+}
+
+/**
+ * Build a Safe Messaging Mode system prompt modifier.
+ * This constrains the AI to avoid depth escalation and focus on grounding.
+ */
+export function buildSafeModeSystemPrompt(): string {
+  return `
+🛡️ SAFE MESSAGING MODE ACTIVE
+The user is showing signs of elevated distress. Modify your approach:
+
+REQUIRED BEHAVIORS:
+- Do NOT escalate depth beyond level 3
+- Do NOT ask confrontational questions
+- Do NOT surface past contradictions or painful memories
+- Focus on grounding, presence, and small steps
+- Questions should be calming, not probing
+- Acknowledge difficulty without deepening it
+
+SUGGESTED APPROACHES:
+- Present-moment awareness questions
+- Small, manageable action questions
+- Connection to support systems
+- Recognition of their strength in reaching out
+
+Remember: Sorca is not a crisis counselor. If high-severity content is detected, signpost to professional resources.
+`;
+}
+
+export interface SafeModeResponse {
+  shouldActivate: boolean;
+  distressLevel: number;
+  groundingPrompt?: string;
+  resources: string[];
+  systemPromptModifier?: string;
+}
+
+/**
+ * Pattern Detection for Therapist Alerts
+ * Detects patterns that may warrant therapist attention
+ */
+
+export interface PatternDetectionResult {
+  detected: boolean;
+  type: 'distress' | 'pattern' | 'milestone' | 'mood_shift';
+  message: string;
+  severity: 'low' | 'medium' | 'high';
+}
+
+const ESCALATING_DISTRESS_PATTERNS = [
+  /\b(getting\s*worse|can'?t\s*cope|falling\s*apart|spiraling|losing\s*(control|it|my\s*mind))\b/i,
+  /\b(every(thing|one)\s*(is|feels)\s*(hopeless|pointless|meaningless))\b/i,
+  /\b(don'?t\s*know\s*(how\s*(much\s*)?longer|if\s*i\s*can))\b/i,
+  /\b(exhausted|drained|empty|numb)\s+(all\s*the\s*time|every\s*day|constantly)/i,
+];
+
+const POSITIVE_SHIFT_PATTERNS = [
+  /\b(breakthrough|finally\s*(understand|see|realize)|clicked|makes\s*sense\s*now)\b/i,
+  /\b(feeling\s*(better|hopeful|stronger|clearer))\b/i,
+  /\b(first\s*time\s*(in\s*(a\s*)?long\s*time|I'?ve\s*felt))/i,
+  /\b(grateful|thankful|appreciat)/i,
+];
+
+const RECURRING_THEME_KEYWORDS = [
+  'always', 'never', 'every time', 'keeps happening', 'pattern', 
+  'same thing', 'again and again', 'stuck in', 'cycle'
+];
+
+/**
+ * Detect patterns in user messages that should alert therapists
+ */
+export function detectPatterns(
+  messages: Array<{ role: string; content: string }>,
+  currentDistressLevel: number
+): PatternDetectionResult | null {
+  const userMessages = messages.filter(m => m.role === 'user');
+  if (userMessages.length === 0) return null;
+
+  const recentMessages = userMessages.slice(-5);
+  const lastMessage = userMessages[userMessages.length - 1]?.content || '';
+
+  // Check for escalating distress
+  for (const pattern of ESCALATING_DISTRESS_PATTERNS) {
+    if (pattern.test(lastMessage)) {
+      return {
+        detected: true,
+        type: 'distress',
+        message: `Escalating distress language detected: "${lastMessage.slice(0, 100)}..."`,
+        severity: currentDistressLevel > 0.6 ? 'high' : 'medium',
+      };
+    }
+  }
+
+  // Check for positive shifts (milestones)
+  for (const pattern of POSITIVE_SHIFT_PATTERNS) {
+    if (pattern.test(lastMessage)) {
+      return {
+        detected: true,
+        type: 'milestone',
+        message: `Positive shift detected: "${lastMessage.slice(0, 100)}..."`,
+        severity: 'low',
+      };
+    }
+  }
+
+  // Check for recurring themes (patterns)
+  const allContent = recentMessages.map(m => m.content.toLowerCase()).join(' ');
+  const themeCount = RECURRING_THEME_KEYWORDS.filter(kw => 
+    allContent.includes(kw.toLowerCase())
+  ).length;
+
+  if (themeCount >= 3) {
+    return {
+      detected: true,
+      type: 'pattern',
+      message: 'Recurring theme language detected across recent messages',
+      severity: 'medium',
+    };
+  }
+
+  // Check for mood shift (sudden change in tone)
+  if (recentMessages.length >= 3) {
+    const previousDistress = estimateDistressFromText(
+      recentMessages.slice(0, -1).map(m => m.content).join(' ')
+    );
+    const currentDistress = estimateDistressFromText(lastMessage);
+    
+    if (Math.abs(currentDistress - previousDistress) > 0.4) {
+      return {
+        detected: true,
+        type: 'mood_shift',
+        message: `Significant mood shift detected (${previousDistress > currentDistress ? 'improvement' : 'decline'})`,
+        severity: previousDistress > currentDistress ? 'low' : 'medium',
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Estimate distress level from text (simple heuristic)
+ */
+function estimateDistressFromText(text: string): number {
+  const lowerText = text.toLowerCase();
+  let score = 0;
+  
+  const negativeWords = ['sad', 'angry', 'anxious', 'afraid', 'scared', 'hopeless', 
+    'worthless', 'guilty', 'ashamed', 'lonely', 'empty', 'numb', 'overwhelmed'];
+  const positiveWords = ['happy', 'hopeful', 'grateful', 'peaceful', 'calm', 
+    'confident', 'strong', 'better', 'good', 'okay'];
+  
+  negativeWords.forEach(word => {
+    if (lowerText.includes(word)) score += 0.1;
+  });
+  
+  positiveWords.forEach(word => {
+    if (lowerText.includes(word)) score -= 0.05;
+  });
+  
+  return Math.max(0, Math.min(1, score));
+}

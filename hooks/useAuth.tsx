@@ -5,7 +5,7 @@ import { auth, db } from "@/lib/firebase";
 import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc, collection, getDocs, addDoc, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 
-export type Tier = "free" | "philosopher" | "pro";
+export type Tier = "free" | "philosopher" | "pro" | "practice";
 
 export type SessionMessage = {
   id: string;
@@ -23,10 +23,15 @@ export interface SessionSummary {
   messages: SessionMessage[];
 }
 
+export type UserRole = "patient" | "therapist";
+
 interface UserProfile {
   tier: Tier;
   sessionsThisMonth: number;
   lastSessionDate: string | null;
+  role?: UserRole;
+  practiceId?: string;
+  clientIds?: string[];
 }
 
 interface AuthContextType {
@@ -37,6 +42,7 @@ interface AuthContextType {
   sessions: SessionSummary[];
   signIn: () => Promise<void>;
   logOut: () => Promise<void>;
+  isTherapist: boolean;
   getIdToken: () => Promise<string | null>;
   incrementSession: () => Promise<boolean>;
   clearAuthError: () => void;
@@ -334,8 +340,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearAuthError = () => setAuthError(null);
 
+  const isTherapist = profile?.role === 'therapist' || profile?.tier === 'practice';
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, authError, sessions, signIn, logOut, getIdToken, incrementSession, clearAuthError, saveSession, loadSessions, verifySubscription }}>
+    <AuthContext.Provider value={{ user, profile, loading, authError, sessions, signIn, logOut, getIdToken, incrementSession, clearAuthError, saveSession, loadSessions, verifySubscription, isTherapist }}>
       {children}
     </AuthContext.Provider>
   );

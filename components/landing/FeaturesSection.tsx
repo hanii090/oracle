@@ -1,14 +1,75 @@
 'use client';
 
 import { motion } from 'motion/react';
+import { SorcaLogo, MusicIcon, EyeIcon, ThreadIcon, BoltIcon, NightIcon, SessionIcon, HomeworkIcon, PrimerIcon } from '@/components/icons';
 
 const FEATURES = [
-  { icon: '🔮', title: 'The Sorca Session', desc: 'The core experience. You state your problem in any form. Sorca responds with one question. You answer. It asks another. The conversation spirals inward.', color: 'gold' },
-  { icon: '🎵', title: 'Lyria Foley Engine', desc: 'Real-time ambient audio generation powered by Gemini Live API. The music swells, shifts, and reacts to the emotional subtext of your confessions.', color: 'crimson-bright' },
-  { icon: '👁️', title: 'Visual Breakthroughs', desc: 'When you reach a psychological breakthrough, the engine generates a massive, abstract visual metaphor of your realization in real-time.', color: 'violet-bright' },
-  { icon: '🧵', title: 'The Thread', desc: "Every session is connected. Sorca builds a web of your questions, answers, fears, and realisations across time, stored securely.", color: 'teal-bright' },
-  { icon: '⚡', title: 'The Confrontation', desc: "Sorca occasionally surfaces a direct contradiction from your own past — a belief you held that collides with something you believe now.", color: 'text-mid' },
-  { icon: '🌙', title: 'Night Sorca', desc: 'A stripped-back, 3am-safe mode. Dark UI, no navigation, just a single question glowing on screen. Auto-activates between midnight and 5am.', color: 'gold' },
+  { 
+    Icon: SorcaLogo, 
+    title: 'The Sorca Session', 
+    desc: 'The core experience. You state your problem in any form. Sorca responds with one question. You answer. It asks another. The conversation spirals inward.',
+    emotional: 'Where breakthroughs begin',
+    color: 'gold' 
+  },
+  { 
+    Icon: MusicIcon, 
+    title: 'Lyria Foley Engine', 
+    desc: 'Real-time ambient audio generation powered by Gemini Live API. The music swells, shifts, and reacts to the emotional subtext of your confessions.',
+    emotional: 'Your emotions, scored',
+    color: 'crimson-bright' 
+  },
+  { 
+    Icon: EyeIcon, 
+    title: 'Visual Breakthroughs', 
+    desc: 'When you reach a psychological breakthrough, the engine generates a massive, abstract visual metaphor of your realization in real-time.',
+    emotional: 'See your truth',
+    color: 'violet-bright' 
+  },
+  { 
+    Icon: ThreadIcon, 
+    title: 'The Thread', 
+    desc: "Every session is connected. Sorca builds a web of your questions, answers, fears, and realisations across time, stored securely.",
+    emotional: 'Your journey remembered',
+    color: 'teal-bright' 
+  },
+  { 
+    Icon: BoltIcon, 
+    title: 'The Confrontation', 
+    desc: "Sorca occasionally surfaces a direct contradiction from your own past — a belief you held that collides with something you believe now.",
+    emotional: 'Face your contradictions',
+    color: 'text-mid' 
+  },
+  { 
+    Icon: NightIcon, 
+    title: 'Night Sorca', 
+    desc: 'A stripped-back, 3am-safe mode. Dark UI, no navigation, just a single question glowing on screen. Auto-activates between midnight and 5am.',
+    emotional: 'For sleepless souls',
+    color: 'gold' 
+  },
+];
+
+const THERAPY_FEATURES = [
+  { 
+    Icon: SessionIcon, 
+    title: 'Session Debrief', 
+    desc: 'Anchor your therapy session\'s key insight within 24 hours. One focused question anchors what matters before it fades.',
+    emotional: 'Never lose an insight',
+    color: 'teal-bright' 
+  },
+  { 
+    Icon: HomeworkIcon, 
+    title: 'Homework Companion', 
+    desc: 'Turn therapy homework into daily check-ins. 75% completion rate vs 20-30% with worksheets. No forms, just conversation.',
+    emotional: 'Actually do the work',
+    color: 'violet-bright' 
+  },
+  { 
+    Icon: PrimerIcon, 
+    title: 'Pre-Session Primer', 
+    desc: '1 hour before therapy: "What do you most want to say today?" Arrive prepared with the thing you almost forgot.',
+    emotional: 'Arrive ready',
+    color: 'gold' 
+  },
 ];
 
 export function FeaturesSection() {
@@ -33,11 +94,31 @@ export function FeaturesSection() {
         {FEATURES.map((feature, i) => (
           <div key={i} role="listitem" className="bg-surface p-10 relative overflow-hidden group hover:bg-raised hover:-translate-y-1 transition-all duration-300 border border-border hover:border-gold/30 rounded-lg hover:shadow-[0_8px_30px_rgba(192,57,43,0.05)]">
             <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: `var(--color-${feature.color})` }} aria-hidden="true" />
-            <span className="text-3xl mb-6 block" aria-hidden="true">{feature.icon}</span>
+            <feature.Icon size={32} className="mb-4 text-gold" aria-hidden="true" />
+            <div className="font-courier text-[9px] text-gold/60 tracking-widest uppercase mb-2">{feature.emotional}</div>
             <h3 className="font-cinzel text-sm tracking-[0.05em] text-text-main mb-3">{feature.title}</h3>
             <p className="text-xs text-text-muted leading-relaxed">{feature.desc}</p>
           </div>
         ))}
+      </div>
+
+      {/* Therapy Features */}
+      <div className="mt-16">
+        <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-teal-400 mb-5 flex items-center gap-4">
+          For People in Therapy
+          <div className="flex-1 h-px bg-gradient-to-r from-teal-500/30 to-transparent" aria-hidden="true" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="list" aria-label="Therapy features">
+          {THERAPY_FEATURES.map((feature, i) => (
+            <div key={i} role="listitem" className="bg-surface p-10 relative overflow-hidden group hover:bg-raised hover:-translate-y-1 transition-all duration-300 border border-teal-500/20 hover:border-teal-500/40 rounded-lg hover:shadow-[0_8px_30px_rgba(20,184,166,0.05)]">
+              <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity bg-teal-500" aria-hidden="true" />
+              <feature.Icon size={32} className="mb-4 text-teal-400" aria-hidden="true" />
+              <div className="font-courier text-[9px] text-teal-400/60 tracking-widest uppercase mb-2">{feature.emotional}</div>
+              <h3 className="font-cinzel text-sm tracking-[0.05em] text-text-main mb-3">{feature.title}</h3>
+              <p className="text-xs text-text-muted leading-relaxed">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </motion.section>
   );

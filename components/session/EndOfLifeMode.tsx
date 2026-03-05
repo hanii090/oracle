@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { CandleIcon } from '@/components/icons';
 
 interface EndOfLifeToggleProps {
   isActive: boolean;
@@ -101,7 +102,7 @@ export function MemoryPortraitOverlay({ portrait, show, onClose }: MemoryPortrai
       >
         {/* Candle icon */}
         <div className="text-center mb-8">
-          <span className="text-4xl opacity-60">🕯️</span>
+          <CandleIcon size={48} className="mx-auto text-amber-400/60" />
         </div>
 
         {/* Title */}

@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '@/hooks/useAuth';
+import { CapsuleIcon } from '@/components/icons';
 
 /**
  * Time Capsule — Feature 12
@@ -106,7 +107,7 @@ export function TimeCapsule() {
               exit={{ opacity: 0 }}
               className="p-8 text-center"
             >
-              <span className="text-4xl mb-4 block" aria-hidden="true">⏳</span>
+              <CapsuleIcon size={40} className="mx-auto mb-4 text-gold" aria-hidden="true" />
               <h3 className="font-cinzel text-sm tracking-[0.15em] text-gold uppercase mb-3">The Time Capsule</h3>
               <p className="font-cormorant italic text-base text-text-mid mb-6 max-w-md mx-auto">
                 Write a message to your future self. Sorca will ask you three questions, seal your answers, and open them in six months — with a reflection on how you&apos;ve changed.

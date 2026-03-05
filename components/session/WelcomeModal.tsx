@@ -2,33 +2,36 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { SorcaLogo, DepthIcon, ThreadIcon, MusicIcon } from '@/components/icons';
+import type { ComponentType } from 'react';
+import type { IconProps } from '@/components/icons';
 
 interface WelcomeModalProps {
   show: boolean;
   onDismiss: () => void;
 }
 
-const slides = [
+const slides: { Icon: ComponentType<IconProps>; title: string; body: string; accent: string }[] = [
   {
-    icon: '🔮',
+    Icon: SorcaLogo,
     title: 'This Is Not ChatGPT',
     body: 'Sorca never answers. It never advises. It never reassures. It only asks questions — devastating, surgical, impossibly precise questions — until you find the truth yourself.',
     accent: 'text-gold',
   },
   {
-    icon: '🕳️',
+    Icon: DepthIcon,
     title: 'Go Deeper',
     body: 'Each exchange increases your Depth Level. At Depth 5, the questions get personal. At Depth 7, Confrontation Mode begins — Sorca will surface your own contradictions.',
     accent: 'text-crimson-bright',
   },
   {
-    icon: '🧵',
+    Icon: ThreadIcon,
     title: 'It Remembers',
     body: 'The Thread connects all your sessions. Sorca carries memory across conversations, building a map of your beliefs, fears, and recurring patterns over time.',
     accent: 'text-teal-bright',
   },
   {
-    icon: '🎵',
+    Icon: MusicIcon,
     title: 'It Scores Your Journey',
     body: 'Lyria generates real-time ambient music that reacts to the emotional weight of your conversation. Tension, grief, wonder — the music mirrors your inner state.',
     accent: 'text-violet-bright',
@@ -98,7 +101,9 @@ export function WelcomeModal({ show, onDismiss }: WelcomeModalProps) {
                 className="relative z-10"
               >
                 {/* Icon */}
-                <div className="text-5xl mb-6" aria-hidden="true">{slide.icon}</div>
+                <div className="mb-6 flex justify-center" aria-hidden="true">
+                  <slide.Icon size={48} className={slide.accent} />
+                </div>
 
                 {/* Title */}
                 <h2 id="welcome-title" className={`font-cinzel text-xl tracking-[0.15em] mb-4 ${slide.accent}`}>

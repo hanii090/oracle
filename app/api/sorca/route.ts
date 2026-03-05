@@ -3,7 +3,7 @@ import { GoogleGenAI } from '@google/genai';
 import { sorcaRateLimit } from '@/lib/rate-limit';
 import { withRetry, withFallback } from '@/lib/retry';
 import { verifyAuth } from '@/lib/auth-middleware';
-import { detectCrisis, sanitizeMessage } from '@/lib/safety';
+import { detectCrisis, sanitizeMessage, detectPatterns } from '@/lib/safety';
 import { getServerEnv } from '@/lib/env';
 import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
@@ -308,6 +308,22 @@ export async function POST(req: Request) {
 
     const question = result.sorcaText || 'What are you hiding from yourself?';
 
+    // ── Pattern Detection for Therapist Alerts ─────────────────
+    // Asynchronously detect patterns and create alerts if needed
+    if (isAdminConfigured()) {
+      const fullHistory = [...conversationHistory, { role: 'user', content: sanitizedMessage }];
+      const emotionDataObj = result.emotionData as Record<string, unknown> | null;
+      const distressLevel = typeof emotionDataObj?.distress === 'number' ? emotionDataObj.distress : 0;
+      const patternResult = detectPatterns(fullHistory, distressLevel);
+      
+      if (patternResult?.detected) {
+        // Fire and forget - don't block the response
+        createPatternAlert(userId, patternResult, log).catch(() => {
+          // Ignore errors - non-critical
+        });
+      }
+    }
+
     return NextResponse.json({
       question,
       emotionData: result.emotionData,
@@ -319,5 +335,89 @@ export async function POST(req: Request) {
       { error: 'All AI providers failed. Please try again.' },
       { status: 500 }
     );
+  }
+}
+
+// In-memory rate limiting for pattern alerts (per user)
+const patternAlertLimits = new Map<string, { count: number; resetAt: number }>();
+const PATTERN_ALERT_HOURLY_LIMIT = 5;
+const PATTERN_ALERT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+function checkPatternAlertRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const userLimit = patternAlertLimits.get(userId);
+  
+  if (!userLimit || now > userLimit.resetAt) {
+    patternAlertLimits.set(userId, { count: 1, resetAt: now + PATTERN_ALERT_WINDOW_MS });
+    return true;
+  }
+  
+  if (userLimit.count >= PATTERN_ALERT_HOURLY_LIMIT) {
+    return false;
+  }
+  
+  userLimit.count++;
+  return true;
+}
+
+/**
+ * Create pattern alert for therapists (fire and forget)
+ * Rate limited to 5 alerts per user per hour to prevent spam
+ */
+async function createPatternAlert(
+  userId: string, 
+  pattern: { type: string; message: string; severity: string },
+  log: ReturnType<typeof createLogger>
+) {
+  try {
+    // Rate limit pattern alerts
+    if (!checkPatternAlertRateLimit(userId)) {
+      log.info('Pattern alert rate limited', { userId });
+      return;
+    }
+
+    const db = getAdminFirestore();
+    
+    // Find therapists with pattern alert consent for this user
+    const consentSnapshot = await db.collection('therapistConsent')
+      .where('patientId', '==', userId)
+      .where('status', '==', 'active')
+      .get();
+
+    if (consentSnapshot.empty) return;
+
+    const therapistsToAlert = consentSnapshot.docs
+      .map(doc => doc.data())
+      .filter(consent => consent.permissions?.sharePatternAlerts)
+      .map(consent => consent.therapistId);
+
+    if (therapistsToAlert.length === 0) return;
+
+    // Get user display name
+    const userDoc = await db.collection('users').doc(userId).get();
+    const clientName = userDoc.exists ? userDoc.data()?.displayName || 'Client' : 'Client';
+
+    // Create alerts for each consented therapist
+    for (const therapistId of therapistsToAlert) {
+      const alert = {
+        id: crypto.randomUUID(),
+        clientId: userId,
+        clientName,
+        therapistId,
+        type: pattern.type,
+        message: pattern.message,
+        severity: pattern.severity,
+        acknowledged: false,
+        acknowledgedAt: null,
+        notes: null,
+        createdAt: new Date().toISOString(),
+      };
+
+      await db.collection('patternAlerts').doc(alert.id).set(alert);
+    }
+
+    log.info('Pattern alerts created', { userId, type: pattern.type, count: therapistsToAlert.length });
+  } catch (error) {
+    log.error('Failed to create pattern alert', { userId }, error);
   }
 }
