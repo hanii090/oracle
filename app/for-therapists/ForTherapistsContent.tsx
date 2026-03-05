@@ -67,7 +67,7 @@ const PRICING = {
 };
 
 export function ForTherapistsContent() {
-  const { user, loading, signIn, logOut, getIdToken, isTherapist } = useAuth();
+  const { user, profile, loading, signIn, logOut, getIdToken, isTherapist } = useAuth();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [showCredentialModal, setShowCredentialModal] = useState(false);
   const [credentials, setCredentials] = useState({
@@ -148,43 +148,45 @@ export function ForTherapistsContent() {
           Sorca
         </a>
         <div className="flex items-center gap-4">
-          {!loading && (
-            user ? (
-              isTherapist ? (
-                <div className="flex items-center gap-4">
-                  <a
-                    href="/dashboard"
-                    className="text-teal-400 hover:text-teal-300 transition-colors font-cinzel text-xs tracking-widest uppercase"
-                  >
-                    Practice Dashboard
-                  </a>
-                  <button
-                    onClick={() => logOut()}
-                    className="text-text-muted hover:text-teal-400 transition-colors font-courier text-xs tracking-widest uppercase"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-4">
-                  <span className="text-xs text-text-muted">
-                    Signed in as {user.displayName?.split(' ')[0] || 'User'}
-                  </span>
-                  <button
-                    onClick={() => logOut()}
-                    className="text-text-muted hover:text-teal-400 transition-colors font-courier text-xs tracking-widest uppercase"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              )
+          {!loading && !user && (
+            <button
+              onClick={() => signIn()}
+              className="text-teal-400 hover:text-teal-300 transition-colors font-cinzel text-xs tracking-widest uppercase"
+            >
+              Sign In
+            </button>
+          )}
+          {!loading && user && !profile && (
+            <div className="w-4 h-4 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+          )}
+          {!loading && user && profile && (
+            isTherapist ? (
+              <div className="flex items-center gap-4">
+                <a
+                  href="/dashboard"
+                  className="text-teal-400 hover:text-teal-300 transition-colors font-cinzel text-xs tracking-widest uppercase"
+                >
+                  Practice Dashboard
+                </a>
+                <button
+                  onClick={() => logOut()}
+                  className="text-text-muted hover:text-teal-400 transition-colors font-courier text-xs tracking-widest uppercase"
+                >
+                  Sign Out
+                </button>
+              </div>
             ) : (
-              <button
-                onClick={() => signIn()}
-                className="text-teal-400 hover:text-teal-300 transition-colors font-cinzel text-xs tracking-widest uppercase"
-              >
-                Sign In
-              </button>
+              <div className="flex items-center gap-4">
+                <span className="text-xs text-text-muted">
+                  Signed in as {user.displayName?.split(' ')[0] || 'User'}
+                </span>
+                <button
+                  onClick={() => logOut()}
+                  className="text-text-muted hover:text-teal-400 transition-colors font-courier text-xs tracking-widest uppercase"
+                >
+                  Sign Out
+                </button>
+              </div>
             )
           )}
         </div>
