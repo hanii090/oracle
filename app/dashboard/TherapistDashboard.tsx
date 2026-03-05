@@ -289,7 +289,7 @@ export function TherapistDashboard() {
                         {/* Week summary themes */}
                         {client.weekSummary && (
                           <div className="bg-raised p-2 rounded">
-                            <p className="text-[9px] text-text-muted mb-1">This week's themes:</p>
+                            <p className="text-[9px] text-text-muted mb-1">This week&apos;s themes:</p>
                             <p className="text-xs text-text-mid">
                               {client.weekSummary.themes.join(', ') || 'No themes identified'}
                             </p>
@@ -321,7 +321,7 @@ export function TherapistDashboard() {
                 <TherapistIcon size={48} className="mx-auto mb-4 text-text-muted/50" />
                 <h3 className="font-cinzel text-sm text-text-main mb-2">No clients yet</h3>
                 <p className="text-xs text-text-muted max-w-sm mx-auto">
-                  When your clients grant you consent in Sorca, they'll appear here. 
+                  When your clients grant you consent in Sorca, they&apos;ll appear here. 
                   Share the link to your practice and invite them to connect.
                 </p>
               </div>

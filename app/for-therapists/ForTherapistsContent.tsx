@@ -211,9 +211,9 @@ export function ForTherapistsContent() {
                 Peer-Reviewed Evidence · NHS UK · 2025
               </h2>
               <p className="text-text-mid leading-relaxed mb-3">
-                "A study of 244 NHS patients in group-based CBT found that patients using an AI tool between sessions showed 
+                &quot;A study of 244 NHS patients in group-based CBT found that patients using an AI tool between sessions showed 
                 <strong className="text-text-main"> higher recovery rates, greater attendance, and far higher homework completion</strong> than 
-                those using standard worksheets. The mechanism: personalized, conversational engagement beats static handouts."
+                those using standard worksheets. The mechanism: personalized, conversational engagement beats static handouts.&quot;
               </p>
               <p className="text-sm text-text-muted italic">
                 Habicht et al., Journal of Medical Internet Research, March 2025
@@ -286,7 +286,7 @@ export function ForTherapistsContent() {
           </div>
           <p className="text-xs text-text-muted text-center mt-6">
             These are not just ethical guardrails — they are regulatory requirements. 
-            The UK's Care Quality Commission and ICO are watching this space.
+            The UK&apos;s Care Quality Commission and ICO are watching this space.
           </p>
         </motion.div>
       </section>
@@ -366,7 +366,7 @@ export function ForTherapistsContent() {
           viewport={{ once: true }}
         >
           <h2 className="font-cinzel font-semibold text-3xl text-text-main mb-4">
-            Stop Asking "How Was Your Week?"
+            Stop Asking &quot;How Was Your Week?&quot;
           </h2>
           <p className="text-lg text-text-mid mb-8">
             You already know. Sorca told you.

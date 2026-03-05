@@ -308,7 +308,7 @@ export function ConsentFlow({ onClose }: ConsentFlowProps) {
                     {activeConsents.length === 0 && (
                       <div className="text-center py-8 mt-4">
                         <p className="text-sm text-text-muted leading-relaxed">
-                          You haven't shared data with any therapist yet.<br />
+                          You haven&apos;t shared data with any therapist yet.<br />
                           Your Sorca data is completely private.
                         </p>
                       </div>

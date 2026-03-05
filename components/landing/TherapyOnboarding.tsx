@@ -120,7 +120,7 @@ export function TherapyOnboarding({ onComplete, onSkip }: TherapyOnboardingProps
                   className="w-full py-4 px-6 border border-teal-500/30 bg-teal-500/5 rounded-lg text-left hover:bg-teal-500/10 hover:border-teal-500 transition-all group"
                 >
                   <div className="font-cinzel text-sm text-teal-400 group-hover:text-teal-300 transition-colors">
-                    Yes, I'm in therapy
+                    Yes, I&apos;m in therapy
                   </div>
                   <div className="text-xs text-text-muted mt-2 space-y-1">
                     <div className="flex items-center gap-2">
@@ -143,7 +143,7 @@ export function TherapyOnboarding({ onComplete, onSkip }: TherapyOnboardingProps
                   className="w-full py-4 px-6 border border-border rounded-lg text-left hover:bg-raised hover:border-gold/30 transition-all group"
                 >
                   <div className="font-cinzel text-sm text-text-main group-hover:text-gold transition-colors">
-                    No, I'm using Sorca independently
+                    No, I&apos;m using Sorca independently
                   </div>
                   <div className="text-xs text-text-muted mt-1">
                     Continue with the full self-reflection experience
@@ -153,7 +153,7 @@ export function TherapyOnboarding({ onComplete, onSkip }: TherapyOnboardingProps
 
               <p className="text-xs text-text-muted text-center mt-6 leading-relaxed">
                 <strong className="text-gold">Important:</strong> Sorca is not a replacement for therapy. 
-                It's a tool for deepening reflection between sessions.
+                It&apos;s a tool for deepening reflection between sessions.
               </p>
             </motion.div>
           )}
@@ -207,7 +207,7 @@ export function TherapyOnboarding({ onComplete, onSkip }: TherapyOnboardingProps
 
                 <div>
                   <label className="block text-xs text-text-muted font-cinzel tracking-wider mb-2">
-                    Therapist's Name (optional, for your reference)
+                    Therapist&apos;s Name (optional, for your reference)
                   </label>
                   <input
                     type="text"

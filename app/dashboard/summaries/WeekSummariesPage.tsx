@@ -181,7 +181,7 @@ export function WeekSummariesPage() {
                 <BookIcon size={48} className="mx-auto mb-4 text-text-muted/30" />
                 <h3 className="font-cinzel text-sm text-text-main mb-2">No summaries yet</h3>
                 <p className="text-xs text-text-muted">
-                  Summaries are generated weekly based on {selectedClient.displayName}'s sessions
+                  Summaries are generated weekly based on {selectedClient.displayName}&apos;s sessions
                 </p>
               </div>
             ) : (

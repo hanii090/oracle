@@ -38,7 +38,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="font-cinzel text-xl text-text-main mb-4">2a. Therapy Edition Data (If Applicable)</h2>
-            <p>If you use Sorca's therapy-support features, we also collect:</p>
+            <p>If you use Sorca&apos;s therapy-support features, we also collect:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li><strong>Therapy profile:</strong> Session schedule, therapist name (if provided), and therapy-related preferences.</li>
               <li><strong>Homework data:</strong> Assignments, check-in responses, and completion progress.</li>
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
               <li><strong>Coping anchors:</strong> Grounding techniques you save.</li>
               <li><strong>Week summaries:</strong> AI-generated weekly reflections.</li>
             </ul>
-            <p className="mt-4"><strong>Therapist sharing:</strong> If you grant consent to share data with a therapist, they will be able to view the specific categories you've consented to (week summaries, homework progress, pattern alerts, or mood data). This consent is explicit, revocable at any time, and fully audited per GDPR Article 7.</p>
+            <p className="mt-4"><strong>Therapist sharing:</strong> If you grant consent to share data with a therapist, they will be able to view the specific categories you&apos;ve consented to (week summaries, homework progress, pattern alerts, or mood data). This consent is explicit, revocable at any time, and fully audited per GDPR Article 7.</p>
             <p><strong>Safe messaging mode:</strong> If distress patterns are detected, Sorca may automatically engage grounding mode. This is for your safety and does not involve human review unless you explicitly contact support.</p>
           </section>
 

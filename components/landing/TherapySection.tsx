@@ -72,7 +72,7 @@ export function TherapySection() {
 
       <p className="text-lg text-text-mid leading-relaxed max-w-3xl mb-12">
         Therapy is one hour a week. The other 167 hours, people are on their own — with the thoughts that came up, 
-        the homework they probably won't do, and no one to ask them the follow-up question. 
+        the homework they probably won&apos;t do, and no one to ask them the follow-up question. 
         <strong className="text-teal-400"> That gap is where Sorca belongs.</strong>
       </p>
 

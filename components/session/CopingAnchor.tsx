@@ -96,7 +96,7 @@ export function CopingAnchor({ onClose }: CopingAnchorProps) {
     }
   };
 
-  const useAnchor = async (anchor: CopingAnchorData) => {
+  const startAnchor = async (anchor: CopingAnchorData) => {
     setActiveAnchor(anchor);
     setCurrentStep(0);
     setView('use');
@@ -225,7 +225,7 @@ export function CopingAnchor({ onClose }: CopingAnchorProps) {
                                 {anchor.steps.length} steps · Used {anchor.usageCount || 0} times
                               </span>
                               <button
-                                onClick={() => useAnchor(anchor)}
+                                onClick={() => startAnchor(anchor)}
                                 className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-cinzel text-[10px] tracking-widest uppercase rounded hover:bg-emerald-500/20 transition-colors"
                               >
                                 Use Now
