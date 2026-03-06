@@ -117,6 +117,16 @@ export async function POST(req: Request) {
         acceptedBy: userId,
       });
 
+      // Update therapist's clientIds array
+      const therapistUserRef = db.collection('users').doc(therapistId);
+      const therapistUserDoc = await therapistUserRef.get();
+      const existingClientIds = therapistUserDoc.exists ? (therapistUserDoc.data()?.clientIds || []) : [];
+      if (!existingClientIds.includes(userId)) {
+        await therapistUserRef.update({
+          clientIds: [...existingClientIds, userId],
+        });
+      }
+
       log.info('Consent granted via invite', { userId, therapistId, consentId });
 
       return NextResponse.json({

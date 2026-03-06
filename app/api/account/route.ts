@@ -26,9 +26,10 @@ function getStripe(): Stripe | null {
   return stripeClient;
 }
 
-function tierFromPriceId(priceId: string): 'philosopher' | 'pro' | null {
+function tierFromPriceId(priceId: string): 'philosopher' | 'pro' | 'practice' | null {
   if (priceId === process.env.STRIPE_PRICE_ID_PHILOSOPHER) return 'philosopher';
   if (priceId === process.env.STRIPE_PRICE_ID_PRO) return 'pro';
+  if (priceId === process.env.STRIPE_PRICE_ID_PRACTICE) return 'practice';
   return null;
 }
 

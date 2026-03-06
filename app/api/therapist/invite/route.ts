@@ -126,7 +126,7 @@ export async function POST(req: Request) {
     log.info('Client invite created', { therapistId, clientEmail, inviteId });
 
     // Generate invite link
-    const origin = req.headers.get('origin') || 'https://sorca.life';
+    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://sorca.life';
     const inviteLink = `${origin}/consent?invite=${inviteCode}`;
 
     return NextResponse.json({

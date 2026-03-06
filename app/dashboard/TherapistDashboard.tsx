@@ -62,6 +62,7 @@ export function TherapistDashboard() {
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showAlertPanel, setShowAlertPanel] = useState(false);
   const [sessionPrep, setSessionPrep] = useState<{ clientName: string; prepBrief: string; data: Record<string, unknown> } | null>(null);
@@ -97,6 +98,7 @@ export function TherapistDashboard() {
   };
 
   const loadDashboard = useCallback(async () => {
+    setError(null);
     try {
       const token = await getIdToken();
       const res = await fetch('/api/therapist/dashboard', {
@@ -105,9 +107,13 @@ export function TherapistDashboard() {
       if (res.ok) {
         const dashboardData = await res.json();
         setData(dashboardData);
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.error || `Failed to load dashboard (${res.status})`);
       }
     } catch (e) {
       console.error('Failed to load dashboard:', e);
+      setError('Unable to connect to server. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -145,6 +151,28 @@ export function TherapistDashboard() {
 
   if (!isTherapist) {
     return null;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-void flex items-center justify-center">
+        <div className="max-w-md text-center px-6">
+          <div className="w-16 h-16 bg-crimson/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-crimson" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="font-cinzel text-xl text-text-main mb-2">Dashboard Error</h2>
+          <p className="text-sm text-text-muted mb-6">{error}</p>
+          <button
+            onClick={() => loadDashboard()}
+            className="px-6 py-2 bg-teal-500/20 border border-teal-500/40 text-teal-400 rounded-lg hover:bg-teal-500/30 transition-colors font-cinzel text-xs tracking-widest uppercase"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const handleCreateInvite = async () => {

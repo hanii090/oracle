@@ -21,9 +21,10 @@ function getStripe(): Stripe {
   return stripe;
 }
 
-function tierFromPriceId(priceId: string): 'philosopher' | 'pro' | null {
+function tierFromPriceId(priceId: string): 'philosopher' | 'pro' | 'practice' | null {
   if (priceId === process.env.STRIPE_PRICE_ID_PHILOSOPHER) return 'philosopher';
   if (priceId === process.env.STRIPE_PRICE_ID_PRO) return 'pro';
+  if (priceId === process.env.STRIPE_PRICE_ID_PRACTICE) return 'practice';
   return null;
 }
 
@@ -86,17 +87,40 @@ export async function POST(req: Request) {
 
         // Update user tier in Firestore (server-side — trusted)
         const db = getAdminFirestore();
-        await db.doc(`users/${userId}`).set(
-          {
-            tier,
-            stripeCustomerId: session.customer as string,
-            stripeSubscriptionId: subscriptionId,
-            upgradedAt: new Date().toISOString(),
-          },
-          { merge: true }
-        );
+        
+        // Build update object
+        const updateData: Record<string, unknown> = {
+          tier,
+          stripeCustomerId: session.customer as string,
+          stripeSubscriptionId: subscriptionId,
+          upgradedAt: new Date().toISOString(),
+        };
 
-        log.info('User upgraded', { userId, tier });
+        // For practice tier, also set therapist role and save credentials from metadata
+        if (tier === 'practice') {
+          updateData.role = 'therapist';
+          
+          // Extract therapist credentials from checkout session metadata
+          if (session.metadata) {
+            const credentials: Record<string, string> = {};
+            if (session.metadata.therapist_registration_body) {
+              credentials.registrationBody = session.metadata.therapist_registration_body;
+            }
+            if (session.metadata.therapist_registration_number) {
+              credentials.registrationNumber = session.metadata.therapist_registration_number;
+            }
+            if (session.metadata.therapist_practice_name) {
+              credentials.practiceName = session.metadata.therapist_practice_name;
+            }
+            if (Object.keys(credentials).length > 0) {
+              updateData.therapistCredentials = credentials;
+            }
+          }
+        }
+
+        await db.doc(`users/${userId}`).set(updateData, { merge: true });
+
+        log.info('User upgraded', { userId, tier, isTherapist: tier === 'practice' });
       } catch (e) {
         log.error('Error processing checkout.session.completed', {}, e);
       }
