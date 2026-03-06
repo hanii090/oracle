@@ -61,7 +61,7 @@ interface CopingAnchor {
 }
 
 export function UserDashboard() {
-  const { user, profile, loading: authLoading, sessions, loadSessions, getIdToken } = useAuth();
+  const { user, profile, loading: authLoading, sessions, loadSessions, getIdToken, logOut } = useAuth();
   const { therapyProfile, isInTherapy } = useTherapy();
   const router = useRouter();
   
@@ -74,7 +74,7 @@ export function UserDashboard() {
   const [newAnchorName, setNewAnchorName] = useState('');
   const [newAnchorTechnique, setNewAnchorTechnique] = useState('');
   const [savingAnchor, setSavingAnchor] = useState(false);
-  const [consents, setConsents] = useState<Array<{ id: string; therapistName: string; permissions: Record<string, boolean>; createdAt: string }>>([]);
+  const [consents, setConsents] = useState<Array<{ id: string; therapistName: string; permissions: Record<string, boolean>; grantedAt: string }>>([]);
   const [loadingConsents, setLoadingConsents] = useState(false);
   const [summaries, setSummaries] = useState<WeekSummary[]>([]);
   const [homework, setHomework] = useState<HomeworkAssignment[]>([]);
@@ -262,6 +262,12 @@ export function UserDashboard() {
             >
               ← Back to Sorca
             </Link>
+            <button
+              onClick={async () => { await logOut(); router.push('/'); }}
+              className="text-xs text-text-muted hover:text-crimson font-cinzel tracking-widest transition-colors"
+            >
+              Log Out
+            </button>
           </div>
         </div>
 
@@ -561,7 +567,7 @@ export function UserDashboard() {
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-cinzel text-sm text-gold">{consent.therapistName}</h3>
                         <span className="text-[10px] text-text-muted">
-                          Since {new Date(consent.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          Since {consent.grantedAt ? new Date(consent.grantedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown'}
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-2">

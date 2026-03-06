@@ -9,25 +9,25 @@ import { motion } from 'motion/react';
 
 const COMING_SOON = [
   {
-    icon: '🎙️',
-    title: 'Premium Voice (ElevenLabs)',
-    desc: 'Ultra-realistic AI voice for Sorca sessions. Natural conversation flow with emotional intelligence. No more robotic text-to-speech.',
-    tag: 'Patient Pro · Q2 2026',
+    icon: '�',
+    title: 'ICB Waitlist Support',
+    desc: 'Guided self-help while waiting for NHS talking therapies. Evidence-based CBT techniques, mood tracking, and psychoeducation — bridging the 18-week gap between referral and first appointment.',
+    tag: 'V3 · NHS UK · Q2 2026',
+    color: 'teal',
+  },
+  {
+    icon: '🛡️',
+    title: 'Crisis Safety Net',
+    desc: 'Integrated with Samaritans, Shout text line, and NHS 111 mental health. Automatic escalation when risk language is detected. Grounding mode activates instantly. Because safety cannot wait.',
+    tag: 'V4 · UK Crisis Services · Q3 2026',
     color: 'violet',
   },
   {
-    icon: '🏢',
-    title: 'Sorca for Teams',
-    desc: 'Leadership teams do weekly Sorca sessions on a shared theme. Each member answers privately. Sorca aggregates anonymised patterns. Not therapy. Not consulting. Something new.',
-    tag: 'B2B · Q3 2026',
+    icon: '📱',
+    title: 'NHS App Integration',
+    desc: 'Login with NHS Login. Appear as a Connected Service in the NHS App. Sync outcome measures to your NHS Personal Health Record. 30 million users, one front door.',
+    tag: 'V5 · NHS Digital · Q4 2026',
     color: 'gold',
-  },
-  {
-    icon: '🌐',
-    title: 'Thread API',
-    desc: 'Open your Thread to other tools. Export your beliefs, patterns, and growth data to therapy apps, journals, and personal knowledge graphs. Your data, your choice.',
-    tag: 'Developer Preview · Q4 2026',
-    color: 'teal',
   },
 ];
 

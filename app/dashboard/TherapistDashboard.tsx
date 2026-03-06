@@ -58,7 +58,7 @@ interface DashboardData {
 }
 
 export function TherapistDashboard() {
-  const { user, profile, profileLoaded, isTherapist, loading: authLoading, getIdToken } = useAuth();
+  const { user, profile, profileLoaded, isTherapist, loading: authLoading, getIdToken, logOut } = useAuth();
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -250,6 +250,12 @@ export function TherapistDashboard() {
             >
               ← Back to Sorca
             </a>
+            <button
+              onClick={async () => { await logOut(); router.push('/'); }}
+              className="text-xs text-text-muted hover:text-crimson font-cinzel tracking-widest transition-colors"
+            >
+              Log Out
+            </button>
           </div>
         </div>
 

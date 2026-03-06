@@ -78,6 +78,14 @@ export const metadata: Metadata = {
     description:
       "No answers. No advice. Just questions so precise they change everything. Used by therapists, coaches, and founders seeking radical self-honesty.",
     url: "/",
+    images: [
+      {
+        url: "/hero-image.png",
+        width: 1200,
+        height: 630,
+        alt: "SORCA — The AI That Only Asks Questions",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -85,6 +93,7 @@ export const metadata: Metadata = {
     description:
       "A Socratic AI for therapists, coaches, and anyone brave enough to face themselves. No answers — only the questions you've been avoiding.",
     creator: "@saboracle",
+    images: ["/hero-image.png"],
   },
   robots: {
     index: true,

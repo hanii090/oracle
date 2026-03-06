@@ -36,69 +36,102 @@ export async function GET(req: Request) {
     }
 
     // Get client profiles
-    const clients = await Promise.all(
+    const clientResults = await Promise.all(
       clientIds.map(async (clientId) => {
-        const consent = consents.find(c => c.patientId === clientId);
-        
-        // Get basic user info
-        const userDoc = await db.collection('users').doc(clientId).get();
-        const userData = userDoc.exists ? userDoc.data() : null;
+        try {
+          const consent = consents.find(c => c.patientId === clientId);
+          
+          // Get basic user info
+          const userDoc = await db.collection('users').doc(clientId).get();
+          const userData = userDoc.exists ? userDoc.data() : null;
 
-        // Get therapy profile
-        const therapyDoc = await db.collection('therapyProfiles').doc(clientId).get();
-        const therapyData = therapyDoc.exists ? therapyDoc.data() : null;
+          // Get therapy profile
+          const therapyDoc = await db.collection('therapyProfiles').doc(clientId).get();
+          const therapyData = therapyDoc.exists ? therapyDoc.data() : null;
 
-        // Get active homework
-        const homeworkSnapshot = await db.collection('homeworkAssignments')
-          .where('patientId', '==', clientId)
-          .where('status', '==', 'active')
-          .limit(5)
-          .get();
-        const activeHomework = homeworkSnapshot.docs.map(doc => doc.data());
-
-        // Get recent week summary (only if consented)
-        let weekSummary = null;
-        if (consent?.permissions?.shareWeekSummary) {
-          const summarySnapshot = await db.collection('weekSummaries')
-            .doc(clientId)
-            .collection('weeks')
-            .orderBy('createdAt', 'desc')
-            .limit(1)
-            .get();
-          if (!summarySnapshot.empty) {
-            weekSummary = summarySnapshot.docs[0].data();
+          // Get active homework
+          let activeHomework: FirebaseFirestore.DocumentData[] = [];
+          try {
+            const homeworkSnapshot = await db.collection('homeworkAssignments')
+              .where('patientId', '==', clientId)
+              .where('status', '==', 'active')
+              .limit(5)
+              .get();
+            activeHomework = homeworkSnapshot.docs.map(doc => doc.data());
+          } catch {
+            // Homework query may fail if composite index missing
           }
-        }
 
-        return {
-          id: clientId,
-          displayName: userData?.displayName || 'Client',
-          email: userData?.email || null,
-          nextSession: therapyData?.nextSessionDate || null,
-          sessionDay: therapyData?.sessionDay || null,
-          permissions: consent?.permissions || {},
-          activeHomework: activeHomework.length,
-          homeworkCompletionRate: activeHomework.length > 0 
-            ? Math.round((activeHomework.reduce((sum, h) => sum + (h.completedDays || 0), 0) / 
-                activeHomework.reduce((sum, h) => sum + (h.durationDays || 7), 0)) * 100)
-            : null,
-          weekSummary: weekSummary ? {
-            createdAt: weekSummary.createdAt,
-            themes: weekSummary.themes || [],
-            moodTrend: weekSummary.moodTrend || null,
-          } : null,
-          consentedAt: consent?.grantedAt,
-        };
+          // Get recent week summary (only if consented)
+          let weekSummary = null;
+          if (consent?.permissions?.shareWeekSummary) {
+            try {
+              const summarySnapshot = await db.collection('weekSummaries')
+                .doc(clientId)
+                .collection('weeks')
+                .orderBy('createdAt', 'desc')
+                .limit(1)
+                .get();
+              if (!summarySnapshot.empty) {
+                weekSummary = summarySnapshot.docs[0].data();
+              }
+            } catch {
+              // Week summary query may fail — degrade gracefully
+            }
+          }
+
+          return {
+            id: clientId,
+            displayName: userData?.displayName || 'Client',
+            email: userData?.email || null,
+            nextSession: therapyData?.nextSessionDate || null,
+            sessionDay: therapyData?.sessionDay || null,
+            permissions: consent?.permissions || {},
+            activeHomework: activeHomework.length,
+            homeworkCompletionRate: activeHomework.length > 0 
+              ? Math.round((activeHomework.reduce((sum, h) => sum + (h.completedDays || 0), 0) / 
+                  activeHomework.reduce((sum, h) => sum + (h.durationDays || 7), 0)) * 100)
+              : null,
+            weekSummary: weekSummary ? {
+              createdAt: weekSummary.createdAt,
+              themes: weekSummary.themes || [],
+              moodTrend: weekSummary.moodTrend || null,
+            } : null,
+            consentedAt: consent?.grantedAt,
+          };
+        } catch (clientError) {
+          log.warn('Failed to load client data', { clientId }, clientError);
+          return null;
+        }
       })
     );
+    const clients = clientResults.filter((c): c is NonNullable<typeof c> => c !== null);
 
     // Get pattern alerts (if any clients have consented)
-    const alertsSnapshot = await db.collection('patternAlerts')
-      .where('therapistId', '==', userId)
-      .orderBy('createdAt', 'desc')
-      .limit(10)
-      .get();
-    const recentAlerts = alertsSnapshot.docs.map(doc => doc.data());
+    // Wrapped in try-catch: this query requires a Firestore composite index
+    // (therapistId ASC, createdAt DESC). If index doesn't exist, degrade gracefully.
+    let recentAlerts: FirebaseFirestore.DocumentData[] = [];
+    try {
+      const alertsSnapshot = await db.collection('patternAlerts')
+        .where('therapistId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .limit(10)
+        .get();
+      recentAlerts = alertsSnapshot.docs.map(doc => doc.data());
+    } catch (alertError) {
+      log.warn('Pattern alerts query failed (composite index may be missing)', {}, alertError);
+      // Fallback: try without orderBy
+      try {
+        const fallbackSnapshot = await db.collection('patternAlerts')
+          .where('therapistId', '==', userId)
+          .limit(10)
+          .get();
+        recentAlerts = fallbackSnapshot.docs.map(doc => doc.data());
+      } catch {
+        // Collection may not exist yet — that's fine
+        recentAlerts = [];
+      }
+    }
 
     // Calculate upcoming sessions (next 7 days)
     const now = new Date();
