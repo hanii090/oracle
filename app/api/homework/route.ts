@@ -173,16 +173,10 @@ export async function GET(req: Request) {
 
     const db = getAdminFirestore();
 
-    // Tier gating: Homework companion is a Plus+ feature (philosopher, pro, practice)
+    // Tier check: self-assigned homework requires paid tier, but therapist-assigned homework is always visible
     const userDoc = await db.doc(`users/${userId}`).get();
     const tier = userDoc.exists ? userDoc.data()?.tier || 'free' : 'free';
-    
-    if (tier === 'free') {
-      return NextResponse.json(
-        { error: 'Homework companion requires Patient Plus or higher subscription', assignments: [] },
-        { status: 403 }
-      );
-    }
+    const isFreeUser = tier === 'free';
 
     if (assignmentId) {
       // Get specific assignment
@@ -236,14 +230,32 @@ export async function GET(req: Request) {
       return NextResponse.json({ assignment });
     }
 
-    // Get all active assignments for user
-    const snapshot = await db.collection('homeworkAssignments')
-      .where('patientId', '==', userId)
-      .orderBy('createdAt', 'desc')
-      .limit(20)
-      .get();
+    // Get all assignments for user
+    let assignments: FirebaseFirestore.DocumentData[] = [];
+    try {
+      const snapshot = await db.collection('homeworkAssignments')
+        .where('patientId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .limit(20)
+        .get();
+      assignments = snapshot.docs.map(doc => doc.data());
+    } catch {
+      // Composite index may be missing — fallback without orderBy
+      try {
+        const fallback = await db.collection('homeworkAssignments')
+          .where('patientId', '==', userId)
+          .limit(20)
+          .get();
+        assignments = fallback.docs.map(doc => doc.data());
+      } catch {
+        assignments = [];
+      }
+    }
 
-    const assignments = snapshot.docs.map(doc => doc.data());
+    // Free-tier users can only see therapist-assigned homework
+    if (isFreeUser) {
+      assignments = assignments.filter(a => a.assignedBy === 'therapist');
+    }
 
     return NextResponse.json({ assignments });
   } catch (error) {

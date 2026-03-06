@@ -1,29 +1,32 @@
 'use client';
 
 import { motion } from 'motion/react';
+import { WaitlistIcon, ShieldIcon, NhsAppIcon } from '@/components/icons';
+import type { ComponentType } from 'react';
+import type { IconProps } from '@/components/icons';
 
 /**
- * Coming Soon Section — Teams & End of Life features
+ * Coming Soon Section — NHS/UK-focused upcoming features.
  * Shows upcoming features that are in development.
  */
 
-const COMING_SOON = [
+const COMING_SOON: { Icon: ComponentType<IconProps>; title: string; desc: string; tag: string; color: string }[] = [
   {
-    icon: '�',
+    Icon: WaitlistIcon,
     title: 'ICB Waitlist Support',
     desc: 'Guided self-help while waiting for NHS talking therapies. Evidence-based CBT techniques, mood tracking, and psychoeducation — bridging the 18-week gap between referral and first appointment.',
     tag: 'V3 · NHS UK · Q2 2026',
     color: 'teal',
   },
   {
-    icon: '🛡️',
+    Icon: ShieldIcon,
     title: 'Crisis Safety Net',
     desc: 'Integrated with Samaritans, Shout text line, and NHS 111 mental health. Automatic escalation when risk language is detected. Grounding mode activates instantly. Because safety cannot wait.',
     tag: 'V4 · UK Crisis Services · Q3 2026',
     color: 'violet',
   },
   {
-    icon: '📱',
+    Icon: NhsAppIcon,
     title: 'NHS App Integration',
     desc: 'Login with NHS Login. Appear as a Connected Service in the NHS App. Sync outcome measures to your NHS Personal Health Record. 30 million users, one front door.',
     tag: 'V5 · NHS Digital · Q4 2026',
@@ -69,7 +72,7 @@ export function ComingSoonSection() {
               </span>
             </div>
 
-            <span className="text-3xl mb-6 block opacity-60" aria-hidden="true">{feature.icon}</span>
+            <feature.Icon size={36} className={`mb-6 block opacity-60 ${feature.color === 'teal' ? 'text-teal-400' : feature.color === 'violet' ? 'text-violet-400' : 'text-gold'}`} />
             <h3 className="font-cinzel text-sm tracking-[0.05em] text-text-main mb-3">{feature.title}</h3>
             <p className="text-xs text-text-muted leading-relaxed mb-4">{feature.desc}</p>
             <div className="font-courier text-[9px] text-gold/60 tracking-widest uppercase">

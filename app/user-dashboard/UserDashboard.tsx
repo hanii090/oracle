@@ -7,7 +7,7 @@ import { useTherapy } from '@/hooks/useTherapy';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Stars } from '@/components/Stars';
-import { SessionIcon, HomeworkIcon, BookIcon, AnchorIcon, ConsentIcon, ChevronIcon, CalendarIcon, ChartIcon, CapsuleIcon, GiftIcon, SettingsIcon } from '@/components/icons';
+import { SessionIcon, HomeworkIcon, BookIcon, AnchorIcon, ConsentIcon, ChevronIcon, CalendarIcon, ChartIcon, CapsuleIcon, GiftIcon, SettingsIcon, WaitlistIcon } from '@/components/icons';
 import { TimeCapsule } from '@/components/landing/TimeCapsule';
 import { QuestionGift } from '@/components/landing/QuestionGift';
 import { ExcavationReportSection } from '@/components/landing/ExcavationReport';
@@ -50,6 +50,8 @@ interface HomeworkAssignment {
   openingMessage?: string;
   closingMessage?: string;
   checkIns: CheckIn[];
+  assignedBy?: 'self' | 'therapist';
+  therapistId?: string;
   createdAt: string;
 }
 
@@ -294,6 +296,32 @@ export function UserDashboard() {
           ))}
         </div>
 
+        {/* NHS Waiting List Support Banner - shown when not connected to therapist */}
+        {!isInTherapy && (
+          <div className="bg-teal-900/10 border border-teal-500/20 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <WaitlistIcon size={20} className="text-teal-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-cinzel text-xs text-teal-400 tracking-wider mb-1">On an NHS Waiting List?</h3>
+                <p className="text-[11px] text-text-mid leading-relaxed mb-2">
+                  Sorca can support you while you wait for NHS talking therapies. Use sessions to explore your thoughts, track your mood, and build coping skills before your first appointment.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <a href="https://www.nhs.uk/mental-health/talking-therapies-medicine-treatments/talking-therapies-and-counselling/nhs-talking-therapies/" target="_blank" rel="noopener noreferrer" className="text-[9px] px-2 py-1 bg-teal-500/10 text-teal-400 rounded hover:bg-teal-500/20 transition-colors">
+                    NHS Talking Therapies
+                  </a>
+                  <a href="https://www.nhs.uk/mental-health/self-help/" target="_blank" rel="noopener noreferrer" className="text-[9px] px-2 py-1 bg-teal-500/10 text-teal-400 rounded hover:bg-teal-500/20 transition-colors">
+                    NHS Self-Help Resources
+                  </a>
+                  <a href="https://web.ntw.nhs.uk/selfhelp/" target="_blank" rel="noopener noreferrer" className="text-[9px] px-2 py-1 bg-teal-500/10 text-teal-400 rounded hover:bg-teal-500/20 transition-colors">
+                    CBT Self-Help Guides
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Content */}
         <motion.div
           key={activeTab}
@@ -403,7 +431,14 @@ export function UserDashboard() {
                   {homework.filter(hw => hw.status === 'active' && !hw.journeyPlan).map((hw) => (
                     <div key={hw.id} className="p-4 bg-raised border border-border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-cinzel text-sm text-text-main">{hw.topic}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-cinzel text-sm text-text-main">{hw.topic}</span>
+                          {hw.assignedBy === 'therapist' && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-400">
+                              From therapist
+                            </span>
+                          )}
+                        </div>
                         <span className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">
                           active
                         </span>

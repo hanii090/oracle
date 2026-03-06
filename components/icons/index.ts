@@ -45,3 +45,6 @@ export { PauseIcon } from './PauseIcon';
 export { BellIcon } from './BellIcon';
 export { HeartIcon } from './HeartIcon';
 export { VisionIcon } from './VisionIcon';
+export { WaitlistIcon } from './WaitlistIcon';
+export { ShieldIcon } from './ShieldIcon';
+export { NhsAppIcon } from './NhsAppIcon';

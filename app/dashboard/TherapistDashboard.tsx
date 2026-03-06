@@ -455,7 +455,7 @@ export function TherapistDashboard() {
                           )}
                         </div>
                         <p className="text-[10px] text-text-muted mb-2">
-                          Consented {new Date(client.consentedAt).toLocaleDateString()}
+                          {client.consentedAt ? `Consented ${new Date(client.consentedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : 'Active consent'}
                         </p>
 
                         {/* Permissions badges */}
@@ -485,19 +485,27 @@ export function TherapistDashboard() {
                         )}
                       </div>
 
-                      <div className="text-right">
+                      <div className="text-right flex flex-col items-end gap-2">
                         {client.homeworkCompletionRate !== null && (
-                          <div className="mb-2">
+                          <div>
                             <p className="text-2xl font-cinzel text-teal-400">
                               {client.homeworkCompletionRate}%
                             </p>
                             <p className="text-[9px] text-text-muted">Homework</p>
                           </div>
                         )}
-                        {client.activeHomework > 0 && (
+                        {client.activeHomework > 0 ? (
                           <p className="text-[10px] text-text-muted">
                             {client.activeHomework} active task{client.activeHomework > 1 ? 's' : ''}
                           </p>
+                        ) : (
+                          <a
+                            href={`/dashboard/homework?client=${client.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-[9px] px-2 py-1 bg-violet-500/20 text-violet-400 rounded hover:bg-violet-500/30 transition-colors"
+                          >
+                            + Assign Homework
+                          </a>
                         )}
                       </div>
                     </div>

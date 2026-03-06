@@ -82,7 +82,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const docSnap = await getDoc(docRef);
             if (!docSnap.exists()) {
               const defaultProfile: UserProfile = { tier: "free", sessionsThisMonth: 0, lastSessionDate: null };
-              await setDoc(docRef, defaultProfile);
+              // Include displayName and email from Firebase Auth so therapist dashboard can show real names
+              const profileWithIdentity = {
+                ...defaultProfile,
+                ...(u.displayName ? { displayName: u.displayName } : {}),
+                ...(u.email ? { email: u.email } : {}),
+              };
+              await setDoc(docRef, profileWithIdentity);
+            } else {
+              // Backfill displayName/email if missing (for existing users)
+              const existing = docSnap.data();
+              const updates: Record<string, string> = {};
+              if (!existing?.displayName && u.displayName) updates.displayName = u.displayName;
+              if (!existing?.email && u.email) updates.email = u.email;
+              if (Object.keys(updates).length > 0) {
+                await setDoc(docRef, updates, { merge: true });
+              }
             }
 
             // #11 Real-time profile listener — picks up webhook changes immediately
