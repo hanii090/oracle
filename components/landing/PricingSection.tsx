@@ -15,7 +15,7 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full max-w-6xl px-6 py-20 mb-20"
+      className="w-full max-w-6xl px-4 sm:px-6 py-12 sm:py-20 mb-12 sm:mb-20"
       aria-labelledby="pricing-heading"
     >
       <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-gold mb-5 flex items-center gap-4">
@@ -32,9 +32,9 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
       {/* Top 3 tiers */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Seeker */}
-        <div className="bg-surface p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(192,57,43,0.05)] flex flex-col" role="article" aria-label="Seeker plan">
+        <div className="bg-surface p-6 sm:p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(192,57,43,0.05)] flex flex-col" role="article" aria-label="Seeker plan">
           <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-text-muted mb-3">Patient Free</div>
-          <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1">Free</div>
+          <div className="font-cinzel text-3xl sm:text-5xl font-black text-text-main leading-none mb-1">Free</div>
           <div className="text-xs text-text-muted mb-10">Forever free · No card required</div>
           <ul className="space-y-4 flex-1" aria-label="Patient Free features">
             {['Daily mood check-ins', 'PHQ-9 & GAD-7 tracking', 'Grounding exercises', 'Crisis contacts (UK)', 'Basic session history'].map((item, i) => (
@@ -63,10 +63,10 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
         </div>
 
         {/* Philosopher */}
-        <div className="bg-raised p-12 border border-gold/30 relative rounded-lg hover:border-gold hover:shadow-[0_8px_30px_rgba(192,57,43,0.12)] transition-all duration-300 transform hover:-translate-y-1 flex flex-col" role="article" aria-label="Philosopher plan - most popular">
+        <div className="bg-raised p-6 sm:p-12 border border-gold/30 relative rounded-lg hover:border-gold hover:shadow-[0_8px_30px_rgba(192,57,43,0.12)] transition-all duration-300 transform hover:-translate-y-1 flex flex-col" role="article" aria-label="Philosopher plan - most popular">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-gold text-void font-cinzel text-[9px] tracking-[0.15em] px-4 py-1 rounded-b-md">Most Popular</div>
           <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-text-muted mb-3 mt-2">Patient Plus</div>
-          <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-gold">£</sup>9</div>
+          <div className="font-cinzel text-3xl sm:text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-gold">£</sup>9</div>
           <div className="text-xs text-text-muted mb-10">per month · or £79/year</div>
           <ul className="space-y-4 flex-1" aria-label="Patient Plus features">
             {['Everything in Free', 'AI homework companion', 'Relapse prevention toolkit', 'Psychoeducation library', 'Week summaries', 'Therapist data sharing', 'Priority support'].map((item, i) => (
@@ -84,9 +84,9 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
         </div>
 
         {/* Oracle Pro */}
-        <div className="bg-surface p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(192,57,43,0.05)] flex flex-col" role="article" aria-label="Sorca Pro plan">
+        <div className="bg-surface p-6 sm:p-12 border border-border rounded-lg hover:border-gold/30 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(192,57,43,0.05)] flex flex-col" role="article" aria-label="Sorca Pro plan">
           <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-text-muted mb-3">Patient Pro</div>
-          <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-gold">£</sup>19</div>
+          <div className="font-cinzel text-3xl sm:text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-gold">£</sup>19</div>
           <div className="text-xs text-text-muted mb-10">per month · full support</div>
           <ul className="space-y-4 flex-1" aria-label="Patient Pro features">
             {['Everything in Plus', 'Voice sessions', 'Shared sessions with partner/family', 'GP letter generation', 'Full data export (GDPR)', 'Priority clinical support'].map((item, i) => (
@@ -106,14 +106,14 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
       </div>
 
       {/* Clinical Practice - Full Width */}
-      <div className="mt-6 bg-gradient-to-r from-teal/5 via-surface to-teal/5 p-8 md:p-12 border border-teal/30 rounded-lg hover:border-teal transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(42,107,107,0.08)] relative" role="article" aria-label="Clinical Practice plan">
+      <div className="mt-6 bg-gradient-to-r from-teal/5 via-surface to-teal/5 p-5 sm:p-8 md:p-12 border border-teal/30 rounded-lg hover:border-teal transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(42,107,107,0.08)] relative" role="article" aria-label="Clinical Practice plan">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-teal text-void font-cinzel text-[9px] tracking-[0.15em] px-4 py-1 rounded-b-md">For Therapists & Coaches</div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           {/* Left - Pricing */}
           <div className="text-center md:text-left">
             <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-teal mb-3 mt-2">Clinical Practice</div>
-            <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-teal">£</sup>59</div>
+            <div className="font-cinzel text-3xl sm:text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-teal">£</sup>59</div>
             <div className="text-xs text-text-muted mb-4">per therapist / month</div>
             <a 
               href="/for-therapists"

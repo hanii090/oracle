@@ -235,18 +235,18 @@ export function UserDashboard() {
     <main className="min-h-screen bg-void relative">
       <Stars />
 
-      <div className="max-w-6xl mx-auto px-6 py-8 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 relative z-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
           <div>
-            <h1 className="font-cinzel text-2xl text-text-main mb-1">Your Dashboard</h1>
+            <h1 className="font-cinzel text-xl sm:text-2xl text-text-main mb-1">Your Dashboard</h1>
             <p className="text-sm text-text-muted">
               {profile?.tier} tier · {sessions?.length || 0} sessions
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             {isInTherapy && therapyProfile?.nextSessionDate && (
-              <div className="flex items-center gap-2 text-xs text-teal">
+              <div className="hidden sm:flex items-center gap-2 text-xs text-teal">
                 <CalendarIcon size={16} />
                 <span>Next session: {formatDate(therapyProfile.nextSessionDate)}</span>
               </div>
@@ -260,7 +260,7 @@ export function UserDashboard() {
             </button>
             <Link
               href="/"
-              className="text-xs text-text-muted hover:text-gold font-cinzel tracking-widest"
+              className="hidden sm:inline text-xs text-text-muted hover:text-gold font-cinzel tracking-widest"
             >
               ← Back to Sorca
             </Link>
@@ -274,12 +274,12 @@ export function UserDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
           {tabs.map(({ id, label, Icon, count }) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-cinzel text-xs tracking-widest whitespace-nowrap transition-all ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg font-cinzel text-[10px] sm:text-xs tracking-widest whitespace-nowrap transition-all ${
                 activeTab === id
                   ? 'bg-gold/10 border border-gold/30 text-gold'
                   : 'bg-surface border border-border text-text-muted hover:border-gold/20'
@@ -628,7 +628,7 @@ export function UserDashboard() {
         </motion.div>
 
         {/* Quick Actions */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           <Link
             href="/?start=true"
             className="bg-surface border border-border rounded-lg p-4 hover:border-gold/30 transition-colors group text-center"
@@ -670,7 +670,7 @@ export function UserDashboard() {
           <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
             Insights & Tools
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {/* Excavation Report Card */}
             <button
               onClick={() => profile?.tier !== 'free' && setShowReportModal(true)}

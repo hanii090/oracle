@@ -238,20 +238,20 @@ export function TherapistDashboard() {
     <main className="min-h-screen bg-void relative">
       <Stars />
 
-      <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 relative z-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="font-cinzel text-2xl text-text-main mb-1">Practice Dashboard</h1>
+            <h1 className="font-cinzel text-xl sm:text-2xl text-text-main mb-1">Practice Dashboard</h1>
             <p className="text-sm text-text-muted">
               {data?.totalClients || 0} active clients
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <PatternAlertBadge onClick={() => setShowAlertPanel(true)} />
             <a
               href="/"
-              className="text-xs text-text-muted hover:text-gold font-cinzel tracking-widest"
+              className="hidden sm:inline text-xs text-text-muted hover:text-gold font-cinzel tracking-widest"
             >
               ← Back to Sorca
             </a>
@@ -579,7 +579,7 @@ export function TherapistDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4"
+          className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"
         >
           <a
             href="/dashboard/outcomes"

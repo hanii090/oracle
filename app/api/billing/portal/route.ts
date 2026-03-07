@@ -51,7 +51,7 @@ export async function POST(req: Request) {
 
     if (!stripeCustomerId) {
       return NextResponse.json(
-        { error: 'No active subscription found. You are on the free tier.' },
+        { error: 'No billing account found. If you recently upgraded, please wait a few moments and try again. Your payment may still be processing.' },
         { status: 400 }
       );
     }

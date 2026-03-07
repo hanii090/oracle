@@ -49,24 +49,27 @@ export async function POST(req: Request) {
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 
-    // Tier gating: Homework companion is a Plus+ feature (philosopher, pro, practice)
+    // Determine user tier for gating
+    let userTier = 'free';
     if (isAdminConfigured()) {
       const db = getAdminFirestore();
       const userDoc = await db.doc(`users/${userId}`).get();
-      const tier = userDoc.exists ? userDoc.data()?.tier || 'free' : 'free';
-      
-      if (tier === 'free') {
-        return NextResponse.json(
-          { error: 'Homework companion requires Patient Plus or higher subscription' },
-          { status: 403 }
-        );
-      }
+      userTier = userDoc.exists ? userDoc.data()?.tier || 'free' : 'free';
     }
 
     const body = await req.json();
     
     // Determine if this is a create or check-in request
     if (body.topic) {
+      // Tier gating: Self-assigned homework creation is a Plus+ feature
+      // (therapist-assigned homework is handled via /api/therapist/assign-homework)
+      if (userTier === 'free' && body.assignedBy !== 'therapist') {
+        return NextResponse.json(
+          { error: 'Homework companion requires Patient Plus or higher subscription' },
+          { status: 403 }
+        );
+      }
+
       // Create new homework assignment
       const parsed = createHomeworkSchema.safeParse(body);
       if (!parsed.success) {

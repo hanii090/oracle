@@ -317,7 +317,7 @@ function HomeContent() {
       {!sessionStarted && user && (
         <a
           href={isTherapist ? "/dashboard" : "/user-dashboard"}
-          className={`fixed bottom-6 right-6 z-40 flex items-center gap-2 ${isTherapist ? 'bg-teal hover:bg-teal-bright' : 'bg-gold hover:bg-gold/90'} text-void px-4 py-3 rounded-lg shadow-lg transition-colors font-cinzel text-sm tracking-widest`}
+          className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-2 ${isTherapist ? 'bg-teal hover:bg-teal-bright' : 'bg-gold hover:bg-gold/90'} text-void px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg shadow-lg transition-colors font-cinzel text-xs sm:text-sm tracking-widest`}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             {isTherapist ? (

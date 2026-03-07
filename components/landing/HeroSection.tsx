@@ -17,15 +17,15 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
   return (
     <>
       {/* HEADER / AUTH */}
-      <header className="w-full max-w-6xl px-6 py-6 flex justify-between items-center absolute top-0 z-50">
+      <header className="w-full max-w-6xl px-4 sm:px-6 py-4 sm:py-6 flex justify-between items-center absolute top-0 z-50">
         <div className="font-cinzel text-gold tracking-[0.3em] text-xs uppercase">
           Sorca
         </div>
         <div className="flex items-center gap-6">
           {!loading && (
             user ? (
-              <div className="flex items-center gap-4">
-                <div className="text-xs font-courier text-text-muted uppercase tracking-widest">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <div className="hidden sm:block text-xs font-courier text-text-muted uppercase tracking-widest">
                   {profile?.tier} Tier <span className="text-gold opacity-50 mx-2" aria-hidden="true">|</span> {profile?.tier === 'free' ? `${profile.sessionsThisMonth}/5 Sessions` : '∞ Sessions'}
                 </div>
                 <button
@@ -50,14 +50,14 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
       </header>
 
       {/* HERO */}
-      <section className="min-h-screen flex flex-col items-center justify-center text-center px-6 max-w-4xl mx-auto py-20 relative" aria-labelledby="hero-title">
+      <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 sm:px-6 max-w-4xl mx-auto py-16 sm:py-20 relative" aria-labelledby="hero-title">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192,57,43,0.04)_0%,transparent_60%)] pointer-events-none" aria-hidden="true" />
         
         <div className="font-cinzel text-[11px] tracking-[0.4em] uppercase text-gold mb-6 relative z-10">
           AI-Powered Therapy Support · UK Based
         </div>
         
-        <h1 id="hero-title" className="font-cinzel font-black text-6xl md:text-8xl lg:text-9xl tracking-[0.15em] leading-none text-transparent bg-clip-text bg-gradient-to-b from-gold-bright via-gold to-gold/40 mb-6">
+        <h1 id="hero-title" className="font-cinzel font-black text-4xl sm:text-6xl md:text-8xl lg:text-9xl tracking-[0.1em] sm:tracking-[0.15em] leading-none text-transparent bg-clip-text bg-gradient-to-b from-gold-bright via-gold to-gold/40 mb-6">
           SORCA
         </h1>
 
@@ -74,21 +74,21 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
         </p>
 
         {/* Social Proof */}
-        <div className="flex items-center gap-6 mb-12 relative z-10">
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mb-12 relative z-10">
           <div className="flex -space-x-3">
             {['/avatars/1.webp', '/avatars/2.webp', '/avatars/3.webp', '/avatars/4.webp', '/avatars/5.webp'].map((src, i) => (
               <img 
                 key={i}
                 src={src}
                 alt=""
-                className="w-10 h-10 rounded-full border-2 border-gold/30 object-cover shadow-[0_0_15px_rgba(192,57,43,0.15)] hover:shadow-[0_0_20px_rgba(192,57,43,0.3)] transition-shadow"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gold/30 object-cover shadow-[0_0_15px_rgba(192,57,43,0.15)] hover:shadow-[0_0_20px_rgba(192,57,43,0.3)] transition-shadow"
                 style={{ animationDelay: `${i * 0.1}s` }}
               />
             ))}
           </div>
-          <div className="text-left">
-            <div className="font-cinzel text-sm text-gold">Join patients &amp; therapists across the UK</div>
-            <div className="font-courier text-[10px] text-text-muted tracking-wider">AI-assisted homework shows 75% completion (Habicht et al. 2025)</div>
+          <div className="text-center sm:text-left">
+            <div className="font-cinzel text-xs sm:text-sm text-gold">Join patients &amp; therapists across the UK</div>
+            <div className="font-courier text-[9px] sm:text-[10px] text-text-muted tracking-wider">AI-assisted homework shows 75% completion (Habicht et al. 2025)</div>
           </div>
         </div>
 
@@ -110,7 +110,7 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
         )}
 
         {/* Trust badges */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-8 relative z-10">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mt-8 relative z-10">
           <span className="text-[10px] font-courier text-text-muted tracking-wider uppercase border border-border px-3 py-1.5 rounded">
             GDPR Compliant
           </span>

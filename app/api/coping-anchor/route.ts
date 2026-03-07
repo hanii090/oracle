@@ -7,8 +7,9 @@ import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase-admin';
 
 const anchorSchema = z.object({
   name: z.string().min(1).max(100),
-  type: z.enum(['breathing', 'grounding', 'reframe', 'movement', 'other']),
-  steps: z.array(z.string().max(500)).min(1).max(10),
+  type: z.enum(['breathing', 'grounding', 'reframe', 'movement', 'other']).optional().default('other'),
+  steps: z.array(z.string().max(500)).min(1).max(10).optional(),
+  technique: z.string().max(2000).optional(),
   description: z.string().max(500).optional(),
   taughtBy: z.string().max(100).optional(),
 });
@@ -39,14 +40,22 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, type, steps, description, taughtBy } = parsed.data;
+    const { name, type, steps, technique, description, taughtBy } = parsed.data;
+
+    // Support both simple {technique} and full {steps[]} format
+    const resolvedSteps = steps
+      ? steps.map(s => sanitizeMessage(s))
+      : technique
+        ? [sanitizeMessage(technique)]
+        : ['No steps provided'];
 
     const anchor = {
       id: crypto.randomUUID(),
       userId,
       name: sanitizeMessage(name),
-      type,
-      steps: steps.map(s => sanitizeMessage(s)),
+      type: type || 'other',
+      steps: resolvedSteps,
+      technique: technique ? sanitizeMessage(technique) : resolvedSteps.join('\n'),
       description: description ? sanitizeMessage(description) : null,
       taughtBy: taughtBy ? sanitizeMessage(taughtBy) : null,
       usageCount: 0,
