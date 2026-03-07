@@ -36,6 +36,12 @@ const slides: { Icon: ComponentType<IconProps>; title: string; body: string; acc
     body: 'Lyria generates real-time ambient music that reacts to the emotional weight of your conversation. Tension, grief, wonder — the music mirrors your inner state.',
     accent: 'text-violet-bright',
   },
+  {
+    Icon: DepthIcon,
+    title: 'Choose Your Style',
+    body: 'Sorca adapts its questioning style. Socratic (default) uses open-ended questioning. CBT explores thought patterns. IFS dialogues with inner parts. Person-Centred follows your lead. You can change this anytime during a session.',
+    accent: 'text-gold',
+  },
 ];
 
 export function WelcomeModal({ show, onDismiss }: WelcomeModalProps) {

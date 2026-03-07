@@ -21,6 +21,7 @@ export function ChatInput({ value, onChange, onSubmit, isLoading, nightMode, dis
   }, [isLoading]);
 
   return (
+    <>
     <form onSubmit={onSubmit} className="relative mt-auto group" role="form" aria-label="Send message to Sorca">
       <label htmlFor="sorca-input" className="sr-only">Your message to Sorca</label>
       <textarea
@@ -54,5 +55,33 @@ export function ChatInput({ value, onChange, onSubmit, isLoading, nightMode, dis
         </button>
       </div>
     </form>
+    {!nightMode && !disabled && (
+      <div className="mt-2 text-center">
+        <details className="inline-block">
+          <summary className="text-[9px] text-text-muted/50 hover:text-text-muted cursor-pointer font-courier tracking-wider transition-colors">
+            Need immediate support?
+          </summary>
+          <div className="mt-2 p-3 bg-surface border border-border rounded-lg text-left space-y-1.5">
+            <p className="text-[10px] text-text-muted font-courier tracking-wider uppercase mb-2">UK Crisis Lines</p>
+            <a href="tel:116123" className="flex items-center gap-2 text-xs text-gold hover:text-gold/80 transition-colors">
+              <span className="text-sm">📞</span> Samaritans: <strong>116 123</strong> <span className="text-text-muted">(24/7, free)</span>
+            </a>
+            <a href="sms:85258&body=SHOUT" className="flex items-center gap-2 text-xs text-gold hover:text-gold/80 transition-colors">
+              <span className="text-sm">💬</span> Crisis Text Line: Text <strong>SHOUT</strong> to <strong>85258</strong>
+            </a>
+            <a href="tel:08006895555" className="flex items-center gap-2 text-xs text-text-mid hover:text-text-main transition-colors">
+              <span className="text-sm">📞</span> SANEline: <strong>0800 689 5555</strong> <span className="text-text-muted">(4:30pm–10:30pm)</span>
+            </a>
+            <a href="tel:116123" className="flex items-center gap-2 text-xs text-text-mid hover:text-text-main transition-colors">
+              <span className="text-sm">📞</span> Campaign Against Living Miserably: <strong>0800 58 58 58</strong> <span className="text-text-muted">(5pm–midnight)</span>
+            </a>
+            <p className="text-[9px] text-text-muted/60 mt-2 pt-2 border-t border-border">
+              If you are in immediate danger, call <strong>999</strong>.
+            </p>
+          </div>
+        </details>
+      </div>
+    )}
+    </>
   );
 }

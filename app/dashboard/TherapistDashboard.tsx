@@ -32,6 +32,8 @@ interface Client {
     moodTrend: string | null;
   } | null;
   consentedAt: string;
+  riskFlag?: 'none' | 'low' | 'medium' | 'high';
+  emergencyContact?: { name: string; phone: string; relationship: string };
 }
 
 interface Alert {
@@ -485,6 +487,15 @@ export function TherapistDashboard() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <h3 className="font-cinzel text-sm text-text-main truncate">{client.displayName}</h3>
+                          {client.riskFlag && client.riskFlag !== 'none' && (
+                            <span className={`text-[8px] px-1.5 py-0.5 rounded shrink-0 font-cinzel tracking-wider ${
+                              client.riskFlag === 'high' ? 'bg-red-500/15 text-red-400' :
+                              client.riskFlag === 'medium' ? 'bg-amber-500/15 text-amber-400' :
+                              'bg-blue-500/15 text-blue-400'
+                            }`}>
+                              {client.riskFlag === 'high' ? '⚠ AT RISK' : client.riskFlag === 'medium' ? '⚡ Monitor' : 'ℹ Low risk'}
+                            </span>
+                          )}
                           {client.nextSession && new Date(client.nextSession) <= new Date(Date.now() + 24 * 60 * 60 * 1000) && (
                             <span className="text-[8px] px-1.5 py-0.5 bg-teal/15 text-teal rounded shrink-0">Upcoming</span>
                           )}

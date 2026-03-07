@@ -198,6 +198,44 @@ export function PracticeSettings() {
           </div>
         </motion.div>
 
+        {/* Professional Registration */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="bg-surface border border-border rounded-lg p-6 mb-6"
+        >
+          <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
+            Professional Registration
+          </h2>
+          <p className="text-xs text-text-muted mb-4">
+            Your BACP/UKCP membership number is displayed on your profile and helps clients verify your credentials.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[10px] text-text-muted font-courier tracking-wider block mb-1">Registration Body</label>
+              <select className="w-full bg-raised border border-border rounded-lg px-3 py-2 text-sm text-text-main focus:border-gold/50 focus:outline-none">
+                <option value="bacp">BACP</option>
+                <option value="ukcp">UKCP</option>
+                <option value="bps">BPS</option>
+                <option value="hcpc">HCPC</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] text-text-muted font-courier tracking-wider block mb-1">Membership Number</label>
+              <input
+                type="text"
+                placeholder="e.g. 123456"
+                className="w-full bg-raised border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-gold/50 focus:outline-none"
+              />
+            </div>
+          </div>
+          <p className="text-[9px] text-text-muted/60 mt-2">
+            Clients see a verified badge on your profile when this is set. Required for insurance directory listings.
+          </p>
+        </motion.div>
+
         {/* Invite Clients Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

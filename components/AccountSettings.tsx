@@ -104,6 +104,16 @@ export function AccountSettings({ onClose }: { onClose: () => void }) {
               Tier:{" "}
               <span className="text-gold capitalize">{profile?.tier || "free"}</span>
             </p>
+            {profile?.role === 'therapist' && (
+              <div className="mt-3 pt-3 border-t border-border">
+                <p className="font-courier text-xs text-text-muted tracking-widest uppercase mb-1">
+                  Professional Registration
+                </p>
+                <p className="font-cormorant text-xs text-text-muted italic">
+                  BACP/UKCP membership number can be set in your Practice Settings.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Manage Subscription */}

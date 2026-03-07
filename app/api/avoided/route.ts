@@ -43,6 +43,33 @@ Only include questions with deflection confidence > 0.6.
 Conversation:
 `;
 
+export async function GET(req: Request) {
+  const log = createLogger({ route: '/api/avoided', correlationId: crypto.randomUUID() });
+
+  try {
+    const authResult = await verifyAuth(req);
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
+
+    const adminDb = getAdminFirestore();
+    const snapshot = await adminDb
+      .collection('users').doc(userId).collection('avoided')
+      .orderBy('detectedAt', 'desc')
+      .limit(50)
+      .get();
+
+    const avoidedQuestions = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return NextResponse.json({ avoidedQuestions });
+  } catch (error) {
+    log.error('Avoided questions fetch error', {}, error);
+    return NextResponse.json({ avoidedQuestions: [] });
+  }
+}
+
 export async function POST(req: Request) {
   const log = createLogger({ route: '/api/avoided', correlationId: crypto.randomUUID() });
 

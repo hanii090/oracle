@@ -37,6 +37,8 @@ import { HomeworkCompanion } from "@/components/session/HomeworkCompanion";
 import { PreSessionPrimer } from "@/components/session/PreSessionPrimer";
 import { CopingAnchor } from "@/components/session/CopingAnchor";
 import { ModalitySwitcher, ModalityBadge } from "@/components/session/ModalitySwitcher";
+import { SessionInsightsCard } from "@/components/session/SessionInsightsCard";
+import { PreSessionMoodCheckIn } from "@/components/session/PreSessionMoodCheckIn";
 
 export function SorcaSession({ onExit, viewSession }: { onExit: () => void; viewSession?: { messages: SessionMessage[]; maxDepth: number; createdAt: string } | null }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -63,6 +65,9 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
   const [personalKey, setPersonalKey] = useState<{ key: string; mode: string; emotion: string } | null>(null);
   const [ambientPortrait, setAmbientPortrait] = useState<{ description: string; palette: string[] } | null>(null);
   const [showPortrait, setShowPortrait] = useState(false);
+  const [showSessionInsights, setShowSessionInsights] = useState(false);
+  const [showPreMoodCheckIn, setShowPreMoodCheckIn] = useState(false);
+  const [preMood, setPreMood] = useState<{ score: number; mainConcern: string } | null>(null);
 
   // Therapy mode state
   const [showSessionDebrief, setShowSessionDebrief] = useState(false);
@@ -197,6 +202,11 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
     const greeting = "What truth are you avoiding today?";
     setMessages([{ id: crypto.randomUUID(), role: "assistant", content: greeting, depth: 1 }]);
     setLastSorcaText(greeting);
+
+    // Show pre-session mood check-in for paid users
+    if (profile?.tier !== 'free') {
+      setShowPreMoodCheckIn(true);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -367,6 +377,12 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
 
       await Promise.allSettled(postSessionTasks);
 
+      // Show session insights if they had meaningful exchanges
+      if (currentMessages.filter(m => m.role === 'user').length >= 2) {
+        setShowSessionInsights(true);
+        return; // Don't exit yet, show insights first
+      }
+
       // Show share card if they went deep enough
       if (depth >= 3) {
         setShowShareCard(true);
@@ -483,6 +499,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
             tier: profile?.tier || "free",
             therapyModality,
             timeMode,
+            preMood: preMood || undefined,
           };
       const res = await fetch(apiEndpoint, {
         method: "POST",
@@ -538,6 +555,8 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
         role: "assistant",
         content: question,
         depth: newDepth,
+        emotionData: emotionData,
+        modalityId: therapyModality,
       };
 
       setMessages((prev) => [...prev, oracleMsg]);
@@ -729,6 +748,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
               isLast={i === displayMessages.length - 1}
               index={i}
               totalMessages={displayMessages.length}
+              showEmotionPulse={profile?.tier !== 'free'}
             />
           ))}
           {isLoading && <LoadingIndicator depth={depth} nightMode={nightMode} />}
@@ -866,6 +886,27 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
 
       {showCopingAnchor && authUser && (
         <CopingAnchor onClose={() => setShowCopingAnchor(false)} />
+      )}
+
+      {/* Session Insights Card — shown after session exit */}
+      {showSessionInsights && (
+        <SessionInsightsCard
+          messages={messages}
+          depth={depth}
+          onClose={() => setShowSessionInsights(false)}
+          onExit={() => { setShowSessionInsights(false); onExit(); }}
+        />
+      )}
+
+      {/* Pre-Session Mood Check-In */}
+      {showPreMoodCheckIn && !viewSession && (
+        <PreSessionMoodCheckIn
+          onComplete={(mood) => {
+            setPreMood(mood);
+            setShowPreMoodCheckIn(false);
+          }}
+          onSkip={() => setShowPreMoodCheckIn(false)}
+        />
       )}
     </motion.div>
   );

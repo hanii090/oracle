@@ -30,6 +30,8 @@ export function TherapistNotesPanel({ clientId, clientName, isOpen, onClose }: T
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+  const [draftLoading, setDraftLoading] = useState(false);
+  const [noteFormat, setNoteFormat] = useState<'soap' | 'dap' | 'girp' | 'free'>('soap');
 
   const loadNotes = useCallback(async () => {
     if (!clientId) return;
@@ -153,13 +155,58 @@ export function TherapistNotesPanel({ clientId, clientName, isOpen, onClose }: T
             </button>
           </div>
 
+          {/* Note Format Selector + AI Draft */}
+          <div className="flex items-center gap-2 mb-3">
+            {(['soap', 'dap', 'girp', 'free'] as const).map(fmt => (
+              <button
+                key={fmt}
+                onClick={() => setNoteFormat(fmt)}
+                className={`text-[9px] px-2.5 py-1 rounded font-cinzel tracking-wider transition-all ${
+                  noteFormat === fmt
+                    ? 'bg-teal/10 text-teal border border-teal/30'
+                    : 'bg-surface border border-border text-text-muted hover:border-teal/20'
+                }`}
+              >
+                {fmt.toUpperCase()}
+              </button>
+            ))}
+            <button
+              onClick={async () => {
+                setDraftLoading(true);
+                try {
+                  const token = await getIdToken();
+                  const res = await fetch('/api/therapist/ai-notes', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    },
+                    body: JSON.stringify({ clientId, format: noteFormat }),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setNewNote(data.draft || '');
+                  }
+                } catch (e) {
+                  console.error('AI draft failed:', e);
+                } finally {
+                  setDraftLoading(false);
+                }
+              }}
+              disabled={draftLoading}
+              className="ml-auto text-[9px] px-3 py-1 bg-gold/10 text-gold border border-gold/30 rounded font-cinzel tracking-wider hover:bg-gold/20 transition-colors disabled:opacity-50"
+            >
+              {draftLoading ? 'Drafting...' : 'AI Draft'}
+            </button>
+          </div>
+
           {/* New Note */}
           <div className="bg-raised border border-border rounded-lg p-4 mb-6">
             <textarea
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
-              placeholder="Add a clinical note..."
-              rows={4}
+              placeholder={noteFormat === 'soap' ? 'S: Subjective...\nO: Objective...\nA: Assessment...\nP: Plan...' : noteFormat === 'dap' ? 'D: Data...\nA: Assessment...\nP: Plan...' : noteFormat === 'girp' ? 'G: Goals...\nI: Interventions...\nR: Response...\nP: Plan...' : 'Add a clinical note...'}
+              rows={6}
               className="w-full bg-transparent text-sm text-text-main placeholder:text-text-muted/50 focus:outline-none resize-none"
             />
             <div className="flex items-center gap-2 mt-3">
@@ -179,7 +226,7 @@ export function TherapistNotesPanel({ clientId, clientName, isOpen, onClose }: T
               </button>
             </div>
             <p className="text-[9px] text-text-muted/60 mt-2">
-              These notes are private and not visible to the client.
+              These notes are private and not visible to the client. Format: {noteFormat.toUpperCase()}
             </p>
           </div>
 

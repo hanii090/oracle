@@ -20,6 +20,14 @@ import { ProgressReport } from '@/components/ProgressReport';
 import { GDPRDashboard } from '@/components/GDPRDashboard';
 import { HomeworkCompanion } from '@/components/homework/HomeworkCompanion';
 import { Footer } from '@/components/landing/Footer';
+import { MoodCheckInTab } from '@/components/dashboard/MoodCheckIn';
+import { OutcomeMeasuresTab } from '@/components/dashboard/OutcomeMeasuresTab';
+import { AvoidedQuestionsView } from '@/components/dashboard/AvoidedQuestionsView';
+import { HonestyMap } from '@/components/dashboard/HonestyMap';
+import { BeliefMap } from '@/components/dashboard/BeliefMap';
+import { ProgressTimeline } from '@/components/dashboard/ProgressTimeline';
+import { SteppedCareCard } from '@/components/dashboard/SteppedCareCard';
+import { RelapsePrevention } from '@/components/patient/RelapsePrevention';
 
 interface WeekSummary {
   id: string;
@@ -73,7 +81,8 @@ export function UserDashboard() {
   const { therapyProfile, isInTherapy } = useTherapy();
   const router = useRouter();
   
-  const [activeTab, setActiveTab] = useState<'sessions' | 'summaries' | 'homework' | 'anchors' | 'consent'>('sessions');
+  const [activeTab, setActiveTab] = useState<'sessions' | 'summaries' | 'homework' | 'anchors' | 'consent' | 'mood' | 'outcomes' | 'insights'>('sessions');
+  const [showRelapsePlan, setShowRelapsePlan] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showCapsuleModal, setShowCapsuleModal] = useState(false);
   const [showGiftModal, setShowGiftModal] = useState(false);
@@ -236,9 +245,12 @@ export function UserDashboard() {
 
   const tabs = [
     { id: 'sessions', label: 'Sessions', Icon: SessionIcon, count: sessions?.length || 0 },
-    { id: 'summaries', label: 'Week Summaries', Icon: BookIcon, count: summaries.length },
+    { id: 'mood', label: 'Mood', Icon: ChartIcon, count: null },
+    { id: 'outcomes', label: 'Outcomes', Icon: ChartIcon, count: null },
+    { id: 'insights', label: 'Insights', Icon: BookIcon, count: null },
+    { id: 'summaries', label: 'Summaries', Icon: BookIcon, count: summaries.length },
     { id: 'homework', label: 'Homework', Icon: HomeworkIcon, count: homework.filter(h => h.status === 'active').length },
-    { id: 'anchors', label: 'Coping Anchors', Icon: AnchorIcon, count: anchors.length },
+    { id: 'anchors', label: 'Anchors', Icon: AnchorIcon, count: anchors.length },
     { id: 'consent', label: 'Consent', Icon: ConsentIcon, count: null },
   ] as const;
 
@@ -579,6 +591,53 @@ export function UserDashboard() {
           )}
 
 
+          {activeTab === 'mood' && (
+            <MoodCheckInTab />
+          )}
+
+          {activeTab === 'outcomes' && (
+            <OutcomeMeasuresTab />
+          )}
+
+          {activeTab === 'insights' && (
+            <div className="space-y-8">
+              <AvoidedQuestionsView />
+              <div className="border-t border-border pt-8">
+                <HonestyMap />
+              </div>
+              <div className="border-t border-border pt-8">
+                <BeliefMap />
+              </div>
+              <div className="border-t border-border pt-8">
+                <SteppedCareCard tier={profile?.tier} />
+              </div>
+              {profile?.tier !== 'free' && (
+                <div className="border-t border-border pt-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase">
+                      Relapse Prevention Plan
+                    </h2>
+                    {!showRelapsePlan && (
+                      <button
+                        onClick={() => setShowRelapsePlan(true)}
+                        className="text-xs text-gold hover:text-gold/80 font-cinzel tracking-widest"
+                      >
+                        Open Plan →
+                      </button>
+                    )}
+                  </div>
+                  {showRelapsePlan ? (
+                    <RelapsePrevention />
+                  ) : (
+                    <p className="text-xs text-text-muted">
+                      Build a personalised relapse prevention plan with warning signs, coping strategies, and support contacts.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {activeTab === 'consent' && (
             <div>
               <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
@@ -672,12 +731,10 @@ export function UserDashboard() {
           </Link>
         </div>
 
-        {/* Thought Drop Section */}
-        {isInTherapy && (
-          <div className="mt-6">
-            <ThoughtDrop variant="inline" />
-          </div>
-        )}
+        {/* Thought Drop Section — available to all users */}
+        <div className="mt-6">
+          <ThoughtDrop variant="inline" />
+        </div>
 
         {/* Analytics & Insights Section */}
         <div className="mt-8">

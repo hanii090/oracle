@@ -51,6 +51,33 @@ Return JSON: { "beliefs": [{ "text": "...", "category": "...", "confidence": 0.0
 Conversation:
 `;
 
+export async function GET(req: Request) {
+  const log = createLogger({ route: '/api/beliefs', correlationId: crypto.randomUUID() });
+
+  try {
+    const authResult = await verifyAuth(req);
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
+
+    const adminDb = getAdminFirestore();
+    const beliefsSnap = await adminDb
+      .collection('users').doc(userId).collection('beliefs')
+      .orderBy('lastSeen', 'desc')
+      .limit(50)
+      .get();
+
+    const beliefs = beliefsSnap.docs.map(doc => ({
+      docId: doc.id,
+      ...doc.data(),
+    }));
+
+    return NextResponse.json({ beliefs });
+  } catch (error) {
+    log.error('Beliefs fetch error', {}, error);
+    return NextResponse.json({ beliefs: [] });
+  }
+}
+
 export async function POST(req: Request) {
   const log = createLogger({ route: '/api/beliefs', correlationId: crypto.randomUUID() });
 

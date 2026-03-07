@@ -48,6 +48,36 @@ Analyse these question-response pairs and return a JSON array:
 Pairs to analyse:
 `;
 
+export async function GET(req: Request) {
+  const log = createLogger({ route: '/api/question-dna', correlationId: crypto.randomUUID() });
+
+  try {
+    const authResult = await verifyAuth(req);
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
+
+    const adminDb = getAdminFirestore();
+    const userDoc = await adminDb.doc(`users/${userId}`).get();
+    const userData = userDoc.data();
+
+    const profile = userData?.questionDNAProfile || null;
+
+    // Also get recent individual entries for detail view
+    const recentSnap = await adminDb
+      .collection('users').doc(userId).collection('questionDNA')
+      .orderBy('timestamp', 'desc')
+      .limit(30)
+      .get();
+
+    const recentEntries = recentSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    return NextResponse.json({ profile, recentEntries });
+  } catch (error) {
+    log.error('Question DNA fetch error', {}, error);
+    return NextResponse.json({ profile: null, recentEntries: [] });
+  }
+}
+
 export async function POST(req: Request) {
   const log = createLogger({ route: '/api/question-dna', correlationId: crypto.randomUUID() });
 
