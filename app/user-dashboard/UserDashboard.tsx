@@ -80,13 +80,14 @@ export function UserDashboard() {
   const { user, profile, loading: authLoading, sessions, loadSessions, getIdToken, logOut } = useAuth();
   const { therapyProfile, isInTherapy } = useTherapy();
   const router = useRouter();
-  
+
   const [activeTab, setActiveTab] = useState<'sessions' | 'summaries' | 'homework' | 'anchors' | 'consent' | 'mood' | 'outcomes' | 'insights'>('sessions');
   const [showRelapsePlan, setShowRelapsePlan] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showCapsuleModal, setShowCapsuleModal] = useState(false);
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [showAddAnchor, setShowAddAnchor] = useState(false);
   const [showTherapyProfile, setShowTherapyProfile] = useState(false);
   const [showProgressReport, setShowProgressReport] = useState(false);
@@ -106,7 +107,7 @@ export function UserDashboard() {
   const loadData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    
+
     try {
       const token = await getIdToken();
       const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
@@ -274,32 +275,53 @@ export function UserDashboard() {
                 <span>Next session: {formatDate(therapyProfile.nextSessionDate)}</span>
               </div>
             )}
-            <button
-              onClick={() => setShowGDPR(true)}
-              className="p-2 rounded-lg bg-surface border border-border hover:border-teal/30 transition-colors"
-              title="Data & Privacy"
-            >
-              <ConsentIcon size={18} className="text-text-muted hover:text-teal" />
-            </button>
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-2 rounded-lg bg-surface border border-border hover:border-gold/30 transition-colors"
-              title="Settings"
-            >
-              <SettingsIcon size={18} className="text-text-muted hover:text-gold" />
-            </button>
-            <Link
-              href="/"
-              className="hidden sm:inline text-xs text-text-muted hover:text-gold font-cinzel tracking-widest"
-            >
-              ← Back to Sorca
-            </Link>
-            <button
-              onClick={async () => { await logOut(); router.push('/'); }}
-              className="text-xs text-text-muted hover:text-crimson font-cinzel tracking-widest transition-colors"
-            >
-              Log Out
-            </button>
+            {/* Unified settings dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowSettings(prev => !prev)}
+                className="p-2 rounded-lg bg-surface border border-border hover:border-gold/30 transition-colors"
+                title="Settings & Account"
+              >
+                <SettingsIcon size={18} className="text-text-muted" />
+              </button>
+              {showSettings && (
+                <div className="absolute right-0 top-11 w-56 bg-surface border border-border rounded-xl shadow-xl z-50 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border">
+                    <p className="text-xs font-cinzel text-text-main">{user?.displayName || user?.email}</p>
+                    <p className="text-[10px] text-text-muted mt-0.5">{profile?.tier} tier</p>
+                  </div>
+                  <div className="py-1">
+                    <Link
+                      href="/"
+                      onClick={() => setShowSettings(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs text-text-muted hover:text-text-main hover:bg-raised transition-colors font-cinzel tracking-widest"
+                    >
+                      <span className="text-base">←</span> Back to Sorca
+                    </Link>
+                    <button
+                      onClick={() => { setShowAccountSettings(true); setShowSettings(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-text-muted hover:text-gold hover:bg-raised transition-colors font-cinzel tracking-widest text-left"
+                    >
+                      <SettingsIcon size={14} /> Account Settings
+                    </button>
+                    <button
+                      onClick={() => { setShowGDPR(true); setShowSettings(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-text-muted hover:text-teal hover:bg-raised transition-colors font-cinzel tracking-widest text-left"
+                    >
+                      <ConsentIcon size={14} /> Data &amp; Privacy
+                    </button>
+                  </div>
+                  <div className="border-t border-border py-1">
+                    <button
+                      onClick={async () => { await logOut(); router.push('/'); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-text-muted hover:text-crimson hover:bg-crimson/5 transition-colors font-cinzel tracking-widest text-left"
+                    >
+                      <span className="text-crimson">↗</span> Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -309,11 +331,10 @@ export function UserDashboard() {
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg font-cinzel text-[10px] sm:text-xs tracking-widest whitespace-nowrap shrink-0 transition-all ${
-                activeTab === id
-                  ? 'bg-gold/10 border border-gold/30 text-gold'
-                  : 'bg-surface border border-border text-text-muted hover:border-gold/20'
-              }`}
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg font-cinzel text-[10px] sm:text-xs tracking-widest whitespace-nowrap shrink-0 transition-all ${activeTab === id
+                ? 'bg-gold/10 border border-gold/30 text-gold'
+                : 'bg-surface border border-border text-text-muted hover:border-gold/20'
+                }`}
             >
               <Icon size={14} className="shrink-0" />
               {label}
@@ -465,7 +486,7 @@ export function UserDashboard() {
                       <p className="text-xs text-text-mid mb-2">{hw.description}</p>
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
-                          <div 
+                          <div
                             className="h-full bg-teal rounded-full"
                             style={{ width: `${(hw.completedDays / hw.durationDays) * 100}%` }}
                           />
@@ -488,10 +509,9 @@ export function UserDashboard() {
                           <div key={hw.id} className="p-3 bg-surface/50 border border-border rounded-lg opacity-70">
                             <div className="flex items-center justify-between mb-1">
                               <span className="font-cinzel text-xs text-text-main">{hw.topic}</span>
-                              <span className={`text-[9px] px-2 py-0.5 rounded ${
-                                hw.status === 'completed' ? 'bg-violet/10 text-violet' :
+                              <span className={`text-[9px] px-2 py-0.5 rounded ${hw.status === 'completed' ? 'bg-violet/10 text-violet' :
                                 'bg-text-muted/10 text-text-muted'
-                              }`}>
+                                }`}>
                                 {hw.status}
                               </span>
                             </div>
@@ -746,9 +766,8 @@ export function UserDashboard() {
             <button
               onClick={() => profile?.tier !== 'free' && setShowReportModal(true)}
               disabled={profile?.tier === 'free'}
-              className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${
-                profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-gold/30 cursor-pointer'
-              }`}
+              className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-gold/30 cursor-pointer'
+                }`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <ChartIcon size={20} className="text-gold/70" />
@@ -768,9 +787,8 @@ export function UserDashboard() {
             <button
               onClick={() => profile?.tier !== 'free' && setShowCapsuleModal(true)}
               disabled={profile?.tier === 'free'}
-              className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${
-                profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-violet/30 cursor-pointer'
-              }`}
+              className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-violet/30 cursor-pointer'
+                }`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <CapsuleIcon size={20} className="text-violet/70" />
@@ -805,9 +823,8 @@ export function UserDashboard() {
             <button
               onClick={() => profile?.tier !== 'free' ? setShowProgressReport(true) : undefined}
               disabled={profile?.tier === 'free'}
-              className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${
-                profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-teal/30 cursor-pointer'
-              }`}
+              className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-teal/30 cursor-pointer'
+                }`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <ChartIcon size={20} className="text-teal/70" />
@@ -827,9 +844,8 @@ export function UserDashboard() {
             <button
               onClick={() => profile?.tier !== 'free' && setShowGiftModal(true)}
               disabled={profile?.tier === 'free'}
-              className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${
-                profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-teal/30 cursor-pointer'
-              }`}
+              className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-teal/30 cursor-pointer'
+                }`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <GiftIcon size={20} className="text-teal/70" />
@@ -851,8 +867,8 @@ export function UserDashboard() {
       <Footer />
 
       {/* Account Settings Modal */}
-      {showSettings && (
-        <AccountSettings onClose={() => setShowSettings(false)} />
+      {showAccountSettings && (
+        <AccountSettings onClose={() => setShowAccountSettings(false)} />
       )}
 
       {/* Excavation Report Modal */}

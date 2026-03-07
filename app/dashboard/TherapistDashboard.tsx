@@ -73,6 +73,7 @@ export function TherapistDashboard() {
   const [showAlertPanel, setShowAlertPanel] = useState(false);
   const [sessionPrep, setSessionPrep] = useState<{ clientName: string; prepBrief: string; data: Record<string, unknown> } | null>(null);
   const [prepLoading, setPrepLoading] = useState(false);
+  const [clientScores, setClientScores] = useState<Record<string, { phq9: number | null; gad7: number | null; phq9Severity: string | null; gad7Severity: string | null }>>({});
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
@@ -108,6 +109,33 @@ export function TherapistDashboard() {
     }
   };
 
+  const loadClientScores = async (clientId: string) => {
+    if (clientScores[clientId]) return; // already loaded
+    try {
+      const token = await getIdToken();
+      const res = await fetch(`/api/outcome-measures?clientId=${clientId}&limit=4`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const measures: Array<{ type: string; total: number; severity: string }> = data.measures || [];
+        const latestPhq9 = measures.find(m => m.type === 'PHQ9');
+        const latestGad7 = measures.find(m => m.type === 'GAD7');
+        setClientScores(prev => ({
+          ...prev,
+          [clientId]: {
+            phq9: latestPhq9?.total ?? null,
+            gad7: latestGad7?.total ?? null,
+            phq9Severity: latestPhq9?.severity ?? null,
+            gad7Severity: latestGad7?.severity ?? null,
+          },
+        }));
+      }
+    } catch {
+      // Scores unavailable — degrade gracefully
+    }
+  };
+
   const loadDashboard = useCallback(async () => {
     setError(null);
     try {
@@ -133,21 +161,21 @@ export function TherapistDashboard() {
   useEffect(() => {
     // Wait for auth to fully load before making redirect decisions
     if (authLoading) return;
-    
+
     if (!user) {
       router.push('/');
       return;
     }
-    
+
     // Wait for profile to load before making therapist decision
     if (!profileLoaded) return;
-    
+
     // Redirect non-therapists to user dashboard
     if (!isTherapist) {
       router.push('/user-dashboard');
       return;
     }
-    
+
     // Load dashboard for therapists
     loadDashboard();
   }, [user, isTherapist, profileLoaded, authLoading, router, loadDashboard]);
@@ -285,8 +313,8 @@ export function TherapistDashboard() {
               <div className="bg-surface/50 rounded-lg p-4 text-center">
                 <div className="text-2xl mb-1">
                   {data.weekAtGlance.practiceMoodTrend === 'improving' ? '📈' :
-                   data.weekAtGlance.practiceMoodTrend === 'declining' ? '📉' :
-                   data.weekAtGlance.practiceMoodTrend === 'stable' ? '➡️' : '📊'}
+                    data.weekAtGlance.practiceMoodTrend === 'declining' ? '📉' :
+                      data.weekAtGlance.practiceMoodTrend === 'stable' ? '➡️' : '📊'}
                 </div>
                 <p className="text-xs text-text-muted">Practice Mood</p>
                 <p className="text-sm text-text-main capitalize">{data.weekAtGlance.practiceMoodTrend}</p>
@@ -310,7 +338,7 @@ export function TherapistDashboard() {
 
               {/* Alerts */}
               <div className="bg-surface/50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-cinzel text-editorial-gold">
+                <div className="text-2xl font-cinzel text-amber-400">
                   {data.weekAtGlance.totalAlerts}
                 </div>
                 <p className="text-xs text-text-muted">Alerts</p>
@@ -339,8 +367,8 @@ export function TherapistDashboard() {
 
               {/* Clients Needing Attention */}
               {data.weekAtGlance.clientsNeedingAttention.length > 0 && (
-                <div className="bg-editorial-gold/5 border border-editorial-gold/20 rounded-lg p-3">
-                  <p className="text-[10px] text-editorial-gold uppercase tracking-wider mb-2">Needs Attention</p>
+                <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
+                  <p className="text-[10px] text-amber-400 uppercase tracking-wider mb-2">Needs Attention</p>
                   <div className="space-y-1">
                     {data.weekAtGlance.clientsNeedingAttention.map((c, i) => (
                       <div key={i} className="flex items-center justify-between text-xs">
@@ -401,15 +429,15 @@ export function TherapistDashboard() {
               transition={{ delay: 0.1 }}
               className="bg-surface border border-border rounded-lg p-6"
             >
-              <h2 className="font-cinzel text-sm text-editorial-gold tracking-wider uppercase mb-4">
+              <h2 className="font-cinzel text-sm text-amber-400 tracking-wider uppercase mb-4">
                 Recent Alerts
               </h2>
               {data?.recentAlerts && data.recentAlerts.length > 0 ? (
                 <div className="space-y-3">
                   {data.recentAlerts.slice(0, 5).map((alert, i) => (
-                    <div key={i} className="p-3 bg-editorial-gold/5 border border-editorial-gold/20 rounded-lg">
+                    <div key={i} className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-lg">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-editorial-gold text-xs">
+                        <span className="text-amber-400 text-xs">
                           {alert.type === 'distress' ? '⚠️' : alert.type === 'milestone' ? '🎯' : '📊'}
                         </span>
                         <span className="text-xs text-text-main">{alert.clientName}</span>
@@ -464,146 +492,169 @@ export function TherapistDashboard() {
 
             {data?.clients && data.clients.length > 0 ? (
               <div className="space-y-3">
-                {data.clients.filter(client => 
-                  !clientSearch.trim() || 
+                {data.clients.filter(client =>
+                  !clientSearch.trim() ||
                   client.displayName.toLowerCase().includes(clientSearch.toLowerCase()) ||
                   (client.email && client.email.toLowerCase().includes(clientSearch.toLowerCase()))
                 ).map(client => {
                   const isSelected = selectedClient?.id === client.id;
                   return (
-                  <div
-                    key={client.id}
-                    className={`border rounded-lg transition-all ${
-                      isSelected
-                        ? 'border-teal bg-teal/5'
-                        : 'border-border hover:border-teal/30'
-                    }`}
-                  >
-                    {/* Client summary row — always visible */}
                     <div
-                      className="p-4 cursor-pointer flex items-center justify-between gap-3"
-                      onClick={() => setSelectedClient(isSelected ? null : client)}
+                      key={client.id}
+                      className={`border rounded-lg transition-all ${isSelected
+                          ? 'border-teal bg-teal/5'
+                          : 'border-border hover:border-teal/30'
+                        }`}
                     >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <h3 className="font-cinzel text-sm text-text-main truncate">{client.displayName}</h3>
-                          {client.riskFlag && client.riskFlag !== 'none' && (
-                            <span className={`text-[8px] px-1.5 py-0.5 rounded shrink-0 font-cinzel tracking-wider ${
-                              client.riskFlag === 'high' ? 'bg-red-500/15 text-red-400' :
-                              client.riskFlag === 'medium' ? 'bg-amber-500/15 text-amber-400' :
-                              'bg-blue-500/15 text-blue-400'
-                            }`}>
-                              {client.riskFlag === 'high' ? '⚠ AT RISK' : client.riskFlag === 'medium' ? '⚡ Monitor' : 'ℹ Low risk'}
-                            </span>
-                          )}
-                          {client.nextSession && new Date(client.nextSession) <= new Date(Date.now() + 24 * 60 * 60 * 1000) && (
-                            <span className="text-[8px] px-1.5 py-0.5 bg-teal/15 text-teal rounded shrink-0">Upcoming</span>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-text-muted">
-                          {client.consentedAt ? `Consented ${new Date(client.consentedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : 'Active consent'}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        {client.homeworkCompletionRate !== null && (
-                          <div className="text-right">
-                            <p className="text-lg font-cinzel text-teal leading-none">{client.homeworkCompletionRate}%</p>
-                            <p className="text-[8px] text-text-muted">Homework</p>
-                          </div>
-                        )}
-                        <span className={`text-[10px] text-text-muted transition-transform ${isSelected ? 'rotate-180' : ''}`}>▾</span>
-                      </div>
-                    </div>
-
-                    {/* Expanded detail panel — shown when selected */}
-                    {isSelected && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        className="border-t border-border overflow-hidden"
+                      {/* Client summary row — always visible */}
+                      <div
+                        className="p-4 cursor-pointer flex items-center justify-between gap-3"
+                        onClick={() => { setSelectedClient(isSelected ? null : client); if (!isSelected) loadClientScores(client.id); }}
                       >
-                        <div className="p-4 space-y-4">
-                          {/* Action grid */}
-                          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                            <button
-                              onClick={() => loadSessionPrep(client.id)}
-                              className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-teal/5 border border-teal/20 hover:bg-teal/10 transition-colors"
-                            >
-                              <svg className="w-4 h-4 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                              <span className="text-[9px] text-teal font-cinzel">{prepLoading ? '...' : 'Session Prep'}</span>
-                            </button>
-                            <button
-                              onClick={() => { setSelectedClient(client); setShowNotesPanel(true); }}
-                              className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-violet/5 border border-violet/20 hover:bg-violet/10 transition-colors"
-                            >
-                              <svg className="w-4 h-4 text-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6-6m-3 9H5a2 2 0 01-2-2V6a2 2 0 012-2h6l6 6v4a2 2 0 01-2 2h-4z" /></svg>
-                              <span className="text-[9px] text-violet font-cinzel">Notes</span>
-                            </button>
-                            <button
-                              onClick={() => { setSelectedClient(client); setShowInsurerReport(true); }}
-                              className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-gold/5 border border-gold/20 hover:bg-gold/10 transition-colors"
-                            >
-                              <svg className="w-4 h-4 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                              <span className="text-[9px] text-gold font-cinzel">Insurer</span>
-                            </button>
-                            <button
-                              onClick={() => { setSelectedClient(client); setShowReferralLetter(true); }}
-                              className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-teal/5 border border-teal/20 hover:bg-teal/10 transition-colors"
-                            >
-                              <svg className="w-4 h-4 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                              <span className="text-[9px] text-teal font-cinzel">Letter</span>
-                            </button>
-                            <a
-                              href={`/dashboard/homework?client=${client.id}`}
-                              className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-violet/5 border border-violet/20 hover:bg-violet/10 transition-colors"
-                            >
-                              <HomeworkIcon size={16} className="text-violet" />
-                              <span className="text-[9px] text-violet font-cinzel">Homework</span>
-                            </a>
-                            <button
-                              onClick={() => { setSelectedClient(client); setShowDischargeModal(true); }}
-                              className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-crimson/5 border border-crimson/20 hover:bg-crimson/10 transition-colors"
-                            >
-                              <svg className="w-4 h-4 text-crimson" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                              <span className="text-[9px] text-crimson font-cinzel">Discharge</span>
-                            </button>
-                          </div>
-
-                          {/* Permissions & info row */}
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="text-[8px] text-text-muted uppercase tracking-wider mr-1">Shared:</span>
-                            {client.permissions.shareWeekSummary && (
-                              <span className="text-[8px] bg-violet/10 text-violet px-1.5 py-0.5 rounded">Summary</span>
-                            )}
-                            {client.permissions.shareHomeworkProgress && (
-                              <span className="text-[8px] bg-violet/10 text-violet px-1.5 py-0.5 rounded">Homework</span>
-                            )}
-                            {client.permissions.sharePatternAlerts && (
-                              <span className="text-[8px] bg-gold/10 text-gold px-1.5 py-0.5 rounded">Alerts</span>
-                            )}
-                            {client.permissions.shareMoodData && (
-                              <span className="text-[8px] bg-teal/10 text-teal px-1.5 py-0.5 rounded">Mood</span>
-                            )}
-                            {client.activeHomework > 0 && (
-                              <span className="text-[8px] bg-teal/10 text-teal px-1.5 py-0.5 rounded ml-auto">
-                                {client.activeHomework} active task{client.activeHomework > 1 ? 's' : ''}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <h3 className="font-cinzel text-sm text-text-main truncate">{client.displayName}</h3>
+                            {client.riskFlag && client.riskFlag !== 'none' && (
+                              <span className={`text-[8px] px-1.5 py-0.5 rounded shrink-0 font-cinzel tracking-wider ${client.riskFlag === 'high' ? 'bg-red-500/15 text-red-400' :
+                                  client.riskFlag === 'medium' ? 'bg-amber-500/15 text-amber-400' :
+                                    'bg-blue-500/15 text-blue-400'
+                                }`}>
+                                {client.riskFlag === 'high' ? '⚠ AT RISK' : client.riskFlag === 'medium' ? '⚡ Monitor' : 'ℹ Low risk'}
                               </span>
                             )}
+                            {client.nextSession && new Date(client.nextSession) <= new Date(Date.now() + 24 * 60 * 60 * 1000) && (
+                              <span className="text-[8px] px-1.5 py-0.5 bg-teal/15 text-teal rounded shrink-0">Upcoming</span>
+                            )}
                           </div>
-
-                          {/* Week summary themes */}
-                          {client.weekSummary && (
-                            <div className="bg-raised p-2.5 rounded">
-                              <p className="text-[9px] text-text-muted mb-1">This week&apos;s themes:</p>
-                              <p className="text-xs text-text-mid">
-                                {client.weekSummary.themes.join(', ') || 'No themes identified'}
-                              </p>
+                          <p className="text-[10px] text-text-muted">
+                            {client.consentedAt ? `Consented ${new Date(client.consentedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : 'Active consent'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          {client.homeworkCompletionRate !== null && (
+                            <div className="text-right">
+                              <p className="text-lg font-cinzel text-teal leading-none">{client.homeworkCompletionRate}%</p>
+                              <p className="text-[8px] text-text-muted">Homework</p>
                             </div>
                           )}
+                          <span className={`text-[10px] text-text-muted transition-transform ${isSelected ? 'rotate-180' : ''}`}>▾</span>
                         </div>
-                      </motion.div>
-                    )}
-                  </div>
+                      </div>
+
+                      {/* Expanded detail panel — shown when selected */}
+                      {isSelected && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="border-t border-border overflow-hidden"
+                        >
+                          <div className="p-4 space-y-4">
+                            {/* Action grid */}
+                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                              <button
+                                onClick={() => loadSessionPrep(client.id)}
+                                className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-teal/5 border border-teal/20 hover:bg-teal/10 transition-colors"
+                              >
+                                <svg className="w-4 h-4 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                <span className="text-[9px] text-teal font-cinzel">{prepLoading ? '...' : 'Session Prep'}</span>
+                              </button>
+                              <button
+                                onClick={() => { setSelectedClient(client); setShowNotesPanel(true); }}
+                                className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-violet/5 border border-violet/20 hover:bg-violet/10 transition-colors"
+                              >
+                                <svg className="w-4 h-4 text-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6-6m-3 9H5a2 2 0 01-2-2V6a2 2 0 012-2h6l6 6v4a2 2 0 01-2 2h-4z" /></svg>
+                                <span className="text-[9px] text-violet font-cinzel">Notes</span>
+                              </button>
+                              <button
+                                onClick={() => { setSelectedClient(client); setShowInsurerReport(true); }}
+                                className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-gold/5 border border-gold/20 hover:bg-gold/10 transition-colors"
+                              >
+                                <svg className="w-4 h-4 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                <span className="text-[9px] text-gold font-cinzel">Insurer</span>
+                              </button>
+                              <button
+                                onClick={() => { setSelectedClient(client); setShowReferralLetter(true); }}
+                                className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-teal/5 border border-teal/20 hover:bg-teal/10 transition-colors"
+                              >
+                                <svg className="w-4 h-4 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                <span className="text-[9px] text-teal font-cinzel">Letter</span>
+                              </button>
+                              <a
+                                href={`/dashboard/homework?client=${client.id}`}
+                                className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-violet/5 border border-violet/20 hover:bg-violet/10 transition-colors"
+                              >
+                                <HomeworkIcon size={16} className="text-violet" />
+                                <span className="text-[9px] text-violet font-cinzel">Homework</span>
+                              </a>
+                              <button
+                                onClick={() => { setSelectedClient(client); setShowDischargeModal(true); }}
+                                className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-crimson/5 border border-crimson/20 hover:bg-crimson/10 transition-colors"
+                              >
+                                <svg className="w-4 h-4 text-crimson" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                <span className="text-[9px] text-crimson font-cinzel">Discharge</span>
+                              </button>
+                            </div>
+
+                            {/* Permissions & info row */}
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="text-[8px] text-text-muted uppercase tracking-wider mr-1">Shared:</span>
+                              {client.permissions.shareWeekSummary && (
+                                <span className="text-[8px] bg-violet/10 text-violet px-1.5 py-0.5 rounded">Summary</span>
+                              )}
+                              {client.permissions.shareHomeworkProgress && (
+                                <span className="text-[8px] bg-violet/10 text-violet px-1.5 py-0.5 rounded">Homework</span>
+                              )}
+                              {client.permissions.sharePatternAlerts && (
+                                <span className="text-[8px] bg-gold/10 text-gold px-1.5 py-0.5 rounded">Alerts</span>
+                              )}
+                              {client.permissions.shareMoodData && (
+                                <span className="text-[8px] bg-teal/10 text-teal px-1.5 py-0.5 rounded">Mood</span>
+                              )}
+                              {client.activeHomework > 0 && (
+                                <span className="text-[8px] bg-teal/10 text-teal px-1.5 py-0.5 rounded ml-auto">
+                                  {client.activeHomework} active task{client.activeHomework > 1 ? 's' : ''}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* PHQ-9 / GAD-7 Scores */}
+                            {clientScores[client.id] && (
+                              (clientScores[client.id].phq9 !== null || clientScores[client.id].gad7 !== null) && (
+                                <div className="bg-raised border border-border rounded p-3">
+                                  <p className="text-[9px] text-text-muted uppercase tracking-wider mb-2">Latest Outcome Scores</p>
+                                  <div className="flex gap-4">
+                                    {clientScores[client.id].phq9 !== null && (
+                                      <div>
+                                        <span className="text-[9px] text-blue-400 font-cinzel">PHQ-9 </span>
+                                        <span className="text-sm font-cinzel text-text-main">{clientScores[client.id].phq9}</span>
+                                        <span className="text-[9px] text-text-muted ml-1">— {clientScores[client.id].phq9Severity}</span>
+                                      </div>
+                                    )}
+                                    {clientScores[client.id].gad7 !== null && (
+                                      <div>
+                                        <span className="text-[9px] text-violet-400 font-cinzel">GAD-7 </span>
+                                        <span className="text-sm font-cinzel text-text-main">{clientScores[client.id].gad7}</span>
+                                        <span className="text-[9px] text-text-muted ml-1">— {clientScores[client.id].gad7Severity}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            )}
+
+                            {/* Week summary themes */}
+                            {client.weekSummary && (
+                              <div className="bg-raised p-2.5 rounded">
+                                <p className="text-[9px] text-text-muted mb-1">This week&apos;s themes:</p>
+                                <p className="text-xs text-text-mid">
+                                  {client.weekSummary.themes.join(', ') || 'No themes identified'}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -612,7 +663,7 @@ export function TherapistDashboard() {
                 <TherapistIcon size={48} className="mx-auto mb-4 text-text-muted/50" />
                 <h3 className="font-cinzel text-sm text-text-main mb-2">No clients yet</h3>
                 <p className="text-xs text-text-muted max-w-sm mx-auto mb-4">
-                  When your clients grant you consent in Sorca, they&apos;ll appear here. 
+                  When your clients grant you consent in Sorca, they&apos;ll appear here.
                   Share the link to your practice and invite them to connect.
                 </p>
                 <button
@@ -716,9 +767,9 @@ export function TherapistDashboard() {
       </div>
 
       {/* Pattern Alert Panel */}
-      <PatternAlertPanel 
-        isOpen={showAlertPanel} 
-        onClose={() => setShowAlertPanel(false)} 
+      <PatternAlertPanel
+        isOpen={showAlertPanel}
+        onClose={() => setShowAlertPanel(false)}
       />
 
       {/* Therapist Notes Panel */}

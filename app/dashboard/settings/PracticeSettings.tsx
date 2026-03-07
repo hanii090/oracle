@@ -26,7 +26,7 @@ interface InviteSummary {
 export function PracticeSettings() {
   const { user, profile, profileLoaded, isTherapist, loading: authLoading, getIdToken } = useAuth();
   const router = useRouter();
-  
+
   const [invites, setInvites] = useState<Invite[]>([]);
   const [summary, setSummary] = useState<InviteSummary>({ pending: 0, accepted: 0, expired: 0 });
   const [loading, setLoading] = useState(true);
@@ -38,17 +38,24 @@ export function PracticeSettings() {
   const [newInviteLink, setNewInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [billingLoading, setBillingLoading] = useState(false);
+  const [billingError, setBillingError] = useState<string | null>(null);
+  const [activeClients, setActiveClients] = useState<Array<{ id: string; displayName: string; email: string | null }>>([]);
 
   const loadInvites = useCallback(async () => {
     try {
       const token = await getIdToken();
-      const res = await fetch('/api/therapist/invite', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (res.ok) {
-        const data = await res.json();
+      const [invRes, dashRes] = await Promise.all([
+        fetch('/api/therapist/invite', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+        fetch('/api/therapist/dashboard', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+      ]);
+      if (invRes.ok) {
+        const data = await invRes.json();
         setInvites(data.invites || []);
         setSummary(data.summary || { pending: 0, accepted: 0, expired: 0 });
+      }
+      if (dashRes.ok) {
+        const dashData = await dashRes.json();
+        setActiveClients(dashData.clients || []);
       }
     } catch (e) {
       console.error('Failed to load invites:', e);
@@ -59,25 +66,25 @@ export function PracticeSettings() {
 
   useEffect(() => {
     if (authLoading) return;
-    
+
     if (!user) {
       router.push('/');
       return;
     }
-    
+
     if (!profileLoaded) return;
-    
+
     if (!isTherapist) {
       router.push('/user-dashboard');
       return;
     }
-    
+
     loadInvites();
   }, [user, profileLoaded, isTherapist, authLoading, router, loadInvites]);
 
   const handleCreateInvite = async () => {
     if (!inviteEmail.trim()) return;
-    
+
     setSubmitting(true);
     try {
       const token = await getIdToken();
@@ -119,6 +126,7 @@ export function PracticeSettings() {
 
   const handleManageBilling = async () => {
     setBillingLoading(true);
+    setBillingError(null);
     try {
       const token = await getIdToken();
       const res = await fetch('/api/billing/portal', {
@@ -128,9 +136,13 @@ export function PracticeSettings() {
       if (res.ok) {
         const data = await res.json();
         window.location.href = data.url;
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setBillingError(data.error || 'Billing portal is currently unavailable. Please try again later.');
       }
     } catch (e) {
       console.error('Failed to open billing portal:', e);
+      setBillingError('Unable to connect to billing portal. Please check your connection.');
     } finally {
       setBillingLoading(false);
     }
@@ -185,7 +197,7 @@ export function PracticeSettings() {
                 <span className="text-gold font-cinzel">Practice Tier</span> — Up to 10 clients
               </p>
               <p className="text-xs text-text-muted mt-1">
-                {summary.accepted}/10 active clients
+                {activeClients.length}/10 active clients
               </p>
             </div>
             <button
@@ -196,6 +208,11 @@ export function PracticeSettings() {
               {billingLoading ? 'Loading...' : 'Manage Billing'}
             </button>
           </div>
+          {billingError && (
+            <p className="mt-3 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+              {billingError}
+            </p>
+          )}
         </motion.div>
 
         {/* Professional Registration */}
@@ -362,7 +379,7 @@ export function PracticeSettings() {
           )}
         </motion.div>
 
-        {/* Client Limit Info */}
+        {/* Active Clients */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -370,11 +387,13 @@ export function PracticeSettings() {
           className="bg-surface border border-border rounded-lg p-6"
         >
           <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
-            Client Overview
+            Active Clients
           </h2>
-          <div className="grid grid-cols-3 gap-4 text-center">
+
+          {/* Summary counts */}
+          <div className="grid grid-cols-3 gap-4 text-center mb-6">
             <div className="bg-raised rounded-lg p-4">
-              <p className="text-2xl font-cinzel text-emerald-400">{summary.accepted}</p>
+              <p className="text-2xl font-cinzel text-emerald-400">{activeClients.length}</p>
               <p className="text-xs text-text-muted">Active</p>
             </div>
             <div className="bg-raised rounded-lg p-4">
@@ -382,10 +401,34 @@ export function PracticeSettings() {
               <p className="text-xs text-text-muted">Pending</p>
             </div>
             <div className="bg-raised rounded-lg p-4">
-              <p className="text-2xl font-cinzel text-text-muted">{10 - summary.accepted - summary.pending}</p>
+              <p className="text-2xl font-cinzel text-text-muted">{Math.max(0, 10 - activeClients.length - summary.pending)}</p>
               <p className="text-xs text-text-muted">Available</p>
             </div>
           </div>
+
+          {/* Real client list */}
+          {activeClients.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-[10px] text-text-muted uppercase tracking-wider mb-2">Consented clients</p>
+              {activeClients.map((client) => (
+                <div key={client.id} className="flex items-center justify-between p-3 bg-raised rounded-lg">
+                  <div>
+                    <p className="text-sm text-text-main font-cinzel">{client.displayName}</p>
+                    {client.email && (
+                      <p className="text-[10px] text-text-muted">{client.email}</p>
+                    )}
+                  </div>
+                  <span className="text-[9px] px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded border border-emerald-500/20">
+                    Active
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-text-muted text-center py-4">
+              No active clients yet. Invite clients using the form above.
+            </p>
+          )}
         </motion.div>
       </div>
     </main>
