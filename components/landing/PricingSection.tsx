@@ -53,12 +53,12 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
             ))}
           </ul>
           <button 
-            onClick={() => onUpgrade('free')}
-            disabled={currentTier === 'free'}
+            onClick={() => !currentTier ? onUpgrade('free') : undefined}
+            disabled={!!currentTier}
             className="mt-8 w-full py-3 border border-border text-text-muted font-cinzel text-xs tracking-widest uppercase rounded hover:border-gold hover:text-gold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label={currentTier === 'free' ? 'Current plan: Seeker' : 'Select Seeker plan'}
+            aria-label={currentTier ? 'Current plan: Free' : 'Get started free — sign in'}
           >
-            {currentTier === 'free' ? 'Current Tier' : 'Select'}
+            {currentTier === 'free' ? 'Current Tier' : currentTier ? 'Free Tier' : 'Get Started Free'}
           </button>
         </div>
 
@@ -106,18 +106,18 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
       </div>
 
       {/* Clinical Practice - Full Width */}
-      <div className="mt-6 bg-gradient-to-r from-teal-900/20 via-surface to-teal-900/20 p-8 md:p-12 border border-teal-500/30 rounded-lg hover:border-teal-500 transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(20,184,166,0.08)] relative" role="article" aria-label="Clinical Practice plan">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-teal-500 text-void font-cinzel text-[9px] tracking-[0.15em] px-4 py-1 rounded-b-md">For Therapists & Coaches</div>
+      <div className="mt-6 bg-gradient-to-r from-teal/5 via-surface to-teal/5 p-8 md:p-12 border border-teal/30 rounded-lg hover:border-teal transition-colors duration-300 hover:shadow-[0_8px_30px_rgba(42,107,107,0.08)] relative" role="article" aria-label="Clinical Practice plan">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-teal text-void font-cinzel text-[9px] tracking-[0.15em] px-4 py-1 rounded-b-md">For Therapists & Coaches</div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           {/* Left - Pricing */}
           <div className="text-center md:text-left">
-            <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-teal-400 mb-3 mt-2">Clinical Practice</div>
-            <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-teal-400">£</sup>59</div>
+            <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-teal mb-3 mt-2">Clinical Practice</div>
+            <div className="font-cinzel text-5xl font-black text-text-main leading-none mb-1"><sup className="text-xl text-teal">£</sup>59</div>
             <div className="text-xs text-text-muted mb-4">per therapist / month</div>
             <a 
               href="/for-therapists"
-              className="inline-block px-8 py-3 bg-teal-500/10 border border-teal-500 text-teal-400 font-cinzel text-xs tracking-widest uppercase rounded hover:bg-teal-500 hover:text-void transition-colors"
+              className="inline-block px-8 py-3 bg-teal/10 border border-teal text-teal font-cinzel text-xs tracking-widest uppercase rounded hover:bg-teal hover:text-void transition-colors"
               aria-label="Learn more about Clinical Practice plan"
             >
               Learn More
@@ -137,8 +137,8 @@ export function PricingSection({ currentTier, onUpgrade }: PricingSectionProps) 
                 { title: 'IAPT Compliant', desc: 'NHS data standards' },
                 { title: 'UK Data Hosting', desc: 'GDPR + NHS DSP aligned' },
               ].map((item, i) => (
-                <div key={i} className="text-center p-3 bg-teal-500/5 rounded-lg border border-teal-500/10">
-                  <div className="font-cinzel text-xs text-teal-400 mb-1">{item.title}</div>
+                <div key={i} className="text-center p-3 bg-teal/5 rounded-lg border border-teal/10">
+                  <div className="font-cinzel text-xs text-teal mb-1">{item.title}</div>
                   <div className="text-[10px] text-text-muted">{item.desc}</div>
                 </div>
               ))}

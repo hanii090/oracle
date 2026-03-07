@@ -73,6 +73,7 @@ export function TherapistDashboard() {
   const [inviteSubmitting, setInviteSubmitting] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
+  const [clientSearch, setClientSearch] = useState('');
 
   const loadSessionPrep = async (clientId: string) => {
     setPrepLoading(true);
@@ -144,7 +145,7 @@ export function TherapistDashboard() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-void flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-teal border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -166,7 +167,7 @@ export function TherapistDashboard() {
           <p className="text-sm text-text-muted mb-6">{error}</p>
           <button
             onClick={() => loadDashboard()}
-            className="px-6 py-2 bg-teal-500/20 border border-teal-500/40 text-teal-400 rounded-lg hover:bg-teal-500/30 transition-colors font-cinzel text-xs tracking-widest uppercase"
+            className="px-6 py-2 bg-teal/10 border border-teal/40 text-teal rounded-lg hover:bg-teal/20 transition-colors font-cinzel text-xs tracking-widest uppercase"
           >
             Try Again
           </button>
@@ -264,9 +265,9 @@ export function TherapistDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-teal-900/20 to-violet-900/20 border border-teal-500/30 rounded-lg p-6 mb-6"
+            className="bg-gradient-to-r from-teal/5 to-violet/5 border border-teal/30 rounded-lg p-6 mb-6"
           >
-            <h2 className="font-cinzel text-sm text-teal-400 tracking-wider uppercase mb-4">
+            <h2 className="font-cinzel text-sm text-teal tracking-wider uppercase mb-4">
               Week at a Glance
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
@@ -283,7 +284,7 @@ export function TherapistDashboard() {
 
               {/* Homework Completion */}
               <div className="bg-surface/50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-cinzel text-emerald-400">
+                <div className="text-2xl font-cinzel text-teal">
                   {data.weekAtGlance.averageHomeworkCompletion ?? '—'}%
                 </div>
                 <p className="text-xs text-text-muted">Avg Homework</p>
@@ -291,7 +292,7 @@ export function TherapistDashboard() {
 
               {/* Active Clients */}
               <div className="bg-surface/50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-cinzel text-blue-400">
+                <div className="text-2xl font-cinzel text-violet">
                   {data.weekAtGlance.activeClients}/{data.totalClients}
                 </div>
                 <p className="text-xs text-text-muted">Active This Week</p>
@@ -299,7 +300,7 @@ export function TherapistDashboard() {
 
               {/* Alerts */}
               <div className="bg-surface/50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-cinzel text-amber-400">
+                <div className="text-2xl font-cinzel text-editorial-gold">
                   {data.weekAtGlance.totalAlerts}
                 </div>
                 <p className="text-xs text-text-muted">Alerts</p>
@@ -316,7 +317,7 @@ export function TherapistDashboard() {
                     {data.weekAtGlance.topThemes.map((t, i) => (
                       <span
                         key={i}
-                        className="text-xs px-2 py-0.5 bg-violet-500/20 text-violet-300 rounded"
+                        className="text-xs px-2 py-0.5 bg-violet/10 text-violet rounded"
                         style={{ fontSize: `${Math.max(10, 12 + t.count)}px` }}
                       >
                         {t.theme}
@@ -328,8 +329,8 @@ export function TherapistDashboard() {
 
               {/* Clients Needing Attention */}
               {data.weekAtGlance.clientsNeedingAttention.length > 0 && (
-                <div className="bg-amber-900/20 border border-amber-500/20 rounded-lg p-3">
-                  <p className="text-[10px] text-amber-400 uppercase tracking-wider mb-2">Needs Attention</p>
+                <div className="bg-editorial-gold/5 border border-editorial-gold/20 rounded-lg p-3">
+                  <p className="text-[10px] text-editorial-gold uppercase tracking-wider mb-2">Needs Attention</p>
                   <div className="space-y-1">
                     {data.weekAtGlance.clientsNeedingAttention.map((c, i) => (
                       <div key={i} className="flex items-center justify-between text-xs">
@@ -353,7 +354,7 @@ export function TherapistDashboard() {
               animate={{ opacity: 1, y: 0 }}
               className="bg-surface border border-border rounded-lg p-6"
             >
-              <h2 className="font-cinzel text-sm text-teal-400 tracking-wider uppercase mb-4">
+              <h2 className="font-cinzel text-sm text-teal tracking-wider uppercase mb-4">
                 Upcoming Sessions
               </h2>
               {data?.upcomingSessions && data.upcomingSessions.length > 0 ? (
@@ -371,7 +372,7 @@ export function TherapistDashboard() {
                         </p>
                       </div>
                       {client.nextSession && (
-                        <span className="text-xs text-teal-400 font-cinzel">
+                        <span className="text-xs text-teal font-cinzel">
                           {formatTime(client.nextSession)}
                         </span>
                       )}
@@ -390,15 +391,15 @@ export function TherapistDashboard() {
               transition={{ delay: 0.1 }}
               className="bg-surface border border-border rounded-lg p-6"
             >
-              <h2 className="font-cinzel text-sm text-amber-400 tracking-wider uppercase mb-4">
+              <h2 className="font-cinzel text-sm text-editorial-gold tracking-wider uppercase mb-4">
                 Recent Alerts
               </h2>
               {data?.recentAlerts && data.recentAlerts.length > 0 ? (
                 <div className="space-y-3">
                   {data.recentAlerts.slice(0, 5).map((alert, i) => (
-                    <div key={i} className="p-3 bg-amber-900/10 border border-amber-500/20 rounded-lg">
+                    <div key={i} className="p-3 bg-editorial-gold/5 border border-editorial-gold/20 rounded-lg">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-amber-400 text-xs">
+                        <span className="text-editorial-gold text-xs">
                           {alert.type === 'distress' ? '⚠️' : alert.type === 'milestone' ? '🎯' : '📊'}
                         </span>
                         <span className="text-xs text-text-main">{alert.clientName}</span>
@@ -420,24 +421,50 @@ export function TherapistDashboard() {
             transition={{ delay: 0.2 }}
             className="lg:col-span-2 bg-surface border border-border rounded-lg p-6"
           >
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="font-cinzel text-sm text-text-main tracking-wider uppercase">
                 Your Clients
               </h2>
-              <span className="text-xs text-text-muted">
-                {data?.clients?.length || 0} with active consent
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-text-muted">
+                  {data?.clients?.length || 0} with active consent
+                </span>
+                <button
+                  onClick={() => setShowInviteModal(true)}
+                  className="text-[9px] px-3 py-1.5 bg-teal/10 text-teal border border-teal/30 rounded hover:bg-teal/20 transition-colors font-cinzel tracking-widest"
+                >
+                  + Invite
+                </button>
+              </div>
             </div>
+
+            {/* Client search */}
+            {data?.clients && data.clients.length > 3 && (
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={clientSearch}
+                  onChange={(e) => setClientSearch(e.target.value)}
+                  placeholder="Search clients by name..."
+                  className="w-full bg-raised border border-border rounded-lg px-4 py-2.5 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal/50 focus:outline-none transition-colors"
+                  aria-label="Search clients"
+                />
+              </div>
+            )}
 
             {data?.clients && data.clients.length > 0 ? (
               <div className="space-y-4">
-                {data.clients.map(client => (
+                {data.clients.filter(client => 
+                  !clientSearch.trim() || 
+                  client.displayName.toLowerCase().includes(clientSearch.toLowerCase()) ||
+                  (client.email && client.email.toLowerCase().includes(clientSearch.toLowerCase()))
+                ).map(client => (
                   <div
                     key={client.id}
                     className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                       selectedClient?.id === client.id
-                        ? 'border-teal-500 bg-teal-900/10'
-                        : 'border-border hover:border-teal-500/30'
+                        ? 'border-teal bg-teal/5'
+                        : 'border-border hover:border-teal/30'
                     }`}
                     onClick={() => setSelectedClient(client)}
                   >
@@ -448,7 +475,7 @@ export function TherapistDashboard() {
                           {client.nextSession && new Date(client.nextSession) <= new Date(Date.now() + 24 * 60 * 60 * 1000) && (
                             <button
                               onClick={(e) => { e.stopPropagation(); loadSessionPrep(client.id); }}
-                              className="text-[9px] bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded hover:bg-teal-500/30 transition-colors"
+                              className="text-[9px] bg-teal/10 text-teal px-2 py-0.5 rounded hover:bg-teal/20 transition-colors"
                             >
                               {prepLoading ? '...' : 'Session Prep'}
                             </button>
@@ -461,16 +488,16 @@ export function TherapistDashboard() {
                         {/* Permissions badges */}
                         <div className="flex flex-wrap gap-1 mb-3">
                           {client.permissions.shareWeekSummary && (
-                            <span className="text-[9px] bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded">Summary</span>
+                            <span className="text-[9px] bg-violet/10 text-violet px-1.5 py-0.5 rounded">Summary</span>
                           )}
                           {client.permissions.shareHomeworkProgress && (
-                            <span className="text-[9px] bg-violet-500/10 text-violet-400 px-1.5 py-0.5 rounded">Homework</span>
+                            <span className="text-[9px] bg-violet/10 text-violet px-1.5 py-0.5 rounded">Homework</span>
                           )}
                           {client.permissions.sharePatternAlerts && (
-                            <span className="text-[9px] bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded">Alerts</span>
+                            <span className="text-[9px] bg-editorial-gold/10 text-editorial-gold px-1.5 py-0.5 rounded">Alerts</span>
                           )}
                           {client.permissions.shareMoodData && (
-                            <span className="text-[9px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded">Mood</span>
+                            <span className="text-[9px] bg-teal/10 text-teal px-1.5 py-0.5 rounded">Mood</span>
                           )}
                         </div>
 
@@ -488,7 +515,7 @@ export function TherapistDashboard() {
                       <div className="text-right flex flex-col items-end gap-2">
                         {client.homeworkCompletionRate !== null && (
                           <div>
-                            <p className="text-2xl font-cinzel text-teal-400">
+                            <p className="text-2xl font-cinzel text-teal">
                               {client.homeworkCompletionRate}%
                             </p>
                             <p className="text-[9px] text-text-muted">Homework</p>
@@ -502,7 +529,7 @@ export function TherapistDashboard() {
                           <a
                             href={`/dashboard/homework?client=${client.id}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="text-[9px] px-2 py-1 bg-violet-500/20 text-violet-400 rounded hover:bg-violet-500/30 transition-colors"
+                            className="text-[9px] px-2 py-1 bg-violet/10 text-violet rounded hover:bg-violet/20 transition-colors"
                           >
                             + Assign Homework
                           </a>
@@ -522,7 +549,7 @@ export function TherapistDashboard() {
                 </p>
                 <button
                   onClick={() => setShowInviteModal(true)}
-                  className="px-4 py-2 bg-teal-500 text-void font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-400"
+                  className="px-4 py-2 bg-teal text-void font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-bright"
                 >
                   Invite Your First Client
                 </button>
@@ -540,12 +567,12 @@ export function TherapistDashboard() {
         >
           <a
             href="/dashboard/outcomes"
-            className="bg-surface border border-border rounded-lg p-4 hover:border-teal-500/30 transition-colors group"
+            className="bg-surface border border-border rounded-lg p-4 hover:border-teal/30 transition-colors group"
           >
-            <svg className="w-6 h-6 mb-2 text-teal-400/70 group-hover:text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-6 h-6 mb-2 text-teal/70 group-hover:text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
-            <h3 className="font-cinzel text-sm text-text-main group-hover:text-teal-400 transition-colors">
+            <h3 className="font-cinzel text-sm text-text-main group-hover:text-teal transition-colors">
               Outcome Measures
             </h3>
             <p className="text-[10px] text-text-muted">PHQ-9 & GAD-7 tracking</p>
@@ -553,10 +580,10 @@ export function TherapistDashboard() {
 
           <a
             href="/dashboard/homework"
-            className="bg-surface border border-border rounded-lg p-4 hover:border-violet-500/30 transition-colors group"
+            className="bg-surface border border-border rounded-lg p-4 hover:border-violet/30 transition-colors group"
           >
-            <HomeworkIcon size={24} className="mb-2 text-violet-400/70 group-hover:text-violet-400" />
-            <h3 className="font-cinzel text-sm text-text-main group-hover:text-violet-400 transition-colors">
+            <HomeworkIcon size={24} className="mb-2 text-violet/70 group-hover:text-violet" />
+            <h3 className="font-cinzel text-sm text-text-main group-hover:text-violet transition-colors">
               Assign Homework
             </h3>
             <p className="text-[10px] text-text-muted">Set conversational homework</p>
@@ -564,10 +591,10 @@ export function TherapistDashboard() {
 
           <a
             href="/dashboard/summaries"
-            className="bg-surface border border-border rounded-lg p-4 hover:border-blue-500/30 transition-colors group"
+            className="bg-surface border border-border rounded-lg p-4 hover:border-violet/30 transition-colors group"
           >
-            <BookIcon size={24} className="mb-2 text-blue-400/70 group-hover:text-blue-400" />
-            <h3 className="font-cinzel text-sm text-text-main group-hover:text-blue-400 transition-colors">
+            <BookIcon size={24} className="mb-2 text-violet/70 group-hover:text-violet" />
+            <h3 className="font-cinzel text-sm text-text-main group-hover:text-violet transition-colors">
               Week Summaries
             </h3>
             <p className="text-[10px] text-text-muted">Review client reflections</p>
@@ -591,11 +618,11 @@ export function TherapistDashboard() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-surface border border-teal-500/30 rounded-lg p-8 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto"
+              className="bg-surface border border-teal/30 rounded-lg p-8 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-cinzel text-lg text-teal-400">Session Prep: {sessionPrep.clientName}</h2>
+                <h2 className="font-cinzel text-lg text-teal">Session Prep: {sessionPrep.clientName}</h2>
                 <button onClick={() => setSessionPrep(null)} className="text-text-muted hover:text-gold">
                   ✕
                 </button>
@@ -607,11 +634,11 @@ export function TherapistDashboard() {
               </div>
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div className="bg-raised rounded-lg p-3">
-                  <p className="text-2xl font-cinzel text-teal-400">{String(sessionPrep.data?.sessionCount ?? 0)}</p>
+                  <p className="text-2xl font-cinzel text-teal">{String(sessionPrep.data?.sessionCount ?? 0)}</p>
                   <p className="text-[10px] text-text-muted">Sessions this week</p>
                 </div>
                 <div className="bg-raised rounded-lg p-3">
-                  <p className="text-2xl font-cinzel text-teal-400">{String(sessionPrep.data?.alertCount ?? 0)}</p>
+                  <p className="text-2xl font-cinzel text-teal">{String(sessionPrep.data?.alertCount ?? 0)}</p>
                   <p className="text-[10px] text-text-muted">Alerts this week</p>
                 </div>
               </div>
@@ -632,11 +659,11 @@ export function TherapistDashboard() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-surface border border-teal-500/30 rounded-lg p-6 max-w-md w-full mx-4"
+            className="bg-surface border border-teal/30 rounded-lg p-6 max-w-md w-full mx-4"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-cinzel text-lg text-teal-400">Invite Client</h2>
+              <h2 className="font-cinzel text-lg text-teal">Invite Client</h2>
               <button onClick={closeInviteModal} className="text-text-muted hover:text-gold">✕</button>
             </div>
 
@@ -654,14 +681,14 @@ export function TherapistDashboard() {
                   />
                   <button
                     onClick={handleCopyInviteLink}
-                    className="px-3 py-2 bg-teal-500 text-void rounded hover:bg-teal-400 text-xs font-cinzel"
+                    className="px-3 py-2 bg-teal text-void rounded hover:bg-teal-bright text-xs font-cinzel"
                   >
                     {inviteCopied ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
                 <button
                   onClick={closeInviteModal}
-                  className="w-full py-2 border border-border text-text-muted font-cinzel text-xs tracking-widest rounded-lg hover:border-teal-500/30"
+                  className="w-full py-2 border border-border text-text-muted font-cinzel text-xs tracking-widest rounded-lg hover:border-teal/30"
                 >
                   Done
                 </button>
@@ -673,26 +700,26 @@ export function TherapistDashboard() {
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="Client email address"
-                  className="w-full bg-raised border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal-500/50 focus:outline-none"
+                  className="w-full bg-raised border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal/50 focus:outline-none"
                 />
                 <input
                   type="text"
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
                   placeholder="Client name (optional)"
-                  className="w-full bg-raised border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal-500/50 focus:outline-none"
+                  className="w-full bg-raised border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal/50 focus:outline-none"
                 />
                 <div className="flex gap-2">
                   <button
                     onClick={handleCreateInvite}
                     disabled={inviteSubmitting || !inviteEmail.trim()}
-                    className="flex-1 py-2 bg-teal-500 text-void font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-2 bg-teal text-void font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-bright disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {inviteSubmitting ? 'Creating...' : 'Create Invite'}
                   </button>
                   <button
                     onClick={closeInviteModal}
-                    className="px-4 py-2 border border-border text-text-muted font-cinzel text-xs tracking-widest rounded-lg hover:border-teal-500/30"
+                    className="px-4 py-2 border border-border text-text-muted font-cinzel text-xs tracking-widest rounded-lg hover:border-teal/30"
                   >
                     Cancel
                   </button>

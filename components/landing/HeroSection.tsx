@@ -87,8 +87,8 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
             ))}
           </div>
           <div className="text-left">
-            <div className="font-cinzel text-sm text-gold">3,000+ patients supported</div>
-            <div className="font-courier text-[10px] text-text-muted tracking-wider">75% homework completion rate</div>
+            <div className="font-cinzel text-sm text-gold">Join patients &amp; therapists across the UK</div>
+            <div className="font-courier text-[10px] text-text-muted tracking-wider">AI-assisted homework shows 75% completion (Habicht et al. 2025)</div>
           </div>
         </div>
 
@@ -108,6 +108,23 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
             <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noreferrer" className="text-gold hover:underline ml-1">Learn more about billing.</a>
           </p>
         )}
+
+        {/* Trust badges */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-8 relative z-10">
+          <span className="text-[10px] font-courier text-text-muted tracking-wider uppercase border border-border px-3 py-1.5 rounded">
+            GDPR Compliant
+          </span>
+          <span className="text-[10px] font-courier text-text-muted tracking-wider uppercase border border-border px-3 py-1.5 rounded">
+            UK Data Hosting
+          </span>
+          <span className="text-[10px] font-courier text-text-muted tracking-wider uppercase border border-border px-3 py-1.5 rounded">
+            NHS-Aligned Measures
+          </span>
+        </div>
+
+        <p className="text-[10px] text-text-muted/80 mt-6 max-w-sm text-center relative z-10">
+          Sorca is not therapy and does not provide medical advice. It is a reflective tool designed to complement professional mental health services.
+        </p>
       </section>
     </>
   );

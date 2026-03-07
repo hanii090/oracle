@@ -62,19 +62,19 @@ export function TherapySection() {
       className="w-full max-w-6xl px-6 py-20"
       aria-labelledby="therapy-heading"
     >
-      <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-teal-400 mb-5 flex items-center gap-4">
+      <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-teal mb-5 flex items-center gap-4">
         Therapy Edition
-        <div className="flex-1 h-px bg-gradient-to-r from-teal-500/30 to-transparent" aria-hidden="true" />
+        <div className="flex-1 h-px bg-gradient-to-r from-teal/30 to-transparent" aria-hidden="true" />
       </div>
 
       <h2 id="therapy-heading" className="font-cinzel font-semibold text-3xl md:text-5xl mb-6 text-text-main">
-        NHS-Aligned <em className="font-cormorant italic font-light text-teal-400">Therapy Support</em>
+        NHS-Aligned <em className="font-cormorant italic font-light text-teal">Therapy Support</em>
       </h2>
 
       <p className="text-lg text-text-mid leading-relaxed max-w-3xl mb-12">
         Sorca bridges the gap between weekly therapy sessions with NHS-standard outcome measures, 
         evidence-based coping tools, and AI-powered homework support. 
-        <strong className="text-teal-400">Built for UK therapists and their patients.</strong>
+        <strong className="text-teal">Built for UK therapists and their patients.</strong>
       </p>
 
       {/* Stats */}
@@ -86,9 +86,9 @@ export function TherapySection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.1 }}
-            className="bg-teal-900/10 border border-teal-500/20 rounded-lg p-6 text-center"
+            className="bg-teal/5 border border-teal/20 rounded-lg p-6 text-center"
           >
-            <div className="font-cinzel text-4xl text-teal-400 mb-2">{stat.value}</div>
+            <div className="font-cinzel text-4xl text-teal mb-2">{stat.value}</div>
             <div className="text-sm text-text-mid mb-1">{stat.label}</div>
             <div className="text-[10px] text-text-muted">{stat.source}</div>
           </motion.div>
@@ -96,13 +96,13 @@ export function TherapySection() {
       </div>
 
       {/* Evidence callout */}
-      <div className="bg-surface border border-teal-500/30 rounded-lg p-6 mb-16">
+      <div className="bg-surface border border-teal/30 rounded-lg p-6 mb-16">
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-teal-500/20 flex items-center justify-center">
-            <BookIcon size={24} className="text-teal-400" />
+          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-teal/20 flex items-center justify-center">
+            <BookIcon size={24} className="text-teal" />
           </div>
           <div>
-            <h3 className="font-cinzel text-sm text-teal-400 tracking-wide mb-2">
+            <h3 className="font-cinzel text-sm text-teal tracking-wide mb-2">
               Peer-Reviewed Evidence · 2025
             </h3>
             <p className="text-sm text-text-mid leading-relaxed mb-2">
@@ -130,16 +130,16 @@ export function TherapySection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.05 }}
-            className="bg-surface p-6 border border-border rounded-lg hover:border-teal-500/30 transition-colors group"
+            className="bg-surface p-6 border border-border rounded-lg hover:border-teal/30 transition-colors group"
           >
             <div className="flex items-start gap-3 mb-3">
-              <feature.Icon size={24} className="text-teal-400 shrink-0" />
+              <feature.Icon size={24} className="text-teal shrink-0" />
               <div>
-                <h4 className="font-cinzel text-sm text-text-main group-hover:text-teal-400 transition-colors">
+                <h4 className="font-cinzel text-sm text-text-main group-hover:text-teal transition-colors">
                   {feature.title}
                 </h4>
                 {feature.forTherapist && (
-                  <span className="text-[9px] text-teal-400 font-cinzel tracking-wider">
+                  <span className="text-[9px] text-teal font-cinzel tracking-wider">
                     + Therapist View
                   </span>
                 )}
@@ -155,12 +155,12 @@ export function TherapySection() {
       {/* CTA */}
       <div className="text-center">
         <p className="text-sm text-text-muted mb-4">
-          <strong className="text-teal-400">Sorca is not therapy.</strong> It deepens reflection and extends homework. 
+          <strong className="text-teal">Sorca is not therapy.</strong> It deepens reflection and extends homework. 
           It does not treat, diagnose, or replace the therapeutic relationship.
         </p>
         <a
           href="/for-therapists"
-          className="inline-block px-8 py-3 bg-teal-500/10 border border-teal-500 text-teal-400 font-cinzel text-xs tracking-widest uppercase rounded-lg hover:bg-teal-500 hover:text-void transition-colors"
+          className="inline-block px-8 py-3 bg-teal/10 border border-teal text-teal font-cinzel text-xs tracking-widest uppercase rounded-lg hover:bg-teal hover:text-void transition-colors"
         >
           For Therapists →
         </a>

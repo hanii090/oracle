@@ -17,18 +17,9 @@ import { PricingSection } from '@/components/landing/PricingSection';
 import { Footer } from '@/components/landing/Footer';
 import { LimitModal } from '@/components/landing/LimitModal';
 import { AuthErrorModal } from '@/components/landing/AuthErrorModal';
-import { PatternOfTheWeek } from '@/components/landing/PatternOfTheWeek';
-import MirrorLetter from '@/components/landing/MirrorLetter';
 import { ReviewsSection } from '@/components/landing/ReviewsSection';
 import { CompaniesSection } from '@/components/landing/CompaniesSection';
-import { QuestionDNA } from '@/components/landing/QuestionDNA';
-import { BeliefLifespan } from '@/components/landing/BeliefLifespan';
-import { TimeCapsule } from '@/components/landing/TimeCapsule';
-import { SharedSessions } from '@/components/landing/SharedSessions';
-import { QuestionGift } from '@/components/landing/QuestionGift';
 import { ComingSoonSection } from '@/components/landing/ComingSoonSection';
-import { ExcavationReportSection } from '@/components/landing/ExcavationReport';
-import { EndOfLifeSection } from '@/components/landing/EndOfLifeSection';
 import { TherapySection } from '@/components/landing/TherapySection';
 import { TherapyOnboarding } from '@/components/landing/TherapyOnboarding';
 import { useTherapy } from '@/hooks/useTherapy';
@@ -121,13 +112,7 @@ function HomeContent() {
     checkKey();
   }, []);
 
-  // Auto-start session when ?start=true is in URL (from dashboard)
-  useEffect(() => {
-    if (!loading && user && searchParams.get('start') === 'true' && !sessionStarted) {
-      handleStart();
-      router.replace('/');
-    }
-  }, [loading, user, searchParams, sessionStarted]);
+  const handleStartRef = useRef<(() => Promise<void>) | null>(null);
 
   const handleStart = async () => {
     if (!user) {
@@ -176,6 +161,15 @@ function HomeContent() {
       setSessionStarted(true);
     }
   };
+
+  // Auto-start session when ?start=true is in URL (from dashboard)
+  handleStartRef.current = handleStart;
+  useEffect(() => {
+    if (!loading && user && searchParams.get('start') === 'true' && !sessionStarted) {
+      handleStartRef.current?.();
+      router.replace('/');
+    }
+  }, [loading, user, searchParams, sessionStarted, router]);
 
   // #2 FIX: No more silent fallback to free upgrade on Stripe failure
   const handleUpgrade = async (tier: Tier) => {
@@ -265,51 +259,6 @@ function HomeContent() {
               />
             )}
 
-            {/* Pattern of the Week — surfaces recurring theme for paid users */}
-            {user && profile && profile.tier !== 'free' && (
-              <PatternOfTheWeek />
-            )}
-
-            {/* Mirror Letter — monthly first-person reflection for paid users */}
-            {user && profile && profile.tier !== 'free' && (
-              <MirrorLetter userId={user.uid} isPaidUser={true} />
-            )}
-
-            {/* Feature 06: Monthly Excavation Report — stats, patterns, narrative */}
-            {user && profile && profile.tier !== 'free' && (
-              <ExcavationReportSection />
-            )}
-
-            {/* Feature 02: Question DNA — honesty analysis per question type */}
-            {user && profile && profile.tier !== 'free' && (
-              <QuestionDNA />
-            )}
-
-            {/* Feature 04: Belief Lifespan — track how beliefs evolve */}
-            {user && profile && profile.tier !== 'free' && (
-              <BeliefLifespan />
-            )}
-
-            {/* Feature 12: Time Capsule — seal questions for the future */}
-            {user && profile && profile.tier !== 'free' && (
-              <TimeCapsule />
-            )}
-
-            {/* Feature 15: Shared Sessions — explore the same question with someone */}
-            {user && profile && profile.tier === 'pro' && (
-              <SharedSessions />
-            )}
-
-            {/* Feature 16: Question Gift — send a curated question to someone */}
-            {user && profile && profile.tier !== 'free' && (
-              <QuestionGift />
-            )}
-
-            {/* Sorca for End of Life — Pro only */}
-            {user && profile && profile.tier === 'pro' && (
-              <EndOfLifeSection />
-            )}
-
             {/* Divider */}
             <div className="w-full max-w-6xl h-px bg-gradient-to-r from-transparent via-border to-transparent my-20" aria-hidden="true" />
 
@@ -368,7 +317,7 @@ function HomeContent() {
       {!sessionStarted && user && (
         <a
           href={isTherapist ? "/dashboard" : "/user-dashboard"}
-          className={`fixed bottom-6 right-6 z-40 flex items-center gap-2 ${isTherapist ? 'bg-teal-500 hover:bg-teal-400' : 'bg-gold hover:bg-gold/90'} text-void px-4 py-3 rounded-lg shadow-lg transition-colors font-cinzel text-sm tracking-widest`}
+          className={`fixed bottom-6 right-6 z-40 flex items-center gap-2 ${isTherapist ? 'bg-teal hover:bg-teal-bright' : 'bg-gold hover:bg-gold/90'} text-void px-4 py-3 rounded-lg shadow-lg transition-colors font-cinzel text-sm tracking-widest`}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             {isTherapist ? (

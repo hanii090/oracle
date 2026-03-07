@@ -109,8 +109,11 @@ export function ReviewsSection() {
       <h2 id="reviews-heading" className="font-cinzel font-semibold text-3xl md:text-5xl mb-6 text-text-main">
         What They <em className="font-cormorant italic font-light text-gold">Discovered</em>
       </h2>
-      <p className="font-cormorant text-lg text-text-muted mb-16 max-w-2xl">
-        Every person who enters Sorca leaves knowing something they didn&apos;t know they knew. These are their words — from long-distance relationships held together by midnight sessions, to grief finally given voice, to the courage found at 3am.
+      <p className="font-cormorant text-lg text-text-muted mb-4 max-w-2xl">
+        Every person who enters Sorca leaves knowing something they didn&apos;t know they knew. These stories represent the kinds of experiences people have with Sorca.
+      </p>
+      <p className="text-[10px] text-text-muted/70 font-courier tracking-wider uppercase mb-16">
+        Illustrative scenarios — names and details are fictional
       </p>
 
       {/* Featured review */}

@@ -58,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(!!auth);
+  const [profileReady, setProfileReady] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
 
@@ -76,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (u) {
+        setProfileReady(false);
         if (db) {
           try {
             const docRef = doc(db, "users", u.uid);
@@ -107,8 +109,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setProfile(p);
                 localStorage.setItem(`sorca_profile_${u.uid}`, JSON.stringify(p));
               }
+              setProfileReady(true);
             }, (error) => {
               console.error("Profile snapshot error:", error);
+              setProfileReady(true);
             });
           } catch (error: unknown) {
             console.error("Firestore error loading profile:", error);
@@ -118,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             } else {
               setProfile({ tier: "free", sessionsThisMonth: 0, lastSessionDate: null });
             }
+            setProfileReady(true);
           }
         } else {
           const localProfile = localStorage.getItem(`sorca_profile_${u.uid}`);
@@ -126,9 +131,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } else {
             setProfile({ tier: "free", sessionsThisMonth: 0, lastSessionDate: null });
           }
+          setProfileReady(true);
         }
       } else {
         setProfile(null);
+        setProfileReady(true);
       }
       setLoading(false);
     });
@@ -356,7 +363,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearAuthError = () => setAuthError(null);
 
-  const profileLoaded = !loading && user !== null && profile !== null;
+  const profileLoaded = !loading && profileReady && user !== null && profile !== null;
   const isTherapist = profileLoaded && (profile?.role === 'therapist' || profile?.tier === 'practice');
 
   return (

@@ -4,6 +4,10 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { SkipNav } from "@/components/SkipNav";
 
+// NOTE: Variable names are legacy — they map to CSS classes used across the entire app.
+// font-cinzel = headings (actually Playfair Display)
+// font-cormorant = body text (actually DM Sans)
+// font-courier = labels/mono (actually Bebas Neue)
 const cinzel = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "700", "900"],

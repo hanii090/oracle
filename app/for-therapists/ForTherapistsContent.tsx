@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Stars } from '@/components/Stars';
 import { Footer } from '@/components/landing/Footer';
+import { SiteNav } from '@/components/SiteNav';
 import { ChartIcon, HomeworkIcon, BellIcon, BookIcon, SafeIcon, ConsentIcon, WarningIcon } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import type { ComponentType } from 'react';
@@ -142,55 +143,7 @@ export function ForTherapistsContent() {
     <main className="relative min-h-screen flex flex-col items-center overflow-x-hidden bg-void">
       <Stars />
 
-      {/* Header with Login */}
-      <header className="w-full max-w-6xl px-6 py-6 flex justify-between items-center absolute top-0 z-50">
-        <a href="/" className="font-cinzel text-teal-400 tracking-[0.3em] text-xs uppercase">
-          Sorca
-        </a>
-        <div className="flex items-center gap-4">
-          {!loading && !user && (
-            <button
-              onClick={() => signIn()}
-              className="text-teal-400 hover:text-teal-300 transition-colors font-cinzel text-xs tracking-widest uppercase"
-            >
-              Sign In
-            </button>
-          )}
-          {!loading && user && !profile && (
-            <div className="w-4 h-4 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
-          )}
-          {!loading && user && profile && (
-            isTherapist ? (
-              <div className="flex items-center gap-4">
-                <a
-                  href="/dashboard"
-                  className="text-teal-400 hover:text-teal-300 transition-colors font-cinzel text-xs tracking-widest uppercase"
-                >
-                  Practice Dashboard
-                </a>
-                <button
-                  onClick={() => logOut()}
-                  className="text-text-muted hover:text-teal-400 transition-colors font-courier text-xs tracking-widest uppercase"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-text-muted">
-                  Signed in as {user.displayName?.split(' ')[0] || 'User'}
-                </span>
-                <button
-                  onClick={() => logOut()}
-                  className="text-text-muted hover:text-teal-400 transition-colors font-courier text-xs tracking-widest uppercase"
-                >
-                  Sign Out
-                </button>
-              </div>
-            )
-          )}
-        </div>
-      </header>
+      <SiteNav variant="therapist" />
 
       {/* Hero */}
       <section className="w-full max-w-6xl px-6 pt-32 pb-20 relative z-10">
@@ -200,14 +153,14 @@ export function ForTherapistsContent() {
           transition={{ duration: 0.8 }}
           className="text-center"
         >
-          <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/30 rounded-full px-4 py-1.5 mb-6">
-            <span className="text-teal-400 font-cinzel text-[10px] tracking-widest uppercase">
+          <div className="inline-flex items-center gap-2 bg-teal/10 border border-teal/30 rounded-full px-4 py-1.5 mb-6">
+            <span className="text-teal font-cinzel text-[10px] tracking-widest uppercase">
               For Clinical Practices
             </span>
           </div>
 
           <h1 className="font-cinzel font-semibold text-4xl md:text-6xl text-text-main mb-6 leading-tight">
-            The Context You <em className="font-cormorant italic font-light text-teal-400">Wish</em> You Had
+            The Context You <em className="font-cormorant italic font-light text-teal">Wish</em> You Had
           </h1>
 
           <p className="text-lg text-text-mid leading-relaxed max-w-2xl mx-auto mb-8">
@@ -219,13 +172,13 @@ export function ForTherapistsContent() {
             <button
               onClick={handleStartTrial}
               disabled={checkoutLoading}
-              className="px-8 py-4 bg-teal-500 text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-400 transition-colors disabled:opacity-50"
+              className="px-8 py-4 bg-teal text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors disabled:opacity-50"
             >
               {checkoutLoading ? 'Loading...' : user ? 'Start 14-Day Free Trial' : 'Sign In to Start Trial'}
             </button>
             <a
               href="#features"
-              className="px-8 py-4 border border-teal-500/50 text-teal-400 font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-500/10 transition-colors"
+              className="px-8 py-4 border border-teal/50 text-teal font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal/10 transition-colors"
             >
               See Features
             </a>
@@ -233,16 +186,16 @@ export function ForTherapistsContent() {
 
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-            <div className="bg-surface border border-teal-500/20 rounded-lg p-6 text-center">
-              <div className="font-cinzel text-4xl text-teal-400 mb-1">75%</div>
+            <div className="bg-surface border border-teal/20 rounded-lg p-6 text-center">
+              <div className="font-cinzel text-4xl text-teal mb-1">75%</div>
               <div className="text-xs text-text-muted">Homework completion with AI</div>
             </div>
-            <div className="bg-surface border border-teal-500/20 rounded-lg p-6 text-center">
-              <div className="font-cinzel text-4xl text-teal-400 mb-1">20-30%</div>
+            <div className="bg-surface border border-teal/20 rounded-lg p-6 text-center">
+              <div className="font-cinzel text-4xl text-teal mb-1">20-30%</div>
               <div className="text-xs text-text-muted">Standard worksheet rate</div>
             </div>
-            <div className="bg-surface border border-teal-500/20 rounded-lg p-6 text-center">
-              <div className="font-cinzel text-4xl text-teal-400 mb-1">2 min</div>
+            <div className="bg-surface border border-teal/20 rounded-lg p-6 text-center">
+              <div className="font-cinzel text-4xl text-teal mb-1">2 min</div>
               <div className="text-xs text-text-muted">To assign homework</div>
             </div>
           </div>
@@ -255,14 +208,14 @@ export function ForTherapistsContent() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="bg-surface border border-teal-500/30 rounded-lg p-8"
+          className="bg-surface border border-teal/30 rounded-lg p-8"
         >
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-14 h-14 rounded-full bg-teal-500/20 flex items-center justify-center">
-              <BookIcon size={28} className="text-teal-400" />
+            <div className="flex-shrink-0 w-14 h-14 rounded-full bg-teal/20 flex items-center justify-center">
+              <BookIcon size={28} className="text-teal" />
             </div>
             <div>
-              <h2 className="font-cinzel text-lg text-teal-400 mb-3">
+              <h2 className="font-cinzel text-lg text-teal mb-3">
                 Peer-Reviewed Evidence · NHS UK · 2025
               </h2>
               <p className="text-text-mid leading-relaxed mb-3">
@@ -285,9 +238,9 @@ export function ForTherapistsContent() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-teal-400 mb-5 flex items-center gap-4">
+          <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-teal mb-5 flex items-center gap-4">
             Therapist Features
-            <div className="flex-1 h-px bg-gradient-to-r from-teal-500/30 to-transparent" />
+            <div className="flex-1 h-px bg-gradient-to-r from-teal/30 to-transparent" />
           </div>
 
           <h2 className="font-cinzel font-semibold text-3xl md:text-4xl text-text-main mb-12">
@@ -302,9 +255,9 @@ export function ForTherapistsContent() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-surface border border-border rounded-lg p-6 hover:border-teal-500/30 transition-colors"
+                className="bg-surface border border-border rounded-lg p-6 hover:border-teal/30 transition-colors"
               >
-                <feature.Icon size={32} className="mb-4 text-teal-400" />
+                <feature.Icon size={32} className="mb-4 text-teal" />
                 <h3 className="font-cinzel text-sm text-text-main mb-2">{feature.title}</h3>
                 <p className="text-xs text-text-muted leading-relaxed">{feature.desc}</p>
               </motion.div>
@@ -353,9 +306,9 @@ export function ForTherapistsContent() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-teal-400 mb-5 flex items-center gap-4">
+          <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-teal mb-5 flex items-center gap-4">
             Compliance & Trust
-            <div className="flex-1 h-px bg-gradient-to-r from-teal-500/30 to-transparent" />
+            <div className="flex-1 h-px bg-gradient-to-r from-teal/30 to-transparent" />
           </div>
 
           <h2 className="font-cinzel font-semibold text-3xl text-text-main mb-12">
@@ -365,7 +318,7 @@ export function ForTherapistsContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {COMPLIANCE_ITEMS.map((item, i) => (
               <div key={i} className="bg-surface border border-border rounded-lg p-6 text-center">
-                <item.Icon size={32} className="mx-auto mb-4 text-teal-400" />
+                <item.Icon size={32} className="mx-auto mb-4 text-teal" />
                 <h3 className="font-cinzel text-sm text-text-main mb-2">{item.title}</h3>
                 <p className="text-xs text-text-muted">{item.desc}</p>
               </div>
@@ -380,20 +333,20 @@ export function ForTherapistsContent() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="bg-surface border border-teal-500/30 rounded-lg p-10 text-center"
+          className="bg-surface border border-teal/30 rounded-lg p-10 text-center"
         >
-          <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-teal-400 mb-3">
+          <div className="font-cinzel text-[11px] tracking-[0.2em] uppercase text-teal mb-3">
             Clinical Practice
           </div>
           <div className="font-cinzel text-6xl font-black text-text-main mb-2">
-            <sup className="text-2xl text-teal-400">£</sup>59
+            <sup className="text-2xl text-teal">£</sup>59
           </div>
           <div className="text-sm text-text-muted mb-8">{PRICING.period}</div>
 
           <ul className="space-y-3 text-left max-w-sm mx-auto mb-8">
             {PRICING.includes.map((item, i) => (
               <li key={i} className="text-sm text-text-mid flex items-center gap-2">
-                <span className="text-teal-400">◆</span>
+                <span className="text-teal">◆</span>
                 {item}
               </li>
             ))}
@@ -402,7 +355,7 @@ export function ForTherapistsContent() {
           <button
             onClick={handleStartTrial}
             disabled={checkoutLoading}
-            className="w-full py-4 bg-teal-500 text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-400 transition-colors disabled:opacity-50"
+            className="w-full py-4 bg-teal text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors disabled:opacity-50"
           >
             {checkoutLoading ? 'Loading...' : user ? 'Start 14-Day Free Trial' : 'Sign In to Start Trial'}
           </button>
@@ -429,7 +382,7 @@ export function ForTherapistsContent() {
           <button
             onClick={handleStartTrial}
             disabled={checkoutLoading}
-            className="px-10 py-4 bg-teal-500 text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-400 transition-colors disabled:opacity-50"
+            className="px-10 py-4 bg-teal text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors disabled:opacity-50"
           >
             {checkoutLoading ? 'Loading...' : 'Get Started Free'}
           </button>
@@ -444,9 +397,9 @@ export function ForTherapistsContent() {
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-void border border-teal-500/30 rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl"
+            className="bg-void border border-teal/30 rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl"
           >
-            <h2 className="font-cinzel text-lg text-teal-400 tracking-widest mb-2">
+            <h2 className="font-cinzel text-lg text-teal tracking-widest mb-2">
               Professional Verification
             </h2>
             <p className="text-sm text-text-muted mb-6">
@@ -468,7 +421,7 @@ export function ForTherapistsContent() {
                 <select
                   value={credentials.registrationBody}
                   onChange={(e) => setCredentials({ ...credentials, registrationBody: e.target.value })}
-                  className="w-full bg-raised border border-border rounded-lg px-4 py-3 text-text-main text-sm focus:outline-none focus:border-teal-500 transition-colors"
+                  className="w-full bg-raised border border-border rounded-lg px-4 py-3 text-text-main text-sm focus:outline-none focus:border-teal transition-colors"
                 >
                   <option value="">Select your registration body...</option>
                   {REGISTRATION_BODIES.map((body) => (
@@ -486,7 +439,7 @@ export function ForTherapistsContent() {
                   value={credentials.registrationNumber}
                   onChange={(e) => setCredentials({ ...credentials, registrationNumber: e.target.value })}
                   placeholder="e.g., PYL12345"
-                  className="w-full bg-raised border border-border rounded-lg px-4 py-3 text-text-main text-sm placeholder:text-text-muted/50 focus:outline-none focus:border-teal-500 transition-colors"
+                  className="w-full bg-raised border border-border rounded-lg px-4 py-3 text-text-main text-sm placeholder:text-text-muted/50 focus:outline-none focus:border-teal transition-colors"
                 />
               </div>
 
@@ -499,7 +452,7 @@ export function ForTherapistsContent() {
                   value={credentials.practiceName}
                   onChange={(e) => setCredentials({ ...credentials, practiceName: e.target.value })}
                   placeholder="e.g., Mindful Therapy London"
-                  className="w-full bg-raised border border-border rounded-lg px-4 py-3 text-text-main text-sm placeholder:text-text-muted/50 focus:outline-none focus:border-teal-500 transition-colors"
+                  className="w-full bg-raised border border-border rounded-lg px-4 py-3 text-text-main text-sm placeholder:text-text-muted/50 focus:outline-none focus:border-teal transition-colors"
                 />
               </div>
             </div>
@@ -507,14 +460,14 @@ export function ForTherapistsContent() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowCredentialModal(false)}
-                className="flex-1 py-3 border border-border text-text-muted font-cinzel text-xs tracking-widest uppercase rounded-lg hover:border-teal-500/30 transition-colors"
+                className="flex-1 py-3 border border-border text-text-muted font-cinzel text-xs tracking-widest uppercase rounded-lg hover:border-teal/30 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmitCredentials}
                 disabled={checkoutLoading || !credentials.registrationBody || !credentials.registrationNumber}
-                className="flex-1 py-3 bg-teal-500 text-void font-cinzel text-xs tracking-widest uppercase rounded-lg hover:bg-teal-400 transition-colors disabled:opacity-50"
+                className="flex-1 py-3 bg-teal text-void font-cinzel text-xs tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors disabled:opacity-50"
               >
                 {checkoutLoading ? 'Processing...' : 'Continue to Trial'}
               </button>

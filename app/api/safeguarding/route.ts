@@ -263,24 +263,19 @@ export async function GET(req: Request) {
       });
     }
 
-    // List concerns
-    let query = db.collection('safeguardingConcerns')
-      .where('therapistId', '==', therapistId)
-      .orderBy('createdAt', 'desc');
+    // List concerns — compose filters instead of rebuilding the query
+    let query: FirebaseFirestore.Query = db.collection('safeguardingConcerns')
+      .where('therapistId', '==', therapistId);
 
     if (patientId) {
-      query = db.collection('safeguardingConcerns')
-        .where('therapistId', '==', therapistId)
-        .where('patientId', '==', patientId)
-        .orderBy('createdAt', 'desc');
+      query = query.where('patientId', '==', patientId);
     }
 
     if (status) {
-      query = db.collection('safeguardingConcerns')
-        .where('therapistId', '==', therapistId)
-        .where('status', '==', status)
-        .orderBy('createdAt', 'desc');
+      query = query.where('status', '==', status);
     }
+
+    query = query.orderBy('createdAt', 'desc');
 
     const snapshot = await query.limit(50).get();
     const concerns = snapshot.docs.map(doc => doc.data());
