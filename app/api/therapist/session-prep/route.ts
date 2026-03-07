@@ -17,12 +17,14 @@ Mood Trend: {moodTrend}
 Homework Completion: {homeworkStatus}
 Recent Sorca Session Count: {sessionCount}
 Pattern Alerts This Week: {alerts}
+Thought Drops This Week: {thoughtDrops}
 
 Create a concise therapist prep brief with:
 1. Opening suggestion (one sentence)
 2. Key themes to explore (2-3 bullet points)
 3. Homework follow-up question if applicable
-4. Any concerns or positive notes
+4. Thought drop highlights if any were shared between sessions
+5. Any concerns or positive notes
 
 Keep it under 150 words. Professional but warm tone.
 `;
@@ -126,6 +128,25 @@ export async function POST(req: Request) {
       .get();
     const sessionCount = sessionsSnapshot.size;
 
+    // Get thought drops from this week (if consented to share reflections)
+    let thoughtDrops: Array<{ content: string; createdAt: string }> = [];
+    if (consent.permissions?.shareWeekSummary) {
+      try {
+        const dropsSnapshot = await db.collection('thoughtDrops')
+          .where('userId', '==', clientId)
+          .where('createdAt', '>=', oneWeekAgo)
+          .orderBy('createdAt', 'desc')
+          .limit(10)
+          .get();
+        thoughtDrops = dropsSnapshot.docs.map(d => ({
+          content: d.data().content,
+          createdAt: d.data().createdAt,
+        }));
+      } catch {
+        // Thought drops collection may not exist yet
+      }
+    }
+
     // Generate AI prep brief
     const themes = weekSummary?.themes?.join(', ') || 'No week summary available';
     const moodTrend = weekSummary?.moodTrend || 'Not tracked';
@@ -141,7 +162,10 @@ export async function POST(req: Request) {
           .replace('{moodTrend}', moodTrend)
           .replace('{homeworkStatus}', homeworkStatus)
           .replace('{sessionCount}', String(sessionCount))
-          .replace('{alerts}', alertCount > 0 ? `${alertCount} (${alertTypes.join(', ')})` : 'None');
+          .replace('{alerts}', alertCount > 0 ? `${alertCount} (${alertTypes.join(', ')})` : 'None')
+          .replace('{thoughtDrops}', thoughtDrops.length > 0 
+            ? thoughtDrops.map(d => `"${d.content.slice(0, 100)}"`).join('; ') 
+            : 'None this week');
 
         const response = await ai.models.generateContent({
           model: 'gemini-2.0-flash',
@@ -179,6 +203,7 @@ export async function POST(req: Request) {
         sessionCount,
         alertCount,
         alertTypes,
+        thoughtDrops,
       },
       generatedAt: new Date().toISOString(),
     });

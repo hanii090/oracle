@@ -36,6 +36,7 @@ import { SessionDebriefMode } from "@/components/session/SessionDebriefMode";
 import { HomeworkCompanion } from "@/components/session/HomeworkCompanion";
 import { PreSessionPrimer } from "@/components/session/PreSessionPrimer";
 import { CopingAnchor } from "@/components/session/CopingAnchor";
+import { ModalitySwitcher, ModalityBadge } from "@/components/session/ModalitySwitcher";
 
 export function SorcaSession({ onExit, viewSession }: { onExit: () => void; viewSession?: { messages: SessionMessage[]; maxDepth: number; createdAt: string } | null }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -69,6 +70,10 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
   const [showPreSessionPrimer, setShowPreSessionPrimer] = useState(false);
   const [showCopingAnchor, setShowCopingAnchor] = useState(false);
   const [safeMessagingMode, setSafeMessagingMode] = useState(false);
+
+  // Modality & time mode state
+  const [therapyModality, setTherapyModality] = useState('socratic');
+  const [timeMode, setTimeMode] = useState<string | null>(null);
 
   // End of Life mode state
   const [eolMode, setEolMode] = useState(false);
@@ -476,6 +481,8 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
             depth: newDepth,
             nightMode,
             tier: profile?.tier || "free",
+            therapyModality,
+            timeMode,
           };
       const res = await fetch(apiEndpoint, {
         method: "POST",
@@ -577,7 +584,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, depth, profile, messages, pastThread, nightMode, eolMode, steerMusic, triggerBreakthrough, userId, getIdToken, saveSession, loadSessions]);
+  }, [input, isLoading, depth, profile, messages, pastThread, nightMode, eolMode, steerMusic, triggerBreakthrough, userId, getIdToken, saveSession, loadSessions, therapyModality, timeMode]);
 
   // Voice transcript handler
   const handleVoiceTranscript = useCallback((text: string) => {
@@ -639,6 +646,13 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
                 isActive={eolMode}
                 onToggle={handleToggleEol}
                 isPro={profile?.tier === 'pro'}
+              />
+              <ModalitySwitcher
+                currentModality={therapyModality}
+                currentTimeMode={timeMode}
+                onModalityChange={setTherapyModality}
+                onTimeModeChange={setTimeMode}
+                isPro={profile?.tier !== 'free'}
               />
             </div>
             <div className="flex items-center gap-2">

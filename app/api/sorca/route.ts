@@ -9,6 +9,7 @@ import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
 import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase-admin';
 import { getTherapyPhase, getSessionPhase, detectDistortion, GROUNDING_PROMPT, UK_THERAPY_CONTEXT } from '@/lib/therapy-techniques';
+import { getTherapyMode, getTimeMode, getTimeModeForHour } from '@/lib/therapy-modes';
 
 /**
  * Server-side AI proxy — keeps all API keys secret.
@@ -30,6 +31,8 @@ const requestSchema = z.object({
   tier: z.enum(['free', 'philosopher', 'pro']),
   sessionStartTime: z.string().optional(), // ISO timestamp for duration tracking
   safeMode: z.boolean().optional(), // Client-side safe mode flag
+  therapyModality: z.string().optional(), // Therapy modality mode (cbt, act, ifs, etc.)
+  timeMode: z.string().nullable().optional(), // Time-of-day mode (morning, evening, night, crisis)
 });
 
 function buildSystemPrompt(
@@ -40,7 +43,9 @@ function buildSystemPrompt(
   semanticContradiction?: { statement1: string; statement2: string } | null,
   messageCount?: number,
   lastUserMessage?: string,
-  distressLevel?: number
+  distressLevel?: number,
+  therapyModalityId?: string,
+  timeModeId?: string | null
 ): string {
   // Get therapy phase based on depth
   const therapyPhase = getTherapyPhase(depth);
@@ -72,6 +77,18 @@ ${sessionPhase.guidance}
 
 Past Thread Context:
 ${threadContext}`;
+
+  // Therapy modality mode
+  const modalityMode = therapyModalityId ? getTherapyMode(therapyModalityId) : null;
+  if (modalityMode && modalityMode.id !== 'socratic') {
+    prompt += `\n\n🎯 QUESTIONING STYLE — ${modalityMode.name}:\n${modalityMode.questioningStyle}\nSample questions in this style: ${modalityMode.samplePrompts.join(' | ')}`;
+  }
+
+  // Time-of-day mode
+  const activeTimeMode = timeModeId ? getTimeMode(timeModeId) : getTimeModeForHour(new Date().getHours());
+  if (activeTimeMode && (timeModeId || activeTimeMode.id !== 'morning')) {
+    prompt += `\n\n🕐 TIME MODE — ${activeTimeMode.name}:\nTone: ${activeTimeMode.tone}`;
+  }
 
   // CBT: Detect cognitive distortions in the last user message
   if (lastUserMessage) {
@@ -412,7 +429,8 @@ export async function POST(req: Request) {
     const messageCount = conversationHistory.length;
     const systemPrompt = buildSystemPrompt(
       depth, threadStr, nightMode, dnaProfile, semanticContradiction,
-      messageCount, sanitizedMessage
+      messageCount, sanitizedMessage, undefined,
+      parsed.data.therapyModality, parsed.data.timeMode
     );
     const emotionPrompt = buildEmotionPrompt(sanitizedMessage);
 

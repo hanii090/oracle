@@ -13,6 +13,12 @@ import { QuestionGift } from '@/components/landing/QuestionGift';
 import { ExcavationReportSection } from '@/components/landing/ExcavationReport';
 import { AccountSettings } from '@/components/AccountSettings';
 import { HomeworkJourney } from '@/components/homework/HomeworkJourney';
+import { WaitingListMode } from '@/components/waiting-list/WaitingListMode';
+import { ThoughtDrop } from '@/components/session/ThoughtDrop';
+import { TherapyProfile } from '@/components/TherapyProfile';
+import { ProgressReport } from '@/components/ProgressReport';
+import { GDPRDashboard } from '@/components/GDPRDashboard';
+import { HomeworkCompanion } from '@/components/homework/HomeworkCompanion';
 import { Footer } from '@/components/landing/Footer';
 
 interface WeekSummary {
@@ -73,6 +79,11 @@ export function UserDashboard() {
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAddAnchor, setShowAddAnchor] = useState(false);
+  const [showTherapyProfile, setShowTherapyProfile] = useState(false);
+  const [showProgressReport, setShowProgressReport] = useState(false);
+  const [showGDPR, setShowGDPR] = useState(false);
+  const [companionHomeworkId, setCompanionHomeworkId] = useState<string | null>(null);
+  const [companionHomeworkTitle, setCompanionHomeworkTitle] = useState<string>('');
   const [newAnchorName, setNewAnchorName] = useState('');
   const [newAnchorTechnique, setNewAnchorTechnique] = useState('');
   const [savingAnchor, setSavingAnchor] = useState(false);
@@ -252,6 +263,13 @@ export function UserDashboard() {
               </div>
             )}
             <button
+              onClick={() => setShowGDPR(true)}
+              className="p-2 rounded-lg bg-surface border border-border hover:border-teal/30 transition-colors"
+              title="Data & Privacy"
+            >
+              <ConsentIcon size={18} className="text-text-muted hover:text-teal" />
+            </button>
+            <button
               onClick={() => setShowSettings(true)}
               className="p-2 rounded-lg bg-surface border border-border hover:border-gold/30 transition-colors"
               title="Settings"
@@ -296,29 +314,10 @@ export function UserDashboard() {
           ))}
         </div>
 
-        {/* NHS Waiting List Support Banner - shown when not connected to therapist */}
-        {!isInTherapy && (
-          <div className="bg-teal/5 border border-teal/20 rounded-lg p-4 mb-4">
-            <div className="flex items-start gap-3">
-              <WaitlistIcon size={20} className="text-teal mt-0.5 flex-shrink-0" />
-              <div>
-                <h3 className="font-cinzel text-xs text-teal tracking-wider mb-1">On an NHS Waiting List?</h3>
-                <p className="text-[11px] text-text-mid leading-relaxed mb-2">
-                  Sorca can support you while you wait for NHS talking therapies. Use sessions to explore your thoughts, track your mood, and build coping skills before your first appointment.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <a href="https://www.nhs.uk/mental-health/talking-therapies-medicine-treatments/talking-therapies-and-counselling/nhs-talking-therapies/" target="_blank" rel="noopener noreferrer" className="text-[9px] px-2 py-1 bg-teal/10 text-teal rounded hover:bg-teal/20 transition-colors">
-                    NHS Talking Therapies
-                  </a>
-                  <a href="https://www.nhs.uk/mental-health/self-help/" target="_blank" rel="noopener noreferrer" className="text-[9px] px-2 py-1 bg-teal/10 text-teal rounded hover:bg-teal/20 transition-colors">
-                    NHS Self-Help Resources
-                  </a>
-                  <a href="https://web.ntw.nhs.uk/selfhelp/" target="_blank" rel="noopener noreferrer" className="text-[9px] px-2 py-1 bg-teal/10 text-teal rounded hover:bg-teal/20 transition-colors">
-                    CBT Self-Help Guides
-                  </a>
-                </div>
-              </div>
-            </div>
+        {/* NHS Waiting List Mode - shown when not connected to therapist */}
+        {!isInTherapy && activeTab === 'sessions' && (
+          <div className="mb-4">
+            <WaitingListMode />
           </div>
         )}
 
@@ -439,9 +438,17 @@ export function UserDashboard() {
                             </span>
                           )}
                         </div>
-                        <span className="text-[9px] px-2 py-0.5 rounded bg-teal/10 text-teal">
-                          active
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => { setCompanionHomeworkId(hw.id); setCompanionHomeworkTitle(hw.topic); }}
+                            className="text-[9px] px-2 py-0.5 rounded bg-violet/10 text-violet hover:bg-violet/20 transition-colors"
+                          >
+                            Companion
+                          </button>
+                          <span className="text-[9px] px-2 py-0.5 rounded bg-teal/10 text-teal">
+                            active
+                          </span>
+                        </div>
                       </div>
                       <p className="text-xs text-text-mid mb-2">{hw.description}</p>
                       <div className="flex items-center gap-2">
@@ -665,6 +672,13 @@ export function UserDashboard() {
           </Link>
         </div>
 
+        {/* Thought Drop Section */}
+        {isInTherapy && (
+          <div className="mt-6">
+            <ThoughtDrop variant="inline" />
+          </div>
+        )}
+
         {/* Analytics & Insights Section */}
         <div className="mt-8">
           <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase mb-4">
@@ -712,6 +726,43 @@ export function UserDashboard() {
                 <span className="text-[10px] text-violet/60">Upgrade to Philosopher</span>
               ) : (
                 <span className="text-[10px] text-violet">Create Capsule →</span>
+              )}
+            </button>
+
+            {/* Therapy Profile Card */}
+            <button
+              onClick={() => setShowTherapyProfile(true)}
+              className="bg-surface border border-border rounded-lg p-5 text-left transition-colors hover:border-gold/30 cursor-pointer"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <BookIcon size={20} className="text-gold/70" />
+                <h3 className="font-cinzel text-sm text-text-main">My Therapy Profile</h3>
+              </div>
+              <p className="text-xs text-text-muted mb-3">
+                Portable profile: goals, themes, breakthroughs. Share with new therapists.
+              </p>
+              <span className="text-[10px] text-gold">Edit Profile →</span>
+            </button>
+
+            {/* Progress Report Card */}
+            <button
+              onClick={() => profile?.tier !== 'free' ? setShowProgressReport(true) : undefined}
+              disabled={profile?.tier === 'free'}
+              className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${
+                profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-teal/30 cursor-pointer'
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <ChartIcon size={20} className="text-teal/70" />
+                <h3 className="font-cinzel text-sm text-text-main">Progress Report</h3>
+              </div>
+              <p className="text-xs text-text-muted mb-3">
+                Print a &quot;My Therapy Journey&quot; summary for GP appointments.
+              </p>
+              {profile?.tier === 'free' ? (
+                <span className="text-[10px] text-teal/60">Upgrade to Patient Plus</span>
+              ) : (
+                <span className="text-[10px] text-teal">Generate Report →</span>
               )}
             </button>
 
@@ -809,6 +860,62 @@ export function UserDashboard() {
               </button>
             </div>
             <QuestionGift />
+          </motion.div>
+        </div>
+      )}
+
+      {/* Therapy Profile Modal */}
+      {showTherapyProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+          >
+            <TherapyProfile onClose={() => setShowTherapyProfile(false)} />
+          </motion.div>
+        </div>
+      )}
+
+      {/* Progress Report Modal */}
+      {showProgressReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-border rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+          >
+            <ProgressReport onClose={() => setShowProgressReport(false)} />
+          </motion.div>
+        </div>
+      )}
+
+      {/* Homework Companion Modal */}
+      {companionHomeworkId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-violet/30 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+          >
+            <HomeworkCompanion
+              homeworkId={companionHomeworkId}
+              homeworkTitle={companionHomeworkTitle}
+              onClose={() => setCompanionHomeworkId(null)}
+            />
+          </motion.div>
+        </div>
+      )}
+
+      {/* GDPR Dashboard Modal */}
+      {showGDPR && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+          >
+            <GDPRDashboard onClose={() => setShowGDPR(false)} />
           </motion.div>
         </div>
       )}

@@ -9,6 +9,8 @@ import { TherapistIcon, HomeworkIcon, BookIcon, SettingsIcon, AlertIcon, Calenda
 import { PatternAlertPanel, PatternAlertBadge } from '@/components/session/PatternAlertPanel';
 import { TherapistNotesPanel } from '@/components/session/TherapistNotesPanel';
 import { DischargeModal } from '@/components/session/DischargeModal';
+import { InsurerReportForm } from '@/components/therapist/InsurerReportForm';
+import { ReferralLetterForm } from '@/components/therapist/ReferralLetterForm';
 
 interface Client {
   id: string;
@@ -78,6 +80,8 @@ export function TherapistDashboard() {
   const [clientSearch, setClientSearch] = useState('');
   const [showNotesPanel, setShowNotesPanel] = useState(false);
   const [showDischargeModal, setShowDischargeModal] = useState(false);
+  const [showInsurerReport, setShowInsurerReport] = useState(false);
+  const [showReferralLetter, setShowReferralLetter] = useState(false);
 
   const loadSessionPrep = async (clientId: string) => {
     setPrepLoading(true);
@@ -491,6 +495,18 @@ export function TherapistDashboard() {
                             Notes
                           </button>
                           <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedClient(client); setShowInsurerReport(true); }}
+                            className="text-[9px] bg-gold/10 text-gold px-2 py-0.5 rounded hover:bg-gold/20 transition-colors"
+                          >
+                            Insurer Report
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedClient(client); setShowReferralLetter(true); }}
+                            className="text-[9px] bg-teal/10 text-teal px-2 py-0.5 rounded hover:bg-teal/20 transition-colors"
+                          >
+                            Letter
+                          </button>
+                          <button
                             onClick={(e) => { e.stopPropagation(); setSelectedClient(client); setShowDischargeModal(true); }}
                             className="text-[9px] bg-crimson/10 text-crimson px-2 py-0.5 rounded hover:bg-crimson/20 transition-colors"
                           >
@@ -763,6 +779,50 @@ export function TherapistDashboard() {
                 </div>
               </div>
             )}
+          </motion.div>
+        </div>
+      )}
+
+      {/* Insurer Report Modal */}
+      {showInsurerReport && selectedClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-void/80 backdrop-blur-sm" onClick={() => setShowInsurerReport(false)}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-gold/30 rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-cinzel text-lg text-gold">Insurer Report — {selectedClient.displayName}</h2>
+              <button onClick={() => setShowInsurerReport(false)} className="text-text-muted hover:text-gold">✕</button>
+            </div>
+            <InsurerReportForm
+              clientId={selectedClient.id}
+              clientName={selectedClient.displayName}
+              onClose={() => setShowInsurerReport(false)}
+            />
+          </motion.div>
+        </div>
+      )}
+
+      {/* Referral Letter Modal */}
+      {showReferralLetter && selectedClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-void/80 backdrop-blur-sm" onClick={() => setShowReferralLetter(false)}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-teal/30 rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-cinzel text-lg text-teal">Referral Letter — {selectedClient.displayName}</h2>
+              <button onClick={() => setShowReferralLetter(false)} className="text-text-muted hover:text-teal">✕</button>
+            </div>
+            <ReferralLetterForm
+              clientId={selectedClient.id}
+              clientName={selectedClient.displayName}
+              onClose={() => setShowReferralLetter(false)}
+            />
           </motion.div>
         </div>
       )}
