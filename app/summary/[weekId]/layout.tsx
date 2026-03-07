@@ -14,6 +14,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Week Summary — Sorca',
     description: 'A weekly digest of your self-discovery journey. Themes, insights, and progress.',
+    images: [{ url: '/hero-image.png', width: 1200, height: 630, alt: 'SORCA — The AI That Only Asks Questions' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Week Summary — Sorca',
+    description: 'A weekly digest of your self-discovery journey. Themes, insights, and progress.',
+    images: ['/hero-image.png'],
   },
 };
 

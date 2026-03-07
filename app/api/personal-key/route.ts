@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { z } from 'zod';
 
 /**
  * Personal Key — Feature 07
@@ -59,7 +60,18 @@ export async function POST(req: Request) {
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 
-    const { action, openingMessage, sessionMood } = await req.json();
+    const body = await req.json();
+    const parsed = z.object({
+      action: z.enum(['assign', 'get', 'update']),
+      openingMessage: z.string().max(10_000).optional(),
+      sessionMood: z.string().max(500).optional(),
+    }).safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+
+    const { action, openingMessage, sessionMood } = parsed.data;
 
     const adminDb = getAdminFirestore();
     const userRef = adminDb.collection('users').doc(userId);

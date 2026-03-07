@@ -3,6 +3,13 @@ import { GoogleGenAI } from '@google/genai';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { z } from 'zod';
+
+const capsuleSchema = z.object({
+  action: z.enum(['create', 'list', 'open']),
+  answers: z.array(z.string().max(5000)).length(3).optional(),
+  capsuleId: z.string().max(200).optional(),
+});
 
 /**
  * Time Capsule — Feature 12
@@ -41,7 +48,14 @@ export async function POST(req: Request) {
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 
-    const { action, answers, capsuleId } = await req.json();
+    const body = await req.json();
+    const parsed = capsuleSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+
+    const { action, answers, capsuleId } = parsed.data;
 
     const adminDb = getAdminFirestore();
     const capsulesRef = adminDb.collection('users').doc(userId).collection('timeCapsules');

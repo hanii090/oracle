@@ -18,6 +18,13 @@ export const metadata: Metadata = {
     title: 'Your Dashboard — Sorca',
     description: 'Track your self-discovery journey. Sessions, insights, and homework all in one place.',
     url: '/user-dashboard',
+    images: [{ url: '/hero-image.png', width: 1200, height: 630, alt: 'SORCA — The AI That Only Asks Questions' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Your Dashboard — Sorca',
+    description: 'Track your self-discovery journey. Sessions, insights, and homework all in one place.',
+    images: ['/hero-image.png'],
   },
 };
 

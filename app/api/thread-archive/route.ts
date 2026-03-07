@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase-admin';
+import { z } from 'zod';
+
+const archiveSchema = z.object({
+  action: z.enum(['create', 'share', 'list', 'revoke']),
+  archiveId: z.string().max(200).optional(),
+  recipientName: z.string().max(100).optional(),
+  personalNote: z.string().max(2000).optional(),
+});
 
 /**
  * Thread Archive — Pro-only Feature (End of Life)
@@ -37,7 +45,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const { action, archiveId, recipientName, personalNote } = await req.json();
+    const body = await req.json();
+    const parsed = archiveSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+
+    const { action, archiveId, recipientName, personalNote } = parsed.data;
 
     if (action === 'create') {
       // Gather all sessions

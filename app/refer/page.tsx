@@ -86,9 +86,30 @@ export default function SelfReferralPage() {
   const steps: Step[] = ['personal', 'gp', 'clinical', 'phq9', 'gad7', 'consent'];
   const currentStepIndex = steps.indexOf(step);
 
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePhone = (phone: string) => /^[0-9\s+()-]{10,20}$/.test(phone.trim());
+  const validatePostcode = (pc: string) => /^[A-Z]{1,2}[0-9][0-9A-Z]?\s?[0-9][A-Z]{2}$/i.test(pc.trim());
+
   const handleSubmit = async () => {
     setSubmitting(true);
     setError(null);
+
+    // Client-side validation before submission
+    if (!validateEmail(formData.email)) {
+      setError('Please enter a valid email address.');
+      setSubmitting(false);
+      return;
+    }
+    if (!validatePhone(formData.phone)) {
+      setError('Please enter a valid UK phone number.');
+      setSubmitting(false);
+      return;
+    }
+    if (!validatePostcode(formData.postcode)) {
+      setError('Please enter a valid UK postcode.');
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const res = await fetch('/api/self-referral', {
@@ -97,17 +118,23 @@ export default function SelfReferralPage() {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        setError('Server returned an unexpected response. Please try again.');
+        return;
+      }
 
       if (!res.ok) {
-        setError(data.error || 'Failed to submit referral');
+        setError(data.error || 'Failed to submit referral. Please try again.');
         return;
       }
 
       setResult(data);
       setStep('submitted');
-    } catch (e) {
-      setError('Network error. Please try again.');
+    } catch {
+      setError('Network error. Please check your connection and try again.');
     } finally {
       setSubmitting(false);
     }
@@ -759,6 +786,13 @@ export default function SelfReferralPage() {
         </div>
 
         {renderStepIndicator()}
+
+        {/* Global error banner — visible on all steps */}
+        {error && (
+          <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-4">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
 
         <motion.div
           key={step}

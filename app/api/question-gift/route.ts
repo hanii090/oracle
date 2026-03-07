@@ -3,6 +3,14 @@ import { GoogleGenAI } from '@google/genai';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { z } from 'zod';
+
+const giftSchema = z.object({
+  action: z.enum(['create', 'open', 'answer']),
+  recipientName: z.string().max(100).optional(),
+  giftId: z.string().max(200).optional(),
+  answer: z.string().max(5000).optional(),
+});
 
 /**
  * Question Gift — Feature 16
@@ -31,7 +39,14 @@ export async function POST(req: Request) {
   const log = createLogger({ route: '/api/question-gift', correlationId: crypto.randomUUID() });
 
   try {
-    const { action, recipientName, giftId, answer } = await req.json();
+    const body = await req.json();
+    const parsed = giftSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+
+    const { action, recipientName, giftId, answer } = parsed.data;
 
     // Actions that don't require authentication (for gift recipients)
     if (action === 'open' || action === 'answer') {

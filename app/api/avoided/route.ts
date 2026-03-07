@@ -3,6 +3,7 @@ import { GoogleGenAI } from '@google/genai';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { z } from 'zod';
 
 /**
  * Avoided Question Archive — Feature 05
@@ -53,9 +54,17 @@ export async function POST(req: Request) {
     log.info('Avoided question analysis requested', { userId });
 
     const body = await req.json();
-    const { sessionMessages } = body;
+    const parsed = z.object({
+      sessionMessages: z.array(z.object({ role: z.string(), content: z.string(), depth: z.number().optional() })),
+    }).safeParse(body);
 
-    if (!sessionMessages || sessionMessages.length < 4) {
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+
+    const { sessionMessages } = parsed.data;
+
+    if (sessionMessages.length < 4) {
       return NextResponse.json({
         deflectedQuestions: [],
         message: 'Session too short to analyse.',

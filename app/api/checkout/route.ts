@@ -4,6 +4,16 @@ import { checkoutRateLimit } from '@/lib/rate-limit';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { getStripeEnv } from '@/lib/env';
 import { createLogger } from '@/lib/logger';
+import { z } from 'zod';
+
+const checkoutSchema = z.object({
+  tier: z.enum(['philosopher', 'pro', 'practice']),
+  therapistCredentials: z.object({
+    registrationBody: z.string().min(1),
+    registrationNumber: z.string().min(1),
+    practiceName: z.string().optional(),
+  }).optional(),
+});
 
 let stripeClient: Stripe | null = null;
 
@@ -41,11 +51,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
     }
 
-    const { tier, therapistCredentials } = await req.json();
+    const body = await req.json();
+    const parsed = checkoutSchema.safeParse(body);
 
-    if (!tier) {
-      return NextResponse.json({ error: 'Missing tier' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+
+    const { tier, therapistCredentials } = parsed.data;
 
     // Validate therapist credentials for practice tier
     if (tier === 'practice') {
@@ -93,7 +106,7 @@ export async function POST(req: Request) {
       success_url: `${origin}/?success=true`,
       cancel_url: `${origin}/?canceled=true`,
       client_reference_id: userId,
-      metadata: tier === 'practice' ? {
+      metadata: tier === 'practice' && therapistCredentials ? {
         therapist_registration_body: therapistCredentials.registrationBody,
         therapist_registration_number: therapistCredentials.registrationNumber,
         therapist_practice_name: therapistCredentials.practiceName || '',

@@ -3,6 +3,15 @@ import { GoogleGenAI } from '@google/genai';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { z } from 'zod';
+
+const sharedSessionSchema = z.object({
+  action: z.enum(['create', 'join', 'submit', 'status', 'check']),
+  sessionId: z.string().max(200).optional(),
+  inviteCode: z.string().max(20).optional(),
+  answers: z.array(z.string().max(5000)).optional(),
+  partnerName: z.string().max(100).optional(),
+});
 
 /**
  * Shared Sessions — Feature 15
@@ -37,7 +46,14 @@ export async function POST(req: Request) {
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 
-    const { action, sessionId, inviteCode, answers, partnerName } = await req.json();
+    const body = await req.json();
+    const parsed = sharedSessionSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+
+    const { action, sessionId, inviteCode, answers, partnerName } = parsed.data;
 
     const adminDb = getAdminFirestore();
     const sharedRef = adminDb.collection('sharedSessions');

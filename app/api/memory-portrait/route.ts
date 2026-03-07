@@ -3,6 +3,7 @@ import { GoogleGenAI } from '@google/genai';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase-admin';
+import { z } from 'zod';
 
 /**
  * Memory Portraits — Pro-only Feature (End of Life)
@@ -58,9 +59,18 @@ export async function POST(req: Request) {
       }
     }
 
-    const { sessionMessages } = await req.json();
+    const body = await req.json();
+    const parsed = z.object({
+      sessionMessages: z.array(z.object({ role: z.string(), content: z.string() })),
+    }).safeParse(body);
 
-    if (!sessionMessages || sessionMessages.length < 4) {
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+
+    const { sessionMessages } = parsed.data;
+
+    if (sessionMessages.length < 4) {
       return NextResponse.json(
         { error: 'Not enough conversation to create a memory portrait. Continue your End of Life sessions.' },
         { status: 400 }

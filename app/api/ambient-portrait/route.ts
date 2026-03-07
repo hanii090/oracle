@@ -3,6 +3,7 @@ import { GoogleGenAI } from '@google/genai';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { z } from 'zod';
 
 /**
  * Ambient Portraits — Feature 09
@@ -37,11 +38,18 @@ export async function POST(req: Request) {
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 
-    const { sessionMessages, sessionId, depth } = await req.json();
+    const body = await req.json();
+    const parsed = z.object({
+      sessionMessages: z.array(z.object({ role: z.string(), content: z.string() })).min(4),
+      sessionId: z.string().min(1),
+      depth: z.number().int().min(1).optional(),
+    }).safeParse(body);
 
-    if (!sessionMessages || sessionMessages.length < 4) {
-      return NextResponse.json({ error: 'Not enough conversation for a portrait' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+
+    const { sessionMessages, sessionId, depth } = parsed.data;
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return NextResponse.json({ error: 'AI not configured' }, { status: 500 });

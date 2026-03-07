@@ -3,6 +3,18 @@ import { GoogleGenAI } from '@google/genai';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { z } from 'zod';
+
+const silenceSchema = z.object({
+  sessionId: z.string().min(1),
+  totalSpeechMs: z.number().min(0),
+  totalSilenceMs: z.number().min(0),
+  pauses: z.array(z.object({
+    startMs: z.number().min(0),
+    durationMs: z.number().min(0),
+    afterQuestion: z.string().optional(),
+  })).optional(),
+});
 
 /**
  * Silence Score — Feature 10
@@ -20,11 +32,14 @@ export async function POST(req: Request) {
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 
-    const { sessionId, totalSpeechMs, totalSilenceMs, pauses } = await req.json();
+    const body = await req.json();
+    const parsed = silenceSchema.safeParse(body);
 
-    if (!sessionId || totalSpeechMs === undefined || totalSilenceMs === undefined) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+
+    const { sessionId, totalSpeechMs, totalSilenceMs, pauses } = parsed.data;
 
     const totalMs = totalSpeechMs + totalSilenceMs;
     const silenceRatio = totalMs > 0 ? totalSilenceMs / totalMs : 0;

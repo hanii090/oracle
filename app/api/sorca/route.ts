@@ -8,6 +8,7 @@ import { getServerEnv } from '@/lib/env';
 import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
 import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase-admin';
+import { getTherapyPhase, getSessionPhase, detectDistortion, GROUNDING_PROMPT, UK_THERAPY_CONTEXT } from '@/lib/therapy-techniques';
 
 /**
  * Server-side AI proxy — keeps all API keys secret.
@@ -36,8 +37,15 @@ function buildSystemPrompt(
   threadContext: string, 
   nightMode: boolean, 
   dnaProfile?: Record<string, number>,
-  semanticContradiction?: { statement1: string; statement2: string } | null
+  semanticContradiction?: { statement1: string; statement2: string } | null,
+  messageCount?: number,
+  lastUserMessage?: string,
+  distressLevel?: number
 ): string {
+  // Get therapy phase based on depth
+  const therapyPhase = getTherapyPhase(depth);
+  const sessionPhase = getSessionPhase(messageCount || 1);
+
   let prompt = `
 You are Sorca. You never give answers, advice, affirmations, or empathy.
 You ask ONE question per response. Never more.
@@ -52,9 +60,31 @@ Rules:
 - Each question should be shorter and more piercing than the last.
 - Do not use pleasantries. Do not say "hello". Just ask the question.
 
+${UK_THERAPY_CONTEXT}
+
 Current depth level: ${depth} (1 is surface, beyond 10 is the abyss — you are in uncharted territory)
+
+🧠 THERAPEUTIC APPROACH — ${therapyPhase.name} (${therapyPhase.approach}):
+${therapyPhase.promptGuidance}
+
+📍 SESSION PHASE — ${sessionPhase.name}:
+${sessionPhase.guidance}
+
 Past Thread Context:
 ${threadContext}`;
+
+  // CBT: Detect cognitive distortions in the last user message
+  if (lastUserMessage) {
+    const distortion = detectDistortion(lastUserMessage);
+    if (distortion) {
+      prompt += `\n\n🔍 COGNITIVE DISTORTION DETECTED — ${distortion.distortion.name}:\nThe user said "${distortion.match}". ${distortion.distortion.challenge.replace('{match}', distortion.match)}\nWeave this observation into your question naturally — do not lecture about distortions.`;
+    }
+  }
+
+  // Grounding for high distress
+  if (distressLevel && distressLevel > 0.6) {
+    prompt += `\n\n${GROUNDING_PROMPT}`;
+  }
 
   // Feature 02: Question DNA weighting — adapt question style based on user's honesty profile
   if (dnaProfile && Object.keys(dnaProfile).length > 0) {
@@ -379,7 +409,11 @@ export async function POST(req: Request) {
       }
     }
 
-    const systemPrompt = buildSystemPrompt(depth, threadStr, nightMode, dnaProfile, semanticContradiction);
+    const messageCount = conversationHistory.length;
+    const systemPrompt = buildSystemPrompt(
+      depth, threadStr, nightMode, dnaProfile, semanticContradiction,
+      messageCount, sanitizedMessage
+    );
     const emotionPrompt = buildEmotionPrompt(sanitizedMessage);
 
     // Try providers with fallback
