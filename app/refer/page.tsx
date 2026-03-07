@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'motion/react';
+import { SiteNav } from '@/components/SiteNav';
 import { PHQ9_QUESTIONS, PHQ9_OPTIONS, GAD7_QUESTIONS, GAD7_OPTIONS, PROBLEM_DESCRIPTORS, EMPLOYMENT_STATUS } from '@/lib/iapt-dataset';
 import { UK_CRISIS_CONTACTS } from '@/lib/risk-assessment';
 
@@ -147,16 +148,16 @@ export default function SelfReferralPage() {
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-cinzel ${
               i < currentStepIndex
-                ? 'bg-teal-500 text-void'
+                ? 'bg-teal text-void'
                 : i === currentStepIndex
-                ? 'bg-teal-500/20 border-2 border-teal-500 text-teal-400'
+                ? 'bg-teal/20 border-2 border-teal text-teal'
                 : 'bg-border text-text-muted'
             }`}
           >
             {i + 1}
           </div>
           {i < steps.length - 1 && (
-            <div className={`w-8 h-0.5 ${i < currentStepIndex ? 'bg-teal-500' : 'bg-border'}`} />
+            <div className={`w-8 h-0.5 ${i < currentStepIndex ? 'bg-teal' : 'bg-border'}`} />
           )}
         </div>
       ))}
@@ -390,8 +391,8 @@ export default function SelfReferralPage() {
               }}
               className={`p-3 rounded-lg border text-left text-xs transition-colors ${
                 formData.presentingProblems.includes(problem.code)
-                  ? 'border-teal-500 bg-teal-500/10 text-teal-400'
-                  : 'border-border text-text-mid hover:border-teal-500/50'
+                  ? 'border-teal bg-teal/10 text-teal'
+                  : 'border-border text-text-mid hover:border-teal/50'
               }`}
             >
               {problem.label}
@@ -425,8 +426,8 @@ export default function SelfReferralPage() {
               onClick={() => updateField('durationOfProblem', option.value)}
               className={`p-3 rounded-lg border text-center text-xs transition-colors ${
                 formData.durationOfProblem === option.value
-                  ? 'border-teal-500 bg-teal-500/10 text-teal-400'
-                  : 'border-border text-text-mid hover:border-teal-500/50'
+                  ? 'border-teal bg-teal/10 text-teal'
+                  : 'border-border text-text-mid hover:border-teal/50'
               }`}
             >
               {option.label}
@@ -442,7 +443,7 @@ export default function SelfReferralPage() {
             onClick={() => updateField('previousTherapy', true)}
             className={`px-6 py-2 rounded-lg border text-sm ${
               formData.previousTherapy
-                ? 'border-teal-500 bg-teal-500/10 text-teal-400'
+                ? 'border-teal bg-teal/10 text-teal'
                 : 'border-border text-text-mid'
             }`}
           >
@@ -452,7 +453,7 @@ export default function SelfReferralPage() {
             onClick={() => updateField('previousTherapy', false)}
             className={`px-6 py-2 rounded-lg border text-sm ${
               !formData.previousTherapy
-                ? 'border-teal-500 bg-teal-500/10 text-teal-400'
+                ? 'border-teal bg-teal/10 text-teal'
                 : 'border-border text-text-mid'
             }`}
           >
@@ -476,7 +477,7 @@ export default function SelfReferralPage() {
             onClick={() => updateField('currentMedication', true)}
             className={`px-6 py-2 rounded-lg border text-sm ${
               formData.currentMedication
-                ? 'border-teal-500 bg-teal-500/10 text-teal-400'
+                ? 'border-teal bg-teal/10 text-teal'
                 : 'border-border text-text-mid'
             }`}
           >
@@ -486,7 +487,7 @@ export default function SelfReferralPage() {
             onClick={() => updateField('currentMedication', false)}
             className={`px-6 py-2 rounded-lg border text-sm ${
               !formData.currentMedication
-                ? 'border-teal-500 bg-teal-500/10 text-teal-400'
+                ? 'border-teal bg-teal/10 text-teal'
                 : 'border-border text-text-mid'
             }`}
           >
@@ -611,7 +612,7 @@ export default function SelfReferralPage() {
             type="checkbox"
             checked={formData.consentToProcess}
             onChange={(e) => updateField('consentToProcess', e.target.checked)}
-            className="mt-1 w-5 h-5 rounded border-border bg-raised text-teal-500 focus:ring-teal-500"
+            className="mt-1 w-5 h-5 rounded border-border bg-raised text-teal focus:ring-teal"
           />
           <div>
             <p className="text-sm text-text-main">I consent to my data being processed *</p>
@@ -627,7 +628,7 @@ export default function SelfReferralPage() {
             type="checkbox"
             checked={formData.consentToContactGP}
             onChange={(e) => updateField('consentToContactGP', e.target.checked)}
-            className="mt-1 w-5 h-5 rounded border-border bg-raised text-teal-500 focus:ring-teal-500"
+            className="mt-1 w-5 h-5 rounded border-border bg-raised text-teal focus:ring-teal"
           />
           <div>
             <p className="text-sm text-text-main">I consent to my GP being contacted</p>
@@ -642,7 +643,7 @@ export default function SelfReferralPage() {
             type="checkbox"
             checked={formData.consentToEmergencyContact}
             onChange={(e) => updateField('consentToEmergencyContact', e.target.checked)}
-            className="mt-1 w-5 h-5 rounded border-border bg-raised text-teal-500 focus:ring-teal-500"
+            className="mt-1 w-5 h-5 rounded border-border bg-raised text-teal focus:ring-teal"
           />
           <div>
             <p className="text-sm text-text-main">I consent to my emergency contact being contacted if needed</p>
@@ -680,8 +681,8 @@ export default function SelfReferralPage() {
 
   const renderSubmittedStep = () => (
     <div className="text-center py-12">
-      <div className="w-16 h-16 bg-teal-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-        <svg className="w-8 h-8 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="w-16 h-16 bg-teal/20 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg className="w-8 h-8 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       </div>
@@ -694,7 +695,7 @@ export default function SelfReferralPage() {
       {result && (
         <div className="bg-surface border border-border rounded-lg p-6 max-w-md mx-auto mb-8">
           <p className="text-xs text-text-muted mb-2">Reference Number</p>
-          <p className="font-mono text-lg text-teal-400 mb-4">{result.referralId.slice(0, 8).toUpperCase()}</p>
+          <p className="font-mono text-lg text-teal mb-4">{result.referralId.slice(0, 8).toUpperCase()}</p>
           
           <div className="grid grid-cols-2 gap-4 text-left">
             <div>
@@ -709,7 +710,7 @@ export default function SelfReferralPage() {
 
           <div className="mt-4 pt-4 border-t border-border">
             <p className="text-xs text-text-muted">Recommended Treatment</p>
-            <p className="text-sm text-teal-400">{result.triage.stepName}</p>
+            <p className="text-sm text-teal">{result.triage.stepName}</p>
           </div>
         </div>
       )}
@@ -734,7 +735,7 @@ export default function SelfReferralPage() {
 
       <a
         href="/"
-        className="inline-block px-8 py-3 bg-teal-500/10 border border-teal-500 text-teal-400 font-cinzel text-sm tracking-widest rounded-lg hover:bg-teal-500 hover:text-void transition-colors"
+        className="inline-block px-8 py-3 bg-teal/10 border border-teal text-teal font-cinzel text-sm tracking-widest rounded-lg hover:bg-teal hover:text-void transition-colors"
       >
         Return Home
       </a>
@@ -773,13 +774,11 @@ export default function SelfReferralPage() {
   }
 
   return (
-    <main className="min-h-screen bg-void py-12 px-6">
-      <div className="max-w-2xl mx-auto">
+    <main className="min-h-screen bg-void">
+      <SiteNav />
+      <div className="max-w-2xl mx-auto px-6 py-8">
         <div className="text-center mb-8">
-          <a href="/" className="font-cinzel text-gold tracking-[0.3em] text-sm uppercase">
-            Sorca
-          </a>
-          <h1 className="font-cinzel text-3xl text-text-main mt-4">Self-Referral</h1>
+          <h1 className="font-cinzel text-3xl text-text-main">Self-Referral</h1>
           <p className="text-text-muted mt-2">
             Complete this form to refer yourself for psychological therapy support
           </p>
@@ -823,7 +822,7 @@ export default function SelfReferralPage() {
               <button
                 onClick={handleSubmit}
                 disabled={!canProceed() || submitting}
-                className="px-8 py-3 bg-teal-500 text-void font-cinzel text-sm tracking-widest rounded-lg hover:bg-teal-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-8 py-3 bg-teal text-void font-cinzel text-sm tracking-widest rounded-lg hover:bg-teal-bright transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? 'Submitting...' : 'Submit Referral'}
               </button>
@@ -831,7 +830,7 @@ export default function SelfReferralPage() {
               <button
                 onClick={() => setStep(steps[currentStepIndex + 1])}
                 disabled={!canProceed()}
-                className="px-8 py-3 bg-teal-500/10 border border-teal-500 text-teal-400 font-cinzel text-sm tracking-widest rounded-lg hover:bg-teal-500 hover:text-void transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-8 py-3 bg-teal/10 border border-teal text-teal font-cinzel text-sm tracking-widest rounded-lg hover:bg-teal hover:text-void transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Continue
               </button>

@@ -7,6 +7,7 @@ import { sanitizeMessage } from '@/lib/safety';
 import { validateNHSNumber } from '@/lib/gp-integration';
 import { recommendInitialStep } from '@/lib/stepped-care';
 import { getPHQ9Severity, getGAD7Severity, PROBLEM_DESCRIPTORS } from '@/lib/iapt-dataset';
+import { selfReferralRateLimit } from '@/lib/rate-limit';
 
 const selfReferralSchema = z.object({
   // Personal details
@@ -120,6 +121,16 @@ export interface SelfReferral {
 
 export async function POST(req: Request) {
   const log = createLogger({ route: '/api/self-referral', correlationId: crypto.randomUUID() });
+
+  // Rate limit: 3 submissions per hour per IP
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const rl = selfReferralRateLimit(ip);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: 'Too many referral submissions. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+    );
+  }
 
   try {
     const body = await req.json();

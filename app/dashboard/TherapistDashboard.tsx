@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import { Stars } from '@/components/Stars';
 import { TherapistIcon, HomeworkIcon, BookIcon, SettingsIcon, AlertIcon, CalendarIcon, ExportIcon } from '@/components/icons';
 import { PatternAlertPanel, PatternAlertBadge } from '@/components/session/PatternAlertPanel';
+import { TherapistNotesPanel } from '@/components/session/TherapistNotesPanel';
+import { DischargeModal } from '@/components/session/DischargeModal';
 
 interface Client {
   id: string;
@@ -74,6 +76,8 @@ export function TherapistDashboard() {
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
   const [clientSearch, setClientSearch] = useState('');
+  const [showNotesPanel, setShowNotesPanel] = useState(false);
+  const [showDischargeModal, setShowDischargeModal] = useState(false);
 
   const loadSessionPrep = async (clientId: string) => {
     setPrepLoading(true);
@@ -480,6 +484,18 @@ export function TherapistDashboard() {
                               {prepLoading ? '...' : 'Session Prep'}
                             </button>
                           )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedClient(client); setShowNotesPanel(true); }}
+                            className="text-[9px] bg-violet/10 text-violet px-2 py-0.5 rounded hover:bg-violet/20 transition-colors"
+                          >
+                            Notes
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedClient(client); setShowDischargeModal(true); }}
+                            className="text-[9px] bg-crimson/10 text-crimson px-2 py-0.5 rounded hover:bg-crimson/20 transition-colors"
+                          >
+                            Discharge
+                          </button>
                         </div>
                         <p className="text-[10px] text-text-muted mb-2">
                           {client.consentedAt ? `Consented ${new Date(client.consentedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : 'Active consent'}
@@ -652,6 +668,27 @@ export function TherapistDashboard() {
         isOpen={showAlertPanel} 
         onClose={() => setShowAlertPanel(false)} 
       />
+
+      {/* Therapist Notes Panel */}
+      {selectedClient && (
+        <TherapistNotesPanel
+          clientId={selectedClient.id}
+          clientName={selectedClient.displayName}
+          isOpen={showNotesPanel}
+          onClose={() => setShowNotesPanel(false)}
+        />
+      )}
+
+      {/* Discharge Modal */}
+      {selectedClient && (
+        <DischargeModal
+          clientId={selectedClient.id}
+          clientName={selectedClient.displayName}
+          isOpen={showDischargeModal}
+          onClose={() => setShowDischargeModal(false)}
+          onDischarged={() => { setSelectedClient(null); loadDashboard(); }}
+        />
+      )}
 
       {/* Invite Client Modal */}
       {showInviteModal && (

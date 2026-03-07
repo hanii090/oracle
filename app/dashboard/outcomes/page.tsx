@@ -152,10 +152,10 @@ export default function OutcomesDashboardPage() {
       <div className="relative h-48">
         {/* Caseness threshold line */}
         <div 
-          className="absolute left-0 right-0 border-t border-dashed border-amber-500/50"
+          className="absolute left-0 right-0 border-t border-dashed border-editorial-gold/50"
           style={{ bottom: `${(caseness / maxScore) * 100}%` }}
         >
-          <span className="absolute right-0 -top-3 text-[9px] text-amber-400">
+          <span className="absolute right-0 -top-3 text-[9px] text-editorial-gold">
             Clinical threshold ({caseness})
           </span>
         </div>
@@ -191,7 +191,7 @@ export default function OutcomesDashboardPage() {
   if (loading || loadingClients) {
     return (
       <div className="min-h-screen bg-void flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-teal border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -202,7 +202,7 @@ export default function OutcomesDashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <a href="/dashboard" className="text-xs text-text-muted hover:text-teal-400 mb-2 inline-block">
+            <a href="/dashboard" className="text-xs text-text-muted hover:text-teal mb-2 inline-block">
               ← Back to Dashboard
             </a>
             <h1 className="font-cinzel text-2xl text-text-main">Outcome Measures</h1>
@@ -214,23 +214,23 @@ export default function OutcomesDashboardPage() {
         {practiceStats && (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
             <div className="bg-surface border border-border rounded-lg p-4 text-center">
-              <div className="font-cinzel text-2xl text-teal-400">{practiceStats.totalClients}</div>
+              <div className="font-cinzel text-2xl text-teal">{practiceStats.totalClients}</div>
               <div className="text-xs text-text-muted">Active Clients</div>
             </div>
             <div className="bg-surface border border-border rounded-lg p-4 text-center">
-              <div className="font-cinzel text-2xl text-emerald-400">{practiceStats.recoveryRate}%</div>
+              <div className="font-cinzel text-2xl text-teal">{practiceStats.recoveryRate}%</div>
               <div className="text-xs text-text-muted">Recovery Rate</div>
             </div>
             <div className="bg-surface border border-border rounded-lg p-4 text-center">
-              <div className="font-cinzel text-2xl text-blue-400">{practiceStats.reliableImprovementRate}%</div>
+              <div className="font-cinzel text-2xl text-violet">{practiceStats.reliableImprovementRate}%</div>
               <div className="text-xs text-text-muted">Reliable Improvement</div>
             </div>
             <div className="bg-surface border border-border rounded-lg p-4 text-center">
-              <div className="font-cinzel text-2xl text-blue-400">{practiceStats.averagePHQ9Change}</div>
+              <div className="font-cinzel text-2xl text-violet">{practiceStats.averagePHQ9Change}</div>
               <div className="text-xs text-text-muted">Avg PHQ-9 Change</div>
             </div>
             <div className="bg-surface border border-border rounded-lg p-4 text-center">
-              <div className="font-cinzel text-2xl text-violet-400">{practiceStats.averageGAD7Change}</div>
+              <div className="font-cinzel text-2xl text-violet">{practiceStats.averageGAD7Change}</div>
               <div className="text-xs text-text-muted">Avg GAD-7 Change</div>
             </div>
           </div>
@@ -250,7 +250,7 @@ export default function OutcomesDashboardPage() {
                     onClick={() => setSelectedClient(client)}
                     className={`w-full text-left p-3 rounded-lg transition-colors ${
                       selectedClient?.id === client.id
-                        ? 'bg-teal-500/10 border border-teal-500/30'
+                        ? 'bg-teal/10 border border-teal/30'
                         : 'hover:bg-raised border border-transparent'
                     }`}
                   >
@@ -270,7 +270,7 @@ export default function OutcomesDashboardPage() {
               </div>
             ) : loadingOutcomes ? (
               <div className="bg-surface border border-border rounded-lg p-12 flex items-center justify-center">
-                <div className="w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-teal border-t-transparent rounded-full animate-spin" />
               </div>
             ) : clientOutcomes ? (
               <motion.div
@@ -288,21 +288,21 @@ export default function OutcomesDashboardPage() {
                     {clientOutcomes.recovery && (
                       <div className={`px-4 py-2 rounded-lg ${
                         clientOutcomes.recovery.recovered
-                          ? 'bg-emerald-500/10 border border-emerald-500/30'
+                          ? 'bg-teal/10 border border-teal/30'
                           : clientOutcomes.recovery.reliablyImproved
-                          ? 'bg-blue-500/10 border border-blue-500/30'
+                          ? 'bg-violet/10 border border-violet/30'
                           : clientOutcomes.recovery.reliablyDeteriorated
-                          ? 'bg-red-500/10 border border-red-500/30'
-                          : 'bg-amber-500/10 border border-amber-500/30'
+                          ? 'bg-crimson/10 border border-crimson/30'
+                          : 'bg-editorial-gold/10 border border-editorial-gold/30'
                       }`}>
                         <span className={`text-sm font-cinzel ${
                           clientOutcomes.recovery.recovered
-                            ? 'text-emerald-400'
+                            ? 'text-teal'
                             : clientOutcomes.recovery.reliablyImproved
-                            ? 'text-blue-400'
+                            ? 'text-violet'
                             : clientOutcomes.recovery.reliablyDeteriorated
-                            ? 'text-red-400'
-                            : 'text-amber-400'
+                            ? 'text-crimson'
+                            : 'text-editorial-gold'
                         }`}>
                           {clientOutcomes.recovery.recovered
                             ? '✓ Recovered'
@@ -321,12 +321,12 @@ export default function OutcomesDashboardPage() {
                 <div className="bg-surface border border-border rounded-lg p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-cinzel text-sm text-blue-400">PHQ-9 (Depression)</h3>
+                      <h3 className="font-cinzel text-sm text-violet">PHQ-9 (Depression)</h3>
                       <p className="text-xs text-text-muted">Patient Health Questionnaire</p>
                     </div>
                     {clientOutcomes.measures.filter(m => m.type === 'PHQ9').length > 0 && (
                       <div className="text-right">
-                        <div className="text-lg font-cinzel text-blue-400">
+                        <div className="text-lg font-cinzel text-violet">
                           {clientOutcomes.measures.filter(m => m.type === 'PHQ9')[0]?.total}
                         </div>
                         <div className="text-xs text-text-muted">
@@ -342,12 +342,12 @@ export default function OutcomesDashboardPage() {
                 <div className="bg-surface border border-border rounded-lg p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-cinzel text-sm text-violet-400">GAD-7 (Anxiety)</h3>
+                      <h3 className="font-cinzel text-sm text-violet">GAD-7 (Anxiety)</h3>
                       <p className="text-xs text-text-muted">Generalised Anxiety Disorder Scale</p>
                     </div>
                     {clientOutcomes.measures.filter(m => m.type === 'GAD7').length > 0 && (
                       <div className="text-right">
-                        <div className="text-lg font-cinzel text-violet-400">
+                        <div className="text-lg font-cinzel text-violet">
                           {clientOutcomes.measures.filter(m => m.type === 'GAD7')[0]?.total}
                         </div>
                         <div className="text-xs text-text-muted">
@@ -381,8 +381,8 @@ export default function OutcomesDashboardPage() {
                             <td className="py-2">
                               <span className={`px-2 py-0.5 rounded text-xs ${
                                 measure.type === 'PHQ9' 
-                                  ? 'bg-blue-500/10 text-blue-400' 
-                                  : 'bg-violet-500/10 text-violet-400'
+                                  ? 'bg-violet/10 text-violet' 
+                                  : 'bg-violet/10 text-violet'
                               }`}>
                                 {measure.type}
                               </span>

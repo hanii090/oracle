@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { Stars } from '@/components/Stars';
 import { HomeworkIcon, CheckIcon, ChevronIcon } from '@/components/icons';
+import { HOMEWORK_TEMPLATES as LIB_TEMPLATES, TEMPLATE_CATEGORIES, type HomeworkTemplate as LibTemplate } from '@/lib/homework-templates';
 
 interface Client {
   id: string;
@@ -19,55 +20,17 @@ interface HomeworkTemplate {
   description: string;
   defaultDuration: number;
   questions: string[];
+  category?: string;
 }
 
-const HOMEWORK_TEMPLATES: HomeworkTemplate[] = [
-  {
-    id: 'thought-record',
-    title: 'Thought Record',
-    description: 'Daily CBT thought tracking exercise',
-    defaultDuration: 7,
-    questions: [
-      'What situation triggered this thought?',
-      'What emotion did you feel?',
-      'What was the automatic thought?',
-      'What evidence supports or contradicts this thought?',
-    ],
-  },
-  {
-    id: 'gratitude',
-    title: 'Gratitude Practice',
-    description: 'Daily gratitude reflection',
-    defaultDuration: 7,
-    questions: [
-      'What are you grateful for today?',
-      'Who made a positive difference?',
-      'What small moment brought you joy?',
-    ],
-  },
-  {
-    id: 'behavioral-activation',
-    title: 'Behavioral Activation',
-    description: 'Schedule and track meaningful activities',
-    defaultDuration: 7,
-    questions: [
-      'What activity did you complete today?',
-      'How did you feel before vs after?',
-      'What might you try tomorrow?',
-    ],
-  },
-  {
-    id: 'mindfulness',
-    title: 'Mindfulness Practice',
-    description: 'Daily mindfulness check-in',
-    defaultDuration: 7,
-    questions: [
-      'What did you notice in your body today?',
-      'What thoughts passed through without judgment?',
-      'When were you most present?',
-    ],
-  },
-];
+const HOMEWORK_TEMPLATES: HomeworkTemplate[] = LIB_TEMPLATES.map(t => ({
+  id: t.id,
+  title: t.name,
+  description: t.description,
+  defaultDuration: t.suggestedDuration,
+  questions: t.checkInPrompts,
+  category: t.category,
+}));
 
 export function HomeworkAssignmentPage() {
   const { user, profileLoaded, isTherapist, loading: authLoading, getIdToken } = useAuth();
@@ -212,7 +175,7 @@ export function HomeworkAssignmentPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-void flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-teal border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

@@ -104,16 +104,16 @@ export function FeaturesSection() {
 
       {/* Therapy Features */}
       <div className="mt-16">
-        <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-teal-400 mb-5 flex items-center gap-4">
+        <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-teal mb-5 flex items-center gap-4">
           For People in Therapy
-          <div className="flex-1 h-px bg-gradient-to-r from-teal-500/30 to-transparent" aria-hidden="true" />
+          <div className="flex-1 h-px bg-gradient-to-r from-teal/30 to-transparent" aria-hidden="true" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="list" aria-label="Therapy features">
           {THERAPY_FEATURES.map((feature, i) => (
-            <div key={i} role="listitem" className="bg-surface p-10 relative overflow-hidden group hover:bg-raised hover:-translate-y-1 transition-all duration-300 border border-teal-500/20 hover:border-teal-500/40 rounded-lg hover:shadow-[0_8px_30px_rgba(20,184,166,0.05)]">
-              <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity bg-teal-500" aria-hidden="true" />
-              <feature.Icon size={32} className="mb-4 text-teal-400" aria-hidden="true" />
-              <div className="font-courier text-[9px] text-teal-400/60 tracking-widest uppercase mb-2">{feature.emotional}</div>
+            <div key={i} role="listitem" className="bg-surface p-10 relative overflow-hidden group hover:bg-raised hover:-translate-y-1 transition-all duration-300 border border-teal/20 hover:border-teal/40 rounded-lg hover:shadow-[0_8px_30px_rgba(20,184,166,0.05)]">
+              <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity bg-teal" aria-hidden="true" />
+              <feature.Icon size={32} className="mb-4 text-teal" aria-hidden="true" />
+              <div className="font-courier text-[9px] text-teal/60 tracking-widest uppercase mb-2">{feature.emotional}</div>
               <h3 className="font-cinzel text-sm tracking-[0.05em] text-text-main mb-3">{feature.title}</h3>
               <p className="text-xs text-text-muted leading-relaxed">{feature.desc}</p>
             </div>

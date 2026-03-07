@@ -86,12 +86,12 @@ export function FindTherapistContent() {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-raised border border-border rounded-lg p-5 hover:border-teal-500/30 transition-colors"
+      className="bg-raised border border-border rounded-lg p-5 hover:border-teal/30 transition-colors"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <h3 className="font-cinzel text-base text-text-main">{service.name}</h3>
-          <p className="text-xs text-teal-400 mt-1">{service.icbArea}</p>
+          <p className="text-xs text-teal mt-1">{service.icbArea}</p>
         </div>
         {service.serviceTypes.includes('crisis') && (
           <span className="shrink-0 px-2 py-1 bg-red-500/10 border border-red-500/30 rounded text-xs text-red-400">
@@ -110,9 +110,9 @@ export function FindTherapistContent() {
       <div className="mt-4 flex flex-wrap gap-3">
         <a
           href={`tel:${service.phone.replace(/\s/g, '')}`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-lg text-sm text-text-main hover:border-teal-500/50 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-lg text-sm text-text-main hover:border-teal/50 transition-colors"
         >
-          <svg className="w-4 h-4 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-4 h-4 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
           </svg>
           {service.phone}
@@ -122,7 +122,7 @@ export function FindTherapistContent() {
           href={service.selfReferralUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-teal-500/10 border border-teal-500 rounded-lg text-sm text-teal-400 hover:bg-teal-500 hover:text-void transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-teal/10 border border-teal rounded-lg text-sm text-teal hover:bg-teal hover:text-void transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -171,12 +171,12 @@ export function FindTherapistContent() {
               onChange={(e) => setPostcode(e.target.value.toUpperCase())}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="e.g. SW1A 1AA"
-              className="flex-1 bg-surface border border-border rounded-lg px-4 py-3 text-text-main placeholder:text-text-muted/50 focus:border-teal-500/50 focus:outline-none transition-colors"
+              className="flex-1 bg-surface border border-border rounded-lg px-4 py-3 text-text-main placeholder:text-text-muted/50 focus:border-teal/50 focus:outline-none transition-colors"
             />
             <button
               onClick={handleSearch}
               disabled={searching || !postcode.trim()}
-              className="px-6 py-3 bg-teal-500 text-void font-cinzel text-sm tracking-widest rounded-lg hover:bg-teal-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 bg-teal text-void font-cinzel text-sm tracking-widest rounded-lg hover:bg-teal-bright transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {searching ? 'Searching...' : 'Search'}
             </button>
@@ -241,7 +241,7 @@ export function FindTherapistContent() {
         <div className="mt-10">
           <button
             onClick={loadRegions}
-            className="w-full text-center py-4 border border-border rounded-lg text-text-muted hover:border-teal-500/30 hover:text-text-mid transition-colors font-cinzel text-sm tracking-widest"
+            className="w-full text-center py-4 border border-border rounded-lg text-text-muted hover:border-teal/30 hover:text-text-mid transition-colors font-cinzel text-sm tracking-widest"
           >
             {loadingRegions ? 'Loading...' : 'Browse by Region'}
           </button>
@@ -254,8 +254,8 @@ export function FindTherapistContent() {
                   onClick={() => browseRegion(region)}
                   className={`p-3 rounded-lg border text-sm transition-colors ${
                     selectedRegion === region
-                      ? 'border-teal-500 bg-teal-500/10 text-teal-400'
-                      : 'border-border text-text-mid hover:border-teal-500/30'
+                      ? 'border-teal bg-teal/10 text-teal'
+                      : 'border-border text-text-mid hover:border-teal/30'
                   }`}
                 >
                   {region}
@@ -277,8 +277,8 @@ export function FindTherapistContent() {
         </div>
 
         {/* Self-Referral CTA */}
-        <div className="mt-10 bg-teal-500/5 border border-teal-500/20 rounded-lg p-6 text-center">
-          <h3 className="font-cinzel text-base text-teal-400 mb-2">
+        <div className="mt-10 bg-teal/5 border border-teal/20 rounded-lg p-6 text-center">
+          <h3 className="font-cinzel text-base text-teal mb-2">
             Already Using Sorca?
           </h3>
           <p className="text-sm text-text-mid mb-4">
@@ -286,7 +286,7 @@ export function FindTherapistContent() {
           </p>
           <a
             href="/refer"
-            className="inline-block px-8 py-3 bg-teal-500 text-void font-cinzel text-sm tracking-widest rounded-lg hover:bg-teal-400 transition-colors"
+            className="inline-block px-8 py-3 bg-teal text-void font-cinzel text-sm tracking-widest rounded-lg hover:bg-teal-bright transition-colors"
           >
             Self-Refer via Sorca
           </a>

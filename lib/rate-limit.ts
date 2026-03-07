@@ -152,3 +152,23 @@ export async function sessionRateLimitAsync(userId: string): Promise<RateLimitRe
   return rateLimitAsync(`session:${userId}`, { maxRequests: 10, windowMs: 60_000 });
 }
 
+/** Self-referral: 3 submissions per hour per IP (sensitive PII endpoint) */
+export function selfReferralRateLimit(ip: string): RateLimitResult {
+  return rateLimit(`self-referral:${ip}`, { maxRequests: 3, windowMs: 3_600_000 });
+}
+
+/** Consent grant: 5 per hour per IP */
+export function consentRateLimit(ip: string): RateLimitResult {
+  return rateLimit(`consent:${ip}`, { maxRequests: 5, windowMs: 3_600_000 });
+}
+
+/** Find therapist search: 20 per minute per IP */
+export function searchRateLimit(ip: string): RateLimitResult {
+  return rateLimit(`search:${ip}`, { maxRequests: 20, windowMs: 60_000 });
+}
+
+/** GP letter generation: 5 per hour per user */
+export function gpLetterRateLimit(userId: string): RateLimitResult {
+  return rateLimit(`gp-letter:${userId}`, { maxRequests: 5, windowMs: 3_600_000 });
+}
+

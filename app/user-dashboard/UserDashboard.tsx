@@ -246,7 +246,7 @@ export function UserDashboard() {
           </div>
           <div className="flex items-center gap-4">
             {isInTherapy && therapyProfile?.nextSessionDate && (
-              <div className="flex items-center gap-2 text-xs text-teal-400">
+              <div className="flex items-center gap-2 text-xs text-teal">
                 <CalendarIcon size={16} />
                 <span>Next session: {formatDate(therapyProfile.nextSessionDate)}</span>
               </div>
@@ -298,22 +298,22 @@ export function UserDashboard() {
 
         {/* NHS Waiting List Support Banner - shown when not connected to therapist */}
         {!isInTherapy && (
-          <div className="bg-teal-900/10 border border-teal-500/20 rounded-lg p-4 mb-4">
+          <div className="bg-teal/5 border border-teal/20 rounded-lg p-4 mb-4">
             <div className="flex items-start gap-3">
-              <WaitlistIcon size={20} className="text-teal-400 mt-0.5 flex-shrink-0" />
+              <WaitlistIcon size={20} className="text-teal mt-0.5 flex-shrink-0" />
               <div>
-                <h3 className="font-cinzel text-xs text-teal-400 tracking-wider mb-1">On an NHS Waiting List?</h3>
+                <h3 className="font-cinzel text-xs text-teal tracking-wider mb-1">On an NHS Waiting List?</h3>
                 <p className="text-[11px] text-text-mid leading-relaxed mb-2">
                   Sorca can support you while you wait for NHS talking therapies. Use sessions to explore your thoughts, track your mood, and build coping skills before your first appointment.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <a href="https://www.nhs.uk/mental-health/talking-therapies-medicine-treatments/talking-therapies-and-counselling/nhs-talking-therapies/" target="_blank" rel="noopener noreferrer" className="text-[9px] px-2 py-1 bg-teal-500/10 text-teal-400 rounded hover:bg-teal-500/20 transition-colors">
+                  <a href="https://www.nhs.uk/mental-health/talking-therapies-medicine-treatments/talking-therapies-and-counselling/nhs-talking-therapies/" target="_blank" rel="noopener noreferrer" className="text-[9px] px-2 py-1 bg-teal/10 text-teal rounded hover:bg-teal/20 transition-colors">
                     NHS Talking Therapies
                   </a>
-                  <a href="https://www.nhs.uk/mental-health/self-help/" target="_blank" rel="noopener noreferrer" className="text-[9px] px-2 py-1 bg-teal-500/10 text-teal-400 rounded hover:bg-teal-500/20 transition-colors">
+                  <a href="https://www.nhs.uk/mental-health/self-help/" target="_blank" rel="noopener noreferrer" className="text-[9px] px-2 py-1 bg-teal/10 text-teal rounded hover:bg-teal/20 transition-colors">
                     NHS Self-Help Resources
                   </a>
-                  <a href="https://web.ntw.nhs.uk/selfhelp/" target="_blank" rel="noopener noreferrer" className="text-[9px] px-2 py-1 bg-teal-500/10 text-teal-400 rounded hover:bg-teal-500/20 transition-colors">
+                  <a href="https://web.ntw.nhs.uk/selfhelp/" target="_blank" rel="noopener noreferrer" className="text-[9px] px-2 py-1 bg-teal/10 text-teal rounded hover:bg-teal/20 transition-colors">
                     CBT Self-Help Guides
                   </a>
                 </div>
@@ -391,7 +391,7 @@ export function UserDashboard() {
                       <p className="text-xs text-text-mid mb-2">{summary.summary}</p>
                       <div className="flex flex-wrap gap-1">
                         {summary.themes.map((theme, i) => (
-                          <span key={i} className="text-[9px] px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded">
+                          <span key={i} className="text-[9px] px-2 py-0.5 bg-violet/10 text-violet rounded">
                             {theme}
                           </span>
                         ))}
@@ -434,12 +434,12 @@ export function UserDashboard() {
                         <div className="flex items-center gap-2">
                           <span className="font-cinzel text-sm text-text-main">{hw.topic}</span>
                           {hw.assignedBy === 'therapist' && (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-400">
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-teal/10 text-teal">
                               From therapist
                             </span>
                           )}
                         </div>
-                        <span className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">
+                        <span className="text-[9px] px-2 py-0.5 rounded bg-teal/10 text-teal">
                           active
                         </span>
                       </div>
@@ -447,7 +447,7 @@ export function UserDashboard() {
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-emerald-500 rounded-full"
+                            className="h-full bg-teal rounded-full"
                             style={{ width: `${(hw.completedDays / hw.durationDays) * 100}%` }}
                           />
                         </div>
@@ -470,7 +470,7 @@ export function UserDashboard() {
                             <div className="flex items-center justify-between mb-1">
                               <span className="font-cinzel text-xs text-text-main">{hw.topic}</span>
                               <span className={`text-[9px] px-2 py-0.5 rounded ${
-                                hw.status === 'completed' ? 'bg-blue-500/10 text-blue-400' :
+                                hw.status === 'completed' ? 'bg-violet/10 text-violet' :
                                 'bg-text-muted/10 text-text-muted'
                               }`}>
                                 {hw.status}
@@ -498,7 +498,7 @@ export function UserDashboard() {
                 {anchors.length > 0 && !showAddAnchor && (
                   <button
                     onClick={() => setShowAddAnchor(true)}
-                    className="text-xs text-teal-400 hover:text-teal-300 font-cinzel tracking-widest"
+                    className="text-xs text-teal hover:text-teal-bright font-cinzel tracking-widest"
                   >
                     + Add Anchor
                   </button>
@@ -506,34 +506,34 @@ export function UserDashboard() {
               </div>
 
               {showAddAnchor && (
-                <div className="bg-raised border border-teal-500/30 rounded-lg p-4 mb-4">
-                  <h3 className="font-cinzel text-sm text-teal-400 mb-3">Add New Anchor</h3>
+                <div className="bg-raised border border-teal/30 rounded-lg p-4 mb-4">
+                  <h3 className="font-cinzel text-sm text-teal mb-3">Add New Anchor</h3>
                   <div className="space-y-3">
                     <input
                       type="text"
                       value={newAnchorName}
                       onChange={(e) => setNewAnchorName(e.target.value)}
                       placeholder="Anchor name (e.g., Box Breathing)"
-                      className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal-500/50 focus:outline-none"
+                      className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal/50 focus:outline-none"
                     />
                     <textarea
                       value={newAnchorTechnique}
                       onChange={(e) => setNewAnchorTechnique(e.target.value)}
                       placeholder="Describe the technique..."
                       rows={3}
-                      className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal-500/50 focus:outline-none resize-none"
+                      className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal/50 focus:outline-none resize-none"
                     />
                     <div className="flex gap-2">
                       <button
                         onClick={handleSaveAnchor}
                         disabled={savingAnchor || !newAnchorName.trim() || !newAnchorTechnique.trim()}
-                        className="px-4 py-2 bg-teal-500 text-void font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 bg-teal text-void font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-bright disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {savingAnchor ? 'Saving...' : 'Save Anchor'}
                       </button>
                       <button
                         onClick={() => { setShowAddAnchor(false); setNewAnchorName(''); setNewAnchorTechnique(''); }}
-                        className="px-4 py-2 border border-border text-text-muted font-cinzel text-xs tracking-widest rounded-lg hover:border-teal-500/30"
+                        className="px-4 py-2 border border-border text-text-muted font-cinzel text-xs tracking-widest rounded-lg hover:border-teal/30"
                       >
                         Cancel
                       </button>
@@ -553,7 +553,7 @@ export function UserDashboard() {
                   </div>
                   <button
                     onClick={() => setShowAddAnchor(true)}
-                    className="inline-block px-6 py-3 border border-teal-500 text-teal-400 font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-500/10"
+                    className="inline-block px-6 py-3 border border-teal text-teal font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal/10"
                   >
                     Add Your First Anchor
                   </button>
@@ -562,7 +562,7 @@ export function UserDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {anchors.map((anchor) => (
                     <div key={anchor.id} className="p-4 bg-raised border border-border rounded-lg">
-                      <h3 className="font-cinzel text-sm text-teal-400 mb-2">{anchor.name}</h3>
+                      <h3 className="font-cinzel text-sm text-teal mb-2">{anchor.name}</h3>
                       <p className="text-xs text-text-mid">{anchor.technique}</p>
                     </div>
                   ))}
@@ -607,16 +607,16 @@ export function UserDashboard() {
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {consent.permissions.shareWeekSummary && (
-                          <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded">Week Summary</span>
+                          <span className="text-[10px] bg-violet/10 text-violet px-2 py-1 rounded">Week Summary</span>
                         )}
                         {consent.permissions.shareHomeworkProgress && (
-                          <span className="text-[10px] bg-violet-500/10 text-violet-400 px-2 py-1 rounded">Homework</span>
+                          <span className="text-[10px] bg-violet/10 text-violet px-2 py-1 rounded">Homework</span>
                         )}
                         {consent.permissions.sharePatternAlerts && (
-                          <span className="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-1 rounded">Alerts</span>
+                          <span className="text-[10px] bg-editorial-gold/10 text-editorial-gold px-2 py-1 rounded">Alerts</span>
                         )}
                         {consent.permissions.shareMoodData && (
-                          <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded">Mood</span>
+                          <span className="text-[10px] bg-teal/10 text-teal px-2 py-1 rounded">Mood</span>
                         )}
                       </div>
                     </div>
@@ -643,10 +643,10 @@ export function UserDashboard() {
           {isInTherapy && (
             <Link
               href="/?homework=true"
-              className="bg-surface border border-border rounded-lg p-4 hover:border-violet-500/30 transition-colors group text-center"
+              className="bg-surface border border-border rounded-lg p-4 hover:border-violet/30 transition-colors group text-center"
             >
-              <HomeworkIcon size={24} className="mx-auto mb-2 text-violet-400/70 group-hover:text-violet-400" />
-              <h3 className="font-cinzel text-sm text-text-main group-hover:text-violet-400 transition-colors">
+              <HomeworkIcon size={24} className="mx-auto mb-2 text-violet/70 group-hover:text-violet" />
+              <h3 className="font-cinzel text-sm text-text-main group-hover:text-violet transition-colors">
                 Do Homework
               </h3>
               <p className="text-[10px] text-text-muted">Complete your therapy homework</p>
@@ -655,10 +655,10 @@ export function UserDashboard() {
 
           <Link
             href="/?anchor=true"
-            className="bg-surface border border-border rounded-lg p-4 hover:border-teal-500/30 transition-colors group text-center"
+            className="bg-surface border border-border rounded-lg p-4 hover:border-teal/30 transition-colors group text-center"
           >
-            <AnchorIcon size={24} className="mx-auto mb-2 text-teal-400/70 group-hover:text-teal-400" />
-            <h3 className="font-cinzel text-sm text-text-main group-hover:text-teal-400 transition-colors">
+            <AnchorIcon size={24} className="mx-auto mb-2 text-teal/70 group-hover:text-teal" />
+            <h3 className="font-cinzel text-sm text-text-main group-hover:text-teal transition-colors">
               Grounding
             </h3>
             <p className="text-[10px] text-text-muted">Access your coping anchors</p>
@@ -698,20 +698,20 @@ export function UserDashboard() {
               onClick={() => profile?.tier !== 'free' && setShowCapsuleModal(true)}
               disabled={profile?.tier === 'free'}
               className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${
-                profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-violet-500/30 cursor-pointer'
+                profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-violet/30 cursor-pointer'
               }`}
             >
               <div className="flex items-center gap-3 mb-3">
-                <CapsuleIcon size={20} className="text-violet-400/70" />
+                <CapsuleIcon size={20} className="text-violet/70" />
                 <h3 className="font-cinzel text-sm text-text-main">Time Capsule</h3>
               </div>
               <p className="text-xs text-text-muted mb-3">
                 Send messages to your future self. Receive them when you need them most.
               </p>
               {profile?.tier === 'free' ? (
-                <span className="text-[10px] text-violet-400/60">Upgrade to Philosopher</span>
+                <span className="text-[10px] text-violet/60">Upgrade to Philosopher</span>
               ) : (
-                <span className="text-[10px] text-violet-400">Create Capsule →</span>
+                <span className="text-[10px] text-violet">Create Capsule →</span>
               )}
             </button>
 
@@ -720,20 +720,20 @@ export function UserDashboard() {
               onClick={() => profile?.tier !== 'free' && setShowGiftModal(true)}
               disabled={profile?.tier === 'free'}
               className={`bg-surface border border-border rounded-lg p-5 text-left transition-colors ${
-                profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-teal-500/30 cursor-pointer'
+                profile?.tier === 'free' ? 'opacity-60 cursor-not-allowed' : 'hover:border-teal/30 cursor-pointer'
               }`}
             >
               <div className="flex items-center gap-3 mb-3">
-                <GiftIcon size={20} className="text-teal-400/70" />
+                <GiftIcon size={20} className="text-teal/70" />
                 <h3 className="font-cinzel text-sm text-text-main">Question Gift</h3>
               </div>
               <p className="text-xs text-text-muted mb-3">
                 Gift a powerful question to someone you care about.
               </p>
               {profile?.tier === 'free' ? (
-                <span className="text-[10px] text-teal-400/60">Upgrade to Philosopher</span>
+                <span className="text-[10px] text-teal/60">Upgrade to Philosopher</span>
               ) : (
-                <span className="text-[10px] text-teal-400">Send Gift →</span>
+                <span className="text-[10px] text-teal">Send Gift →</span>
               )}
             </button>
           </div>

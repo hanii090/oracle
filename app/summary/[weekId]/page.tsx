@@ -190,9 +190,9 @@ export default function SharedSummaryPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-teal-900/20 border border-teal-500/30 rounded-xl p-6 mb-6"
+          className="bg-teal/5 border border-teal/30 rounded-xl p-6 mb-6"
         >
-          <p className="text-xs text-teal-400 uppercase tracking-widest mb-3">Suggested Focus</p>
+          <p className="text-xs text-teal uppercase tracking-widest mb-3">Suggested Focus</p>
           <p className="text-text-main">{summary.suggestedFocus}</p>
         </motion.div>
 

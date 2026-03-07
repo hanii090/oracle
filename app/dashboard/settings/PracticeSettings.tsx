@@ -212,7 +212,7 @@ export function PracticeSettings() {
             {!showInviteForm && !newInviteLink && (
               <button
                 onClick={() => setShowInviteForm(true)}
-                className="text-xs text-teal-400 hover:text-teal-300 font-cinzel tracking-widest"
+                className="text-xs text-teal hover:text-teal-bright font-cinzel tracking-widest"
               >
                 + New Invite
               </button>
@@ -250,40 +250,40 @@ export function PracticeSettings() {
           )}
 
           {showInviteForm && !newInviteLink && (
-            <div className="bg-raised border border-teal-500/30 rounded-lg p-4 mb-4">
+            <div className="bg-raised border border-teal/30 rounded-lg p-4 mb-4">
               <div className="space-y-3">
                 <input
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="Client email address"
-                  className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal-500/50 focus:outline-none"
+                  className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal/50 focus:outline-none"
                 />
                 <input
                   type="text"
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
                   placeholder="Client name (optional)"
-                  className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal-500/50 focus:outline-none"
+                  className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal/50 focus:outline-none"
                 />
                 <textarea
                   value={inviteMessage}
                   onChange={(e) => setInviteMessage(e.target.value)}
                   placeholder="Personal message (optional)"
                   rows={2}
-                  className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal-500/50 focus:outline-none resize-none"
+                  className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-teal/50 focus:outline-none resize-none"
                 />
                 <div className="flex gap-2">
                   <button
                     onClick={handleCreateInvite}
                     disabled={submitting || !inviteEmail.trim()}
-                    className="px-4 py-2 bg-teal-500 text-void font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-teal text-void font-cinzel text-xs tracking-widest rounded-lg hover:bg-teal-bright disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? 'Creating...' : 'Create Invite'}
                   </button>
                   <button
                     onClick={() => setShowInviteForm(false)}
-                    className="px-4 py-2 border border-border text-text-muted font-cinzel text-xs tracking-widest rounded-lg hover:border-teal-500/30"
+                    className="px-4 py-2 border border-border text-text-muted font-cinzel text-xs tracking-widest rounded-lg hover:border-teal/30"
                   >
                     Cancel
                   </button>

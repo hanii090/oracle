@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { verifyTherapist, getAdminFirestore } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { isAdminConfigured } from '@/lib/firebase-admin';
+import { logTherapistAccess } from '@/lib/audit-log';
 
 export async function GET(req: Request) {
   const log = createLogger({ route: '/api/therapist/dashboard', correlationId: crypto.randomUUID() });
@@ -10,6 +11,10 @@ export async function GET(req: Request) {
     const authResult = await verifyTherapist(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
+
+    // Audit log: therapist viewed dashboard
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+    logTherapistAccess({ therapistId: userId, action: 'dashboard_view', ip: ip || undefined });
 
     if (!isAdminConfigured()) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
