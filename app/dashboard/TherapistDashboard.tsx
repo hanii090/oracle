@@ -461,115 +461,140 @@ export function TherapistDashboard() {
             )}
 
             {data?.clients && data.clients.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {data.clients.filter(client => 
                   !clientSearch.trim() || 
                   client.displayName.toLowerCase().includes(clientSearch.toLowerCase()) ||
                   (client.email && client.email.toLowerCase().includes(clientSearch.toLowerCase()))
-                ).map(client => (
+                ).map(client => {
+                  const isSelected = selectedClient?.id === client.id;
+                  return (
                   <div
                     key={client.id}
-                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                      selectedClient?.id === client.id
+                    className={`border rounded-lg transition-all ${
+                      isSelected
                         ? 'border-teal bg-teal/5'
                         : 'border-border hover:border-teal/30'
                     }`}
-                    onClick={() => setSelectedClient(client)}
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-cinzel text-sm text-text-main">{client.displayName}</h3>
+                    {/* Client summary row — always visible */}
+                    <div
+                      className="p-4 cursor-pointer flex items-center justify-between gap-3"
+                      onClick={() => setSelectedClient(isSelected ? null : client)}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <h3 className="font-cinzel text-sm text-text-main truncate">{client.displayName}</h3>
                           {client.nextSession && new Date(client.nextSession) <= new Date(Date.now() + 24 * 60 * 60 * 1000) && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); loadSessionPrep(client.id); }}
-                              className="text-[9px] bg-teal/10 text-teal px-2 py-0.5 rounded hover:bg-teal/20 transition-colors"
-                            >
-                              {prepLoading ? '...' : 'Session Prep'}
-                            </button>
+                            <span className="text-[8px] px-1.5 py-0.5 bg-teal/15 text-teal rounded shrink-0">Upcoming</span>
                           )}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setSelectedClient(client); setShowNotesPanel(true); }}
-                            className="text-[9px] bg-violet/10 text-violet px-2 py-0.5 rounded hover:bg-violet/20 transition-colors"
-                          >
-                            Notes
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setSelectedClient(client); setShowInsurerReport(true); }}
-                            className="text-[9px] bg-gold/10 text-gold px-2 py-0.5 rounded hover:bg-gold/20 transition-colors"
-                          >
-                            Insurer Report
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setSelectedClient(client); setShowReferralLetter(true); }}
-                            className="text-[9px] bg-teal/10 text-teal px-2 py-0.5 rounded hover:bg-teal/20 transition-colors"
-                          >
-                            Letter
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setSelectedClient(client); setShowDischargeModal(true); }}
-                            className="text-[9px] bg-crimson/10 text-crimson px-2 py-0.5 rounded hover:bg-crimson/20 transition-colors"
-                          >
-                            Discharge
-                          </button>
                         </div>
-                        <p className="text-[10px] text-text-muted mb-2">
+                        <p className="text-[10px] text-text-muted">
                           {client.consentedAt ? `Consented ${new Date(client.consentedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : 'Active consent'}
                         </p>
-
-                        {/* Permissions badges */}
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {client.permissions.shareWeekSummary && (
-                            <span className="text-[9px] bg-violet/10 text-violet px-1.5 py-0.5 rounded">Summary</span>
-                          )}
-                          {client.permissions.shareHomeworkProgress && (
-                            <span className="text-[9px] bg-violet/10 text-violet px-1.5 py-0.5 rounded">Homework</span>
-                          )}
-                          {client.permissions.sharePatternAlerts && (
-                            <span className="text-[9px] bg-editorial-gold/10 text-editorial-gold px-1.5 py-0.5 rounded">Alerts</span>
-                          )}
-                          {client.permissions.shareMoodData && (
-                            <span className="text-[9px] bg-teal/10 text-teal px-1.5 py-0.5 rounded">Mood</span>
-                          )}
-                        </div>
-
-                        {/* Week summary themes */}
-                        {client.weekSummary && (
-                          <div className="bg-raised p-2 rounded">
-                            <p className="text-[9px] text-text-muted mb-1">This week&apos;s themes:</p>
-                            <p className="text-xs text-text-mid">
-                              {client.weekSummary.themes.join(', ') || 'No themes identified'}
-                            </p>
-                          </div>
-                        )}
                       </div>
-
-                      <div className="text-right flex flex-col items-end gap-2">
+                      <div className="flex items-center gap-3 shrink-0">
                         {client.homeworkCompletionRate !== null && (
-                          <div>
-                            <p className="text-2xl font-cinzel text-teal">
-                              {client.homeworkCompletionRate}%
-                            </p>
-                            <p className="text-[9px] text-text-muted">Homework</p>
+                          <div className="text-right">
+                            <p className="text-lg font-cinzel text-teal leading-none">{client.homeworkCompletionRate}%</p>
+                            <p className="text-[8px] text-text-muted">Homework</p>
                           </div>
                         )}
-                        {client.activeHomework > 0 ? (
-                          <p className="text-[10px] text-text-muted">
-                            {client.activeHomework} active task{client.activeHomework > 1 ? 's' : ''}
-                          </p>
-                        ) : (
-                          <a
-                            href={`/dashboard/homework?client=${client.id}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-[9px] px-2 py-1 bg-violet/10 text-violet rounded hover:bg-violet/20 transition-colors"
-                          >
-                            + Assign Homework
-                          </a>
-                        )}
+                        <span className={`text-[10px] text-text-muted transition-transform ${isSelected ? 'rotate-180' : ''}`}>▾</span>
                       </div>
                     </div>
+
+                    {/* Expanded detail panel — shown when selected */}
+                    {isSelected && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="border-t border-border overflow-hidden"
+                      >
+                        <div className="p-4 space-y-4">
+                          {/* Action grid */}
+                          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                            <button
+                              onClick={() => loadSessionPrep(client.id)}
+                              className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-teal/5 border border-teal/20 hover:bg-teal/10 transition-colors"
+                            >
+                              <svg className="w-4 h-4 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                              <span className="text-[9px] text-teal font-cinzel">{prepLoading ? '...' : 'Session Prep'}</span>
+                            </button>
+                            <button
+                              onClick={() => { setSelectedClient(client); setShowNotesPanel(true); }}
+                              className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-violet/5 border border-violet/20 hover:bg-violet/10 transition-colors"
+                            >
+                              <svg className="w-4 h-4 text-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6-6m-3 9H5a2 2 0 01-2-2V6a2 2 0 012-2h6l6 6v4a2 2 0 01-2 2h-4z" /></svg>
+                              <span className="text-[9px] text-violet font-cinzel">Notes</span>
+                            </button>
+                            <button
+                              onClick={() => { setSelectedClient(client); setShowInsurerReport(true); }}
+                              className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-gold/5 border border-gold/20 hover:bg-gold/10 transition-colors"
+                            >
+                              <svg className="w-4 h-4 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                              <span className="text-[9px] text-gold font-cinzel">Insurer</span>
+                            </button>
+                            <button
+                              onClick={() => { setSelectedClient(client); setShowReferralLetter(true); }}
+                              className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-teal/5 border border-teal/20 hover:bg-teal/10 transition-colors"
+                            >
+                              <svg className="w-4 h-4 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                              <span className="text-[9px] text-teal font-cinzel">Letter</span>
+                            </button>
+                            <a
+                              href={`/dashboard/homework?client=${client.id}`}
+                              className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-violet/5 border border-violet/20 hover:bg-violet/10 transition-colors"
+                            >
+                              <HomeworkIcon size={16} className="text-violet" />
+                              <span className="text-[9px] text-violet font-cinzel">Homework</span>
+                            </a>
+                            <button
+                              onClick={() => { setSelectedClient(client); setShowDischargeModal(true); }}
+                              className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-crimson/5 border border-crimson/20 hover:bg-crimson/10 transition-colors"
+                            >
+                              <svg className="w-4 h-4 text-crimson" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                              <span className="text-[9px] text-crimson font-cinzel">Discharge</span>
+                            </button>
+                          </div>
+
+                          {/* Permissions & info row */}
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[8px] text-text-muted uppercase tracking-wider mr-1">Shared:</span>
+                            {client.permissions.shareWeekSummary && (
+                              <span className="text-[8px] bg-violet/10 text-violet px-1.5 py-0.5 rounded">Summary</span>
+                            )}
+                            {client.permissions.shareHomeworkProgress && (
+                              <span className="text-[8px] bg-violet/10 text-violet px-1.5 py-0.5 rounded">Homework</span>
+                            )}
+                            {client.permissions.sharePatternAlerts && (
+                              <span className="text-[8px] bg-gold/10 text-gold px-1.5 py-0.5 rounded">Alerts</span>
+                            )}
+                            {client.permissions.shareMoodData && (
+                              <span className="text-[8px] bg-teal/10 text-teal px-1.5 py-0.5 rounded">Mood</span>
+                            )}
+                            {client.activeHomework > 0 && (
+                              <span className="text-[8px] bg-teal/10 text-teal px-1.5 py-0.5 rounded ml-auto">
+                                {client.activeHomework} active task{client.activeHomework > 1 ? 's' : ''}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Week summary themes */}
+                          {client.weekSummary && (
+                            <div className="bg-raised p-2.5 rounded">
+                              <p className="text-[9px] text-text-muted mb-1">This week&apos;s themes:</p>
+                              <p className="text-xs text-text-mid">
+                                {client.weekSummary.themes.join(', ') || 'No themes identified'}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-12">

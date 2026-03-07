@@ -118,6 +118,7 @@ export function ReferralLetterForm({ clientId, clientName, onClose }: ReferralLe
 
   const inputClass = "w-full bg-raised border border-border rounded px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-gold/50 focus:outline-none";
   const labelClass = "block text-[10px] text-text-muted font-cinzel tracking-wider uppercase mb-1";
+  const reqMark = <span className="text-crimson ml-0.5">*</span>;
 
   return (
     <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-1">
@@ -171,7 +172,7 @@ export function ReferralLetterForm({ clientId, clientName, onClose }: ReferralLe
           </div>
         </div>
         <div>
-          <label className={labelClass}>Recipient Name</label>
+          <label className={labelClass}>Recipient Name{reqMark}</label>
           <input type="text" value={recipientName} onChange={e => setRecipientName(e.target.value)} placeholder="e.g. Smith" className={inputClass} />
         </div>
       </div>
@@ -195,18 +196,18 @@ export function ReferralLetterForm({ clientId, clientName, onClose }: ReferralLe
 
       {/* Clinical content */}
       <div>
-        <label className={labelClass}>Presenting Problem</label>
+        <label className={labelClass}>Presenting Problem{reqMark}</label>
         <textarea value={presentingProblem} onChange={e => setPresentingProblem(e.target.value)} rows={3} placeholder="Describe the client's presenting difficulties..." className={inputClass + ' resize-none'} />
       </div>
 
       <div>
-        <label className={labelClass}>Treatment Summary</label>
+        <label className={labelClass}>Treatment Summary{reqMark}</label>
         <textarea value={treatmentSummary} onChange={e => setTreatmentSummary(e.target.value)} rows={3} placeholder="Summary of treatment provided..." className={inputClass + ' resize-none'} />
       </div>
 
       {letterType === 'referral' && (
         <div>
-          <label className={labelClass}>Reason for Referral</label>
+          <label className={labelClass}>Reason for Referral{reqMark}</label>
           <textarea value={reasonForReferral} onChange={e => setReasonForReferral(e.target.value)} rows={3} placeholder="Why are you referring this client?" className={inputClass + ' resize-none'} />
         </div>
       )}
@@ -256,7 +257,7 @@ export function ReferralLetterForm({ clientId, clientName, onClose }: ReferralLe
       <div className="flex gap-3 pt-2">
         <button
           onClick={handleGenerate}
-          disabled={generating || !recipientName || !presentingProblem || !treatmentSummary}
+          disabled={generating || !recipientName || !presentingProblem || !treatmentSummary || (letterType === 'referral' && !reasonForReferral)}
           className="flex-1 py-3 bg-gold/10 text-gold border border-gold/30 font-cinzel text-sm tracking-widest rounded-lg hover:bg-gold/20 disabled:opacity-50 transition-colors"
         >
           {generating ? 'Generating...' : 'Generate Letter'}

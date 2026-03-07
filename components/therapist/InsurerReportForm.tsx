@@ -175,12 +175,14 @@ export function InsurerReportForm({ clientId, clientName, onClose }: InsurerRepo
 
   const inputClass = "w-full bg-raised border border-border rounded px-3 py-2 text-sm text-text-main placeholder:text-text-muted/50 focus:border-gold/50 focus:outline-none";
   const labelClass = "block text-[10px] text-text-muted font-cinzel tracking-wider uppercase mb-1";
+  const reqMark = <span className="text-crimson ml-0.5">*</span>;
+  const canGenerate = !!selectedInsurer && !!policyNumber && !!presentingProblem && !!progressSummary && !!treatmentModality && !!treatmentPlan && !!riskAssessment;
 
   return (
     <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-1">
       {/* Insurer selection */}
       <div>
-        <label className={labelClass}>Select Insurer</label>
+        <label className={labelClass}>Select Insurer{reqMark}</label>
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
           {insurers.map(ins => (
             <button
@@ -207,7 +209,7 @@ export function InsurerReportForm({ clientId, clientName, onClose }: InsurerRepo
               <input type="date" value={clientDOB} onChange={e => setClientDOB(e.target.value)} className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>Policy Number</label>
+              <label className={labelClass}>Policy Number{reqMark}</label>
               <input type="text" value={policyNumber} onChange={e => setPolicyNumber(e.target.value)} placeholder="Policy/Member number" className={inputClass} />
             </div>
             <div>
@@ -222,7 +224,7 @@ export function InsurerReportForm({ clientId, clientName, onClose }: InsurerRepo
 
           {/* Clinical details */}
           <div>
-            <label className={labelClass}>Presenting Problem</label>
+            <label className={labelClass}>Presenting Problem{reqMark}</label>
             <textarea value={presentingProblem} onChange={e => setPresentingProblem(e.target.value)} rows={3} placeholder="Describe the presenting difficulties..." className={inputClass + ' resize-none'} />
           </div>
 
@@ -232,7 +234,7 @@ export function InsurerReportForm({ clientId, clientName, onClose }: InsurerRepo
               <input type="text" value={diagnosis} onChange={e => setDiagnosis(e.target.value)} placeholder="e.g. F41.1 Generalised anxiety" className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>Treatment Modality</label>
+              <label className={labelClass}>Treatment Modality{reqMark}</label>
               <input type="text" value={treatmentModality} onChange={e => setTreatmentModality(e.target.value)} placeholder="e.g. CBT, Integrative" className={inputClass} />
             </div>
             <div>
@@ -283,15 +285,15 @@ export function InsurerReportForm({ clientId, clientName, onClose }: InsurerRepo
 
           {/* Progress & Plan */}
           <div>
-            <label className={labelClass}>Progress Summary</label>
+            <label className={labelClass}>Progress Summary{reqMark}</label>
             <textarea value={progressSummary} onChange={e => setProgressSummary(e.target.value)} rows={4} placeholder="Summarise the client's progress..." className={inputClass + ' resize-none'} />
           </div>
           <div>
-            <label className={labelClass}>Treatment Plan</label>
+            <label className={labelClass}>Treatment Plan{reqMark}</label>
             <textarea value={treatmentPlan} onChange={e => setTreatmentPlan(e.target.value)} rows={3} placeholder="Ongoing treatment goals and approach..." className={inputClass + ' resize-none'} />
           </div>
           <div>
-            <label className={labelClass}>Risk Assessment</label>
+            <label className={labelClass}>Risk Assessment{reqMark}</label>
             <textarea value={riskAssessment} onChange={e => setRiskAssessment(e.target.value)} rows={2} className={inputClass + ' resize-none'} />
           </div>
           <div>
@@ -303,7 +305,7 @@ export function InsurerReportForm({ clientId, clientName, onClose }: InsurerRepo
           <div className="flex gap-3 pt-2">
             <button
               onClick={handleGenerate}
-              disabled={generating || !policyNumber || !presentingProblem || !progressSummary}
+              disabled={generating || !canGenerate}
               className="flex-1 py-3 bg-gold/10 text-gold border border-gold/30 font-cinzel text-sm tracking-widest rounded-lg hover:bg-gold/20 disabled:opacity-50 transition-colors"
             >
               {generating ? 'Generating...' : 'Generate Report'}

@@ -292,18 +292,18 @@ export function UserDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide touch-scroll -mx-4 px-4 sm:mx-0 sm:px-0" style={{ paddingRight: '2rem' }}>
           {tabs.map(({ id, label, Icon, count }) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg font-cinzel text-[10px] sm:text-xs tracking-widest whitespace-nowrap transition-all ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg font-cinzel text-[10px] sm:text-xs tracking-widest whitespace-nowrap shrink-0 transition-all ${
                 activeTab === id
                   ? 'bg-gold/10 border border-gold/30 text-gold'
                   : 'bg-surface border border-border text-text-muted hover:border-gold/20'
               }`}
             >
-              <Icon size={16} />
+              <Icon size={14} className="shrink-0" />
               {label}
               {count !== null && count > 0 && (
                 <span className="ml-1 px-1.5 py-0.5 bg-gold/20 text-gold text-[9px] rounded">

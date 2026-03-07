@@ -118,6 +118,17 @@ body {
   scrollbar-width: none;
 }
 
+/* Touch-friendly horizontal scroll */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+}
+.touch-scroll > * {
+  scroll-snap-align: start;
+}
+
 /* Mobile-safe touch targets */
 @media (pointer: coarse) {
   button, a, [role="button"] {

@@ -70,61 +70,76 @@ export async function POST(req: Request) {
     };
 
     if (includeFullHistory) {
-      // Get all homework assignments
-      const homeworkSnapshot = await db.collection('homeworkAssignments')
-        .where('patientId', '==', clientId)
-        .where('therapistId', '==', therapistId)
-        .orderBy('createdAt', 'asc')
-        .get();
-
-      archive.homeworkHistory = homeworkSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: data.id,
-          topic: data.topic,
-          assignedAt: data.createdAt,
-          completedDays: data.completedDays,
-          durationDays: data.durationDays,
-          status: data.status,
-        };
-      });
-
-      // Get all week summaries (if consented)
-      if (consent.permissions?.shareWeekSummary) {
-        const summariesSnapshot = await db.collection('weekSummaries')
-          .doc(clientId)
-          .collection('weeks')
-          .orderBy('createdAt', 'asc')
-          .get();
-
-        archive.weekSummaries = summariesSnapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            weekOf: data.createdAt,
-            themes: data.themes,
-            moodTrend: data.moodTrend,
-          };
-        });
-      }
-
-      // Get pattern alerts
-      if (consent.permissions?.sharePatternAlerts) {
-        const alertsSnapshot = await db.collection('patternAlerts')
-          .where('clientId', '==', clientId)
+      // Get all homework assignments — wrapped in try/catch for index resilience
+      try {
+        const homeworkSnapshot = await db.collection('homeworkAssignments')
+          .where('patientId', '==', clientId)
           .where('therapistId', '==', therapistId)
           .orderBy('createdAt', 'asc')
           .get();
 
-        archive.patternAlerts = alertsSnapshot.docs.map(doc => {
+        archive.homeworkHistory = homeworkSnapshot.docs.map(doc => {
           const data = doc.data();
           return {
-            type: data.type,
-            message: data.message,
-            severity: data.severity,
-            createdAt: data.createdAt,
-            acknowledged: data.acknowledged,
+            id: data.id,
+            topic: data.topic,
+            assignedAt: data.createdAt,
+            completedDays: data.completedDays,
+            durationDays: data.durationDays,
+            status: data.status,
           };
         });
+      } catch (e) {
+        log.error('Failed to fetch homework for archive — index may be missing', {}, e);
+        archive.homeworkHistory = [];
+      }
+
+      // Get all week summaries (if consented)
+      if (consent.permissions?.shareWeekSummary) {
+        try {
+          const summariesSnapshot = await db.collection('weekSummaries')
+            .doc(clientId)
+            .collection('weeks')
+            .orderBy('createdAt', 'asc')
+            .get();
+
+          archive.weekSummaries = summariesSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              weekOf: data.createdAt,
+              themes: data.themes,
+              moodTrend: data.moodTrend,
+            };
+          });
+        } catch (e) {
+          log.error('Failed to fetch week summaries for archive', {}, e);
+          archive.weekSummaries = [];
+        }
+      }
+
+      // Get pattern alerts
+      if (consent.permissions?.sharePatternAlerts) {
+        try {
+          const alertsSnapshot = await db.collection('patternAlerts')
+            .where('clientId', '==', clientId)
+            .where('therapistId', '==', therapistId)
+            .orderBy('createdAt', 'asc')
+            .get();
+
+          archive.patternAlerts = alertsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              type: data.type,
+              message: data.message,
+              severity: data.severity,
+              createdAt: data.createdAt,
+              acknowledged: data.acknowledged,
+            };
+          });
+        } catch (e) {
+          log.error('Failed to fetch pattern alerts for archive — index may be missing', {}, e);
+          archive.patternAlerts = [];
+        }
       }
 
       // Calculate therapy duration
