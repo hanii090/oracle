@@ -10,6 +10,15 @@ interface EmailOptions {
   text?: string;
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 interface ResendResponse {
   id?: string;
   error?: string;
@@ -91,7 +100,7 @@ export async function sendExcavationReportEmail(
             <td style="padding: 40px 40px 20px; text-align: center; border-bottom: 1px solid #222;">
               <h1 style="margin: 0; color: #c0392b; font-size: 28px; letter-spacing: 0.2em; font-weight: normal;">SORCA</h1>
               <p style="margin: 10px 0 0; color: #666; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;">Monthly Excavation Report</p>
-              <p style="margin: 5px 0 0; color: #888; font-size: 14px;">${reportMonth}</p>
+              <p style="margin: 5px 0 0; color: #888; font-size: 14px;">${escapeHtml(reportMonth)}</p>
             </td>
           </tr>
           
@@ -99,7 +108,7 @@ export async function sendExcavationReportEmail(
           <tr>
             <td style="padding: 30px 40px 20px;">
               <p style="margin: 0; color: #ccc; font-size: 16px; line-height: 1.6;">
-                Dear ${userName},
+                Dear ${escapeHtml(userName)},
               </p>
               <p style="margin: 15px 0 0; color: #999; font-size: 15px; line-height: 1.7; font-style: italic;">
                 Here is what emerged from the depths this month.
@@ -125,7 +134,7 @@ export async function sendExcavationReportEmail(
                     <div style="color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 5px;">Max Depth</div>
                   </td>
                   <td width="25%" style="text-align: center; padding: 15px;">
-                    <div style="color: #5dade2; font-size: 12px; font-weight: bold;">${reportData.stats.deepestTheme || 'Self'}</div>
+                    <div style="color: #5dade2; font-size: 12px; font-weight: bold;">${escapeHtml(reportData.stats.deepestTheme || 'Self')}</div>
                     <div style="color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 5px;">Deepest Theme</div>
                   </td>
                 </tr>
@@ -138,7 +147,7 @@ export async function sendExcavationReportEmail(
             <td style="padding: 20px 40px;">
               <div style="background-color: #0a0a0a; border-left: 3px solid #c0392b; padding: 20px; border-radius: 4px;">
                 <p style="margin: 0; color: #bbb; font-size: 15px; line-height: 1.8; font-style: italic;">
-                  ${reportData.narrative}
+                  ${escapeHtml(reportData.narrative)}
                 </p>
               </div>
             </td>
@@ -149,7 +158,7 @@ export async function sendExcavationReportEmail(
             <td style="padding: 30px 40px; text-align: center;">
               <p style="margin: 0 0 15px; color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 0.2em;">Question of the Month</p>
               <p style="margin: 0; color: #c0392b; font-size: 18px; line-height: 1.6; font-style: italic;">
-                "${reportData.questionOfTheMonth}"
+                "${escapeHtml(reportData.questionOfTheMonth)}"
               </p>
             </td>
           </tr>
@@ -253,15 +262,15 @@ export async function sendPatternAlertEmail(
           <tr>
             <td style="padding: 30px;">
               <p style="margin: 0 0 15px; color: #ccc; font-size: 14px;">
-                Dear ${therapistName},
+                Dear ${escapeHtml(therapistName)},
               </p>
               <p style="margin: 0 0 20px; color: #999; font-size: 13px; line-height: 1.6;">
-                A pattern has been detected for your client <strong style="color: #ccc;">${clientName}</strong>:
+                A pattern has been detected for your client <strong style="color: #ccc;">${escapeHtml(clientName)}</strong>:
               </p>
               <div style="background-color: #0a0a0a; border-left: 3px solid ${severityColor}; padding: 15px; border-radius: 4px;">
-                <p style="margin: 0 0 5px; color: #666; font-size: 10px; text-transform: uppercase;">${alertData.type} · ${alertData.severity} severity</p>
+                <p style="margin: 0 0 5px; color: #666; font-size: 10px; text-transform: uppercase;">${escapeHtml(alertData.type)} · ${escapeHtml(alertData.severity)} severity</p>
                 <p style="margin: 0; color: #bbb; font-size: 14px; line-height: 1.6;">
-                  ${alertData.message}
+                  ${escapeHtml(alertData.message)}
                 </p>
               </div>
               <p style="margin: 20px 0 0; text-align: center;">
@@ -281,7 +290,7 @@ export async function sendPatternAlertEmail(
 
   return sendEmail({
     to,
-    subject: `[Sorca] Pattern Alert: ${clientName}`,
+    subject: `[Sorca] Pattern Alert: ${clientName.replace(/[<>"]/g, '')}`,
     html,
   });
 }
