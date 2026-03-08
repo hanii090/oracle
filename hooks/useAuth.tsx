@@ -181,24 +181,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const incrementSession = async (): Promise<boolean> => {
     if (!user || !profile) return false;
     
-    let newProfile = { ...profile };
+    const now = new Date();
+    const lastDate = profile.lastSessionDate ? new Date(profile.lastSessionDate) : null;
+    const isNewMonth = !lastDate || lastDate.getMonth() !== now.getMonth() || lastDate.getFullYear() !== now.getFullYear();
 
-    // Check limits
-    if (profile.tier === "free" && profile.sessionsThisMonth >= 5) {
-      // Check if it's a new month
-      const lastDate = profile.lastSessionDate ? new Date(profile.lastSessionDate) : null;
-      const now = new Date();
-      if (lastDate && (lastDate.getMonth() === now.getMonth() && lastDate.getFullYear() === now.getFullYear())) {
-        return false; // Limit reached
-      } else {
-        // Reset for new month
-        newProfile = { ...profile, sessionsThisMonth: 1, lastSessionDate: now.toISOString() };
-      }
+    let newProfile: UserProfile;
+
+    if (isNewMonth) {
+      newProfile = { ...profile, sessionsThisMonth: 1, lastSessionDate: now.toISOString() };
+    } else if (profile.tier === "free" && profile.sessionsThisMonth >= 5) {
+      return false;
     } else {
       newProfile = { 
         ...profile, 
         sessionsThisMonth: profile.sessionsThisMonth + 1,
-        lastSessionDate: new Date().toISOString()
+        lastSessionDate: now.toISOString()
       };
     }
 

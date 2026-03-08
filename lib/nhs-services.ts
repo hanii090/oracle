@@ -188,7 +188,7 @@ export const NHS_SERVICES: NHSService[] = [
     name: 'Steps to Wellbeing (Dorset)',
     icbArea: 'Dorset ICB',
     region: 'South West',
-    phone: '01onal 304 950',
+    phone: '0800 484 0500',
     website: 'https://www.steps2wellbeing.co.uk',
     selfReferralUrl: 'https://www.steps2wellbeing.co.uk/self-referral',
     postcodeAreas: ['BH', 'DT', 'SP'],

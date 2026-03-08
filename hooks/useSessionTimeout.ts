@@ -17,6 +17,8 @@ export function useSessionTimeout() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warningRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showWarning, setShowWarning] = useState(false);
+  const showWarningRef = useRef(showWarning);
+  showWarningRef.current = showWarning;
 
   const clearTimers = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -52,7 +54,7 @@ export function useSessionTimeout() {
     resetTimer();
 
     const handler = () => {
-      if (!showWarning) resetTimer();
+      if (!showWarningRef.current) resetTimer();
     };
 
     for (const event of ACTIVITY_EVENTS) {
@@ -65,7 +67,7 @@ export function useSessionTimeout() {
         window.removeEventListener(event, handler);
       }
     };
-  }, [user, resetTimer, clearTimers, showWarning]);
+  }, [user, resetTimer, clearTimers]);
 
   return { showWarning, dismissWarning };
 }

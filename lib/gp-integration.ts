@@ -219,8 +219,8 @@ ${episode.treatmentProvided}
 
 OUTCOME MEASURES
 ----------------
-${episode.initialPHQ9 !== undefined ? `PHQ-9: ${episode.initialPHQ9} → ${episode.finalPHQ9} (change: ${phq9Change !== null && phq9Change >= 0 ? '+' : ''}${phq9Change !== null ? -phq9Change : 'N/A'})` : 'PHQ-9: Not recorded'}
-${episode.initialGAD7 !== undefined ? `GAD-7: ${episode.initialGAD7} → ${episode.finalGAD7} (change: ${gad7Change !== null && gad7Change >= 0 ? '+' : ''}${gad7Change !== null ? -gad7Change : 'N/A'})` : 'GAD-7: Not recorded'}
+${episode.initialPHQ9 !== undefined ? `PHQ-9: ${episode.initialPHQ9} → ${episode.finalPHQ9} (change: ${phq9Change !== null ? (-phq9Change > 0 ? '+' : '') + String(-phq9Change) : 'N/A'})` : 'PHQ-9: Not recorded'}
+${episode.initialGAD7 !== undefined ? `GAD-7: ${episode.initialGAD7} → ${episode.finalGAD7} (change: ${gad7Change !== null ? (-gad7Change > 0 ? '+' : '') + String(-gad7Change) : 'N/A'})` : 'GAD-7: Not recorded'}
 
 OUTCOME
 -------

@@ -44,9 +44,9 @@ export function LimitModal({ show, onClose, onUpgrade }: LimitModalProps) {
               <button
                 onClick={onUpgrade}
                 className="px-6 py-2 bg-gold/10 border border-gold text-gold hover:bg-gold hover:text-void transition-colors font-cinzel text-xs tracking-widest uppercase rounded"
-                aria-label="Upgrade to Philosopher tier for £12 per month"
+                aria-label="Upgrade to Patient Plus for £9 per month"
               >
-                Ascend (£12/mo)
+                Ascend (£9/mo)
               </button>
             </div>
           </motion.div>

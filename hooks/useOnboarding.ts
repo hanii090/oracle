@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 const ONBOARDING_KEY = 'sorca_onboarding_seen';
 const NIGHT_BANNER_KEY = 'sorca_night_banner_seen';
@@ -31,6 +31,13 @@ export function useOnboarding() {
   const [showNightBanner, setShowNightBanner] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [streak, setStreak] = useState(getInitialStreak);
+  const nightBannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (nightBannerTimerRef.current) clearTimeout(nightBannerTimerRef.current);
+    };
+  }, []);
 
   const dismissWelcome = useCallback(() => {
     localStorage.setItem(ONBOARDING_KEY, 'true');
@@ -42,8 +49,8 @@ export function useOnboarding() {
     if (!hasSeen) {
       setShowNightBanner(true);
       localStorage.setItem(NIGHT_BANNER_KEY, 'true');
-      // Auto-dismiss after 6 seconds
-      setTimeout(() => setShowNightBanner(false), 6000);
+      if (nightBannerTimerRef.current) clearTimeout(nightBannerTimerRef.current);
+      nightBannerTimerRef.current = setTimeout(() => setShowNightBanner(false), 6000);
     }
   }, []);
 

@@ -603,7 +603,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, depth, profile, messages, pastThread, nightMode, eolMode, steerMusic, triggerBreakthrough, userId, getIdToken, saveSession, loadSessions, therapyModality, timeMode]);
+  }, [input, isLoading, depth, profile, messages, pastThread, nightMode, eolMode, steerMusic, triggerBreakthrough, userId, getIdToken, saveSession, loadSessions, therapyModality, timeMode, preMood]);
 
   // Voice transcript handler
   const handleVoiceTranscript = useCallback((text: string) => {

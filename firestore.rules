@@ -5,12 +5,14 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
 
-      // Users can write ONLY safe fields (not tier, stripe*, or upgradedAt)
+      // Users can update ONLY safe fields (not tier, stripe*, or upgradedAt)
       // Those are set server-side via Firebase Admin (webhook handler).
-      allow write: if request.auth != null
-                   && request.auth.uid == userId
-                   && !request.resource.data.diff(resource.data).affectedKeys()
-                       .hasAny(['tier', 'stripeCustomerId', 'stripeSubscriptionId', 'upgradedAt']);
+      // Using `update` (not `write`) so this rule doesn't conflict with `create` below
+      // and doesn't accidentally cover `delete` (which would error on resource.data).
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && !request.resource.data.diff(resource.data).affectedKeys()
+                        .hasAny(['tier', 'stripeCustomerId', 'stripeSubscriptionId', 'upgradedAt']);
 
       // Allow creation with default profile (tier must be 'free')
       allow create: if request.auth != null
@@ -99,8 +101,12 @@ service cloud.firestore {
     match /practices/{practiceId} {
       allow read: if request.auth != null 
                   && resource.data.therapistIds.hasAny([request.auth.uid]);
-      allow write: if request.auth != null 
-                   && resource.data.ownerId == request.auth.uid;
+      // Create: check the incoming data (request.resource) since no document exists yet
+      allow create: if request.auth != null 
+                    && request.resource.data.ownerId == request.auth.uid;
+      // Update/delete: check the existing document (resource) to prevent ownership hijack
+      allow update, delete: if request.auth != null 
+                            && resource.data.ownerId == request.auth.uid;
     }
 
     // Consent records - critical for GDPR compliance
@@ -204,15 +210,19 @@ service cloud.firestore {
 
     // Self-referrals (public submission, therapist read)
     match /selfReferrals/{referralId} {
-      // Therapists can read referrals (auth required)
-      allow read: if request.auth != null;
-      // Public can create (no auth required) - handled by API
+      // Only the assigned therapist or the referring patient can read
+      allow read: if request.auth != null 
+                  && (resource.data.assignedTherapistId == request.auth.uid
+                      || resource.data.userId == request.auth.uid);
+      // Creation and updates handled server-side via Admin SDK
       allow write: if false;
     }
 
     // Referral audit log
     match /referralAudit/{logId} {
-      allow read: if request.auth != null;
+      // Only the therapist involved can read audit entries
+      allow read: if request.auth != null 
+                  && resource.data.therapistId == request.auth.uid;
       allow write: if false;
     }
 

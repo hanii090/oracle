@@ -86,14 +86,14 @@ export function RelapsePrevention() {
     }
   };
 
-  const addWarningSign = () => {
+  const addWarningSign = (type: 'early' | 'late') => {
     if (!newWarningSign.trim()) return;
     const sign: WarningSign = {
       id: crypto.randomUUID(),
       text: newWarningSign,
       category: newWarningCategory,
     };
-    const key = newWarningType === 'early' ? 'warningSignsEarly' : 'warningSignsLate';
+    const key = type === 'early' ? 'warningSignsEarly' : 'warningSignsLate';
     const current = plan?.[key] || [];
     savePlan({ [key]: [...current, sign] });
     setNewWarningSign('');
@@ -210,7 +210,7 @@ export function RelapsePrevention() {
                       className="flex-1 bg-raised border border-border rounded px-3 py-1 text-sm text-text-main placeholder:text-text-muted/50"
                     />
                     <button
-                      onClick={() => { setNewWarningType('early'); addWarningSign(); }}
+                      onClick={() => addWarningSign('early')}
                       className="px-3 py-1 bg-amber-500/20 text-amber-400 rounded text-xs"
                     >
                       Add
@@ -272,7 +272,7 @@ export function RelapsePrevention() {
                       className="flex-1 bg-raised border border-border rounded px-3 py-1 text-sm text-text-main placeholder:text-text-muted/50"
                     />
                     <button
-                      onClick={() => { setNewWarningType('late'); addWarningSign(); }}
+                      onClick={() => addWarningSign('late')}
                       className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-xs"
                     >
                       Add
