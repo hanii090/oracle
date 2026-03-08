@@ -4,7 +4,6 @@ import { sorcaRateLimit } from '@/lib/rate-limit';
 import { withRetry, withFallback } from '@/lib/retry';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { detectCrisis, sanitizeMessage, detectPatterns } from '@/lib/safety';
-import { getServerEnv } from '@/lib/env';
 import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
 import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase-admin';
@@ -28,7 +27,7 @@ const requestSchema = z.object({
   })).max(200),
   depth: z.number().int().min(1).max(100),
   nightMode: z.boolean(),
-  tier: z.enum(['free', 'philosopher', 'pro']),
+  tier: z.enum(['free', 'philosopher', 'pro', 'practice']),
   sessionStartTime: z.string().optional(), // ISO timestamp for duration tracking
   safeMode: z.boolean().optional(), // Client-side safe mode flag
   therapyModality: z.string().optional(), // Therapy modality mode (cbt, act, ifs, etc.)
@@ -358,9 +357,6 @@ export async function POST(req: Request) {
         { status: 429 }
       );
     }
-
-    // ── Validate env ───────────────────────────────────────────
-    const env = getServerEnv();
 
     // Enforce depth limits for free tier
     if (tier === 'free' && depth > 5) {
