@@ -66,7 +66,9 @@ async function redisRateLimit(key: string, config: RateLimitConfig): Promise<Rat
   const redisKey = `ratelimit:${key}`;
 
   try {
-    // Use Upstash REST API — INCR + EXPIRE atomic pipeline
+    // Use Upstash REST API — SET NX + INCR atomic pipeline
+    // SET NX creates the key with expiry only if it doesn't exist,
+    // preventing EXPIRE from resetting the TTL on every request.
     const pipelineRes = await fetch(`${UPSTASH_URL}/pipeline`, {
       method: 'POST',
       headers: {
@@ -74,8 +76,8 @@ async function redisRateLimit(key: string, config: RateLimitConfig): Promise<Rat
         'Content-Type': 'application/json',
       },
       body: JSON.stringify([
+        ['SET', redisKey, '0', 'NX', 'EX', windowSec.toString()],
         ['INCR', redisKey],
-        ['EXPIRE', redisKey, windowSec.toString()],
       ]),
     });
 
@@ -84,7 +86,7 @@ async function redisRateLimit(key: string, config: RateLimitConfig): Promise<Rat
     }
 
     const results = await pipelineRes.json() as Array<{ result: number }>;
-    const currentCount = results[0]?.result ?? 1;
+    const currentCount = results[1]?.result ?? 1;
     const resetAt = Date.now() + config.windowMs;
 
     if (currentCount > config.maxRequests) {

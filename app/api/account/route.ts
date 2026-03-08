@@ -103,7 +103,7 @@ export async function GET(req: Request) {
       const stripe = getStripe();
       if (!stripe) throw new Error('Stripe not configured');
       const sessions = await stripe.checkout.sessions.list({
-        limit: 5,
+        limit: 100,
       });
 
       for (const session of sessions.data) {

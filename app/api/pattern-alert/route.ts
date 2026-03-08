@@ -25,13 +25,13 @@ export async function POST(req: Request) {
   const log = createLogger({ route: '/api/pattern-alert', correlationId: crypto.randomUUID() });
 
   try {
-    const authResult = await verifyAuth(req);
+    const { verifyTherapist } = await import('@/lib/auth-middleware');
+    const authResult = await verifyTherapist(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 
     const body = await req.json();
 
-    // Check if this is an internal alert creation (from AI analysis)
     if (body.clientId) {
       const parsed = createAlertSchema.safeParse(body);
       if (!parsed.success) {

@@ -6,7 +6,7 @@ import { getAdminFirestore } from '@/lib/firebase-admin';
 import { z } from 'zod';
 
 const giftSchema = z.object({
-  action: z.enum(['create', 'open', 'answer']),
+  action: z.enum(['create', 'open', 'answer', 'list']),
   recipientName: z.string().max(100).optional(),
   giftId: z.string().max(200).optional(),
   answer: z.string().max(5000).optional(),

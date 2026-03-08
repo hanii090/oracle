@@ -414,40 +414,53 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 }
 
 function formatContent(content: string): string {
-  return content
-    .split('\n')
-    .map(line => {
-      const trimmed = line.trim();
-      if (trimmed.startsWith('## ')) {
-        return `<h2>${trimmed.slice(3)}</h2>`;
+  const lines = content.split('\n');
+  const result: string[] = [];
+  let inList = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const isListItem = trimmed.startsWith('- ');
+
+    if (isListItem && !inList) {
+      result.push('<ul>');
+      inList = true;
+    } else if (!isListItem && inList) {
+      result.push('</ul>');
+      inList = false;
+    }
+
+    if (trimmed.startsWith('## ')) {
+      result.push(`<h2>${trimmed.slice(3)}</h2>`);
+    } else if (trimmed.startsWith('### ')) {
+      result.push(`<h3>${trimmed.slice(4)}</h3>`);
+    } else if (trimmed.startsWith('> ')) {
+      result.push(`<blockquote>${trimmed.slice(2)}</blockquote>`);
+    } else if (trimmed.startsWith('- **')) {
+      const match = trimmed.match(/^- \*\*(.+?)\*\*(.*)$/);
+      if (match) {
+        result.push(`<li><strong>${match[1]}</strong>${match[2]}</li>`);
+      } else {
+        result.push(`<li>${trimmed.slice(2)}</li>`);
       }
-      if (trimmed.startsWith('### ')) {
-        return `<h3>${trimmed.slice(4)}</h3>`;
-      }
-      if (trimmed.startsWith('> ')) {
-        return `<blockquote>${trimmed.slice(2)}</blockquote>`;
-      }
-      if (trimmed.startsWith('- **')) {
-        const match = trimmed.match(/^- \*\*(.+?)\*\*(.*)$/);
-        if (match) {
-          return `<li><strong>${match[1]}</strong>${match[2]}</li>`;
-        }
-      }
-      if (trimmed.startsWith('- ')) {
-        return `<li>${trimmed.slice(2)}</li>`;
-      }
-      if (trimmed === '---') {
-        return '<hr />';
-      }
-      if (trimmed === '') {
-        return '';
-      }
-      // Handle bold and italic
+    } else if (trimmed.startsWith('- ')) {
+      result.push(`<li>${trimmed.slice(2)}</li>`);
+    } else if (trimmed === '---') {
+      result.push('<hr />');
+    } else if (trimmed === '') {
+      result.push('');
+    } else {
       let processed = trimmed
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.+?)\*/g, '<em>$1</em>')
         .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
-      return `<p>${processed}</p>`;
-    })
-    .join('\n');
+      result.push(`<p>${processed}</p>`);
+    }
+  }
+
+  if (inList) {
+    result.push('</ul>');
+  }
+
+  return result.join('\n');
 }

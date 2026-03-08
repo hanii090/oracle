@@ -48,7 +48,7 @@ export async function GET(req: Request) {
     const { userId } = authResult;
 
     const url = new URL(req.url);
-    const months = parseInt(url.searchParams.get('months') || '3');
+    const months = Math.min(parseInt(url.searchParams.get('months') || '3') || 3, 24);
 
     if (!isAdminConfigured()) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 500 });

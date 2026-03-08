@@ -146,7 +146,8 @@ export default function OutcomesDashboardPage() {
 
     const maxScore = type === 'PHQ9' ? 27 : 21;
     const caseness = type === 'PHQ9' ? IAPT_THRESHOLDS.PHQ9_CASENESS : IAPT_THRESHOLDS.GAD7_CASENESS;
-    const color = type === 'PHQ9' ? 'blue' : 'violet';
+    const aboveClass = type === 'PHQ9' ? 'bg-blue-500' : 'bg-violet-500';
+    const belowClass = type === 'PHQ9' ? 'bg-blue-500/50' : 'bg-violet-500/50';
 
     return (
       <div className="relative h-48">
@@ -162,18 +163,14 @@ export default function OutcomesDashboardPage() {
 
         {/* Chart */}
         <div className="flex items-end justify-between h-full gap-2 pt-6">
-          {filtered.map((measure, i) => {
+          {filtered.map((measure) => {
             const height = (measure.total / maxScore) * 100;
             const isAboveCaseness = measure.total >= caseness;
             
             return (
               <div key={measure.id} className="flex-1 flex flex-col items-center">
                 <div 
-                  className={`w-full rounded-t transition-all ${
-                    isAboveCaseness 
-                      ? `bg-${color}-500` 
-                      : `bg-${color}-500/50`
-                  }`}
+                  className={`w-full rounded-t transition-all ${isAboveCaseness ? aboveClass : belowClass}`}
                   style={{ height: `${height}%` }}
                   title={`${measure.total} - ${measure.severity}`}
                 />
@@ -324,16 +321,18 @@ export default function OutcomesDashboardPage() {
                       <h3 className="font-cinzel text-sm text-violet">PHQ-9 (Depression)</h3>
                       <p className="text-xs text-text-muted">Patient Health Questionnaire</p>
                     </div>
-                    {clientOutcomes.measures.filter(m => m.type === 'PHQ9').length > 0 && (
-                      <div className="text-right">
-                        <div className="text-lg font-cinzel text-violet">
-                          {clientOutcomes.measures.filter(m => m.type === 'PHQ9')[0]?.total}
+                    {(() => {
+                      const phq9 = clientOutcomes.measures
+                        .filter(m => m.type === 'PHQ9')
+                        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+                      const latest = phq9[0];
+                      return latest ? (
+                        <div className="text-right">
+                          <div className="text-lg font-cinzel text-violet">{latest.total}</div>
+                          <div className="text-xs text-text-muted">{latest.severity}</div>
                         </div>
-                        <div className="text-xs text-text-muted">
-                          {clientOutcomes.measures.filter(m => m.type === 'PHQ9')[0]?.severity}
-                        </div>
-                      </div>
-                    )}
+                      ) : null;
+                    })()}
                   </div>
                   {renderScoreChart(clientOutcomes.measures, 'PHQ9')}
                 </div>
@@ -345,16 +344,18 @@ export default function OutcomesDashboardPage() {
                       <h3 className="font-cinzel text-sm text-violet">GAD-7 (Anxiety)</h3>
                       <p className="text-xs text-text-muted">Generalised Anxiety Disorder Scale</p>
                     </div>
-                    {clientOutcomes.measures.filter(m => m.type === 'GAD7').length > 0 && (
-                      <div className="text-right">
-                        <div className="text-lg font-cinzel text-violet">
-                          {clientOutcomes.measures.filter(m => m.type === 'GAD7')[0]?.total}
+                    {(() => {
+                      const gad7 = clientOutcomes.measures
+                        .filter(m => m.type === 'GAD7')
+                        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+                      const latest = gad7[0];
+                      return latest ? (
+                        <div className="text-right">
+                          <div className="text-lg font-cinzel text-violet">{latest.total}</div>
+                          <div className="text-xs text-text-muted">{latest.severity}</div>
                         </div>
-                        <div className="text-xs text-text-muted">
-                          {clientOutcomes.measures.filter(m => m.type === 'GAD7')[0]?.severity}
-                        </div>
-                      </div>
-                    )}
+                      ) : null;
+                    })()}
                   </div>
                   {renderScoreChart(clientOutcomes.measures, 'GAD7')}
                 </div>
@@ -381,7 +382,7 @@ export default function OutcomesDashboardPage() {
                             <td className="py-2">
                               <span className={`px-2 py-0.5 rounded text-xs ${
                                 measure.type === 'PHQ9' 
-                                  ? 'bg-violet/10 text-violet' 
+                                  ? 'bg-blue-500/10 text-blue-400' 
                                   : 'bg-violet/10 text-violet'
                               }`}>
                                 {measure.type}

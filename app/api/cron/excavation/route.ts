@@ -26,7 +26,7 @@ export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
   
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -36,7 +36,8 @@ export async function GET(req: Request) {
 
   const db = getAdminFirestore();
   const now = new Date();
-  const monthKey = `${now.getFullYear()}-${String(now.getMonth()).padStart(2, '0')}`; // Previous month
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const monthKey = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
   
   log.info('Starting excavation report cron', { monthKey });
 
@@ -154,6 +155,6 @@ export async function GET(req: Request) {
 
 function formatMonthKey(monthKey: string): string {
   const [year, month] = monthKey.split('-');
-  const date = new Date(parseInt(year), parseInt(month), 1);
+  const date = new Date(parseInt(year), parseInt(month) - 1, 1);
   return date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 }

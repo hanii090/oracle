@@ -60,7 +60,7 @@ export function SessionScheduler({ client, onScheduled, onClose }: SessionSchedu
           setIsSubmitting(false);
           return;
         }
-        nextSessionDate = `${selectedDate}T${selectedTime}:00.000Z`;
+        nextSessionDate = new Date(`${selectedDate}T${selectedTime}`).toISOString();
       } else {
         // Calculate next occurrence of selected day
         const today = new Date();

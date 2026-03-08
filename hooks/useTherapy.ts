@@ -26,24 +26,27 @@ export interface TherapyProfile {
   updatedAt: string;
 }
 
-const DEFAULT_THERAPY_PROFILE: TherapyProfile = {
-  inTherapy: false,
-  therapistId: null,
-  therapistName: null,
-  nextSessionDate: null,
-  sessionDay: null,
-  sessionTime: null,
-  consentSettings: {
-    shareWeekSummary: false,
-    shareHomeworkProgress: false,
-    sharePatternAlerts: false,
-    shareMoodData: false,
-  },
-  safeMode: false,
-  onboardingCompleted: false,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-};
+function createDefaultTherapyProfile(): TherapyProfile {
+  const now = new Date().toISOString();
+  return {
+    inTherapy: false,
+    therapistId: null,
+    therapistName: null,
+    nextSessionDate: null,
+    sessionDay: null,
+    sessionTime: null,
+    consentSettings: {
+      shareWeekSummary: false,
+      shareHomeworkProgress: false,
+      sharePatternAlerts: false,
+      shareMoodData: false,
+    },
+    safeMode: false,
+    onboardingCompleted: false,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
 
 export function useTherapy() {
   const { user } = useAuth();
@@ -126,19 +129,9 @@ export function useTherapy() {
     setShowTherapyOnboarding(false);
   }, []);
 
-  // Set "I'm in therapy" status
-  const setInTherapy = useCallback(async (inTherapy: boolean) => {
+  const persistProfile = useCallback(async (updatedProfile: TherapyProfile) => {
     if (!user) return;
-
-    const updatedProfile: TherapyProfile = {
-      ...(therapyProfile || DEFAULT_THERAPY_PROFILE),
-      inTherapy,
-      updatedAt: new Date().toISOString(),
-    };
-
-    setTherapyProfile(updatedProfile);
     localStorage.setItem(`${THERAPY_PROFILE_KEY}_${user.uid}`, JSON.stringify(updatedProfile));
-
     if (isFirebaseConfigured && db) {
       try {
         await setDoc(doc(db, 'therapyProfiles', user.uid), updatedProfile, { merge: true });
@@ -146,7 +139,22 @@ export function useTherapy() {
         console.error('Failed to save therapy profile:', e);
       }
     }
-  }, [user, therapyProfile]);
+  }, [user]);
+
+  // Set "I'm in therapy" status
+  const setInTherapy = useCallback(async (inTherapy: boolean) => {
+    if (!user) return;
+    let saved: TherapyProfile | null = null;
+    setTherapyProfile(prev => {
+      saved = {
+        ...(prev || createDefaultTherapyProfile()),
+        inTherapy,
+        updatedAt: new Date().toISOString(),
+      };
+      return saved;
+    });
+    if (saved) await persistProfile(saved);
+  }, [user, persistProfile]);
 
   // Update therapy session schedule
   const updateSessionSchedule = useCallback(async (schedule: {
@@ -156,74 +164,54 @@ export function useTherapy() {
     therapistName?: string;
   }) => {
     if (!user) return;
-
-    const updatedProfile: TherapyProfile = {
-      ...(therapyProfile || DEFAULT_THERAPY_PROFILE),
-      ...schedule,
-      updatedAt: new Date().toISOString(),
-    };
-
-    setTherapyProfile(updatedProfile);
-    localStorage.setItem(`${THERAPY_PROFILE_KEY}_${user.uid}`, JSON.stringify(updatedProfile));
-
-    if (isFirebaseConfigured && db) {
-      try {
-        await setDoc(doc(db, 'therapyProfiles', user.uid), updatedProfile, { merge: true });
-      } catch (e) {
-        console.error('Failed to save session schedule:', e);
-      }
-    }
-  }, [user, therapyProfile]);
+    let saved: TherapyProfile | null = null;
+    setTherapyProfile(prev => {
+      saved = {
+        ...(prev || createDefaultTherapyProfile()),
+        ...schedule,
+        updatedAt: new Date().toISOString(),
+      };
+      return saved;
+    });
+    if (saved) await persistProfile(saved);
+  }, [user, persistProfile]);
 
   // Update consent settings
   const updateConsentSettings = useCallback(async (settings: Partial<TherapyProfile['consentSettings']>) => {
     if (!user) return;
-
-    const updatedProfile: TherapyProfile = {
-      ...(therapyProfile || DEFAULT_THERAPY_PROFILE),
-      consentSettings: {
-        ...(therapyProfile?.consentSettings || DEFAULT_THERAPY_PROFILE.consentSettings),
-        ...settings,
-      },
-      updatedAt: new Date().toISOString(),
-    };
-
-    setTherapyProfile(updatedProfile);
-    localStorage.setItem(`${THERAPY_PROFILE_KEY}_${user.uid}`, JSON.stringify(updatedProfile));
-
-    if (isFirebaseConfigured && db) {
-      try {
-        await setDoc(doc(db, 'therapyProfiles', user.uid), updatedProfile, { merge: true });
-      } catch (e) {
-        console.error('Failed to save consent settings:', e);
-      }
-    }
-  }, [user, therapyProfile]);
+    const defaultConsent = createDefaultTherapyProfile().consentSettings;
+    let saved: TherapyProfile | null = null;
+    setTherapyProfile(prev => {
+      saved = {
+        ...(prev || createDefaultTherapyProfile()),
+        consentSettings: {
+          ...(prev?.consentSettings || defaultConsent),
+          ...settings,
+        },
+        updatedAt: new Date().toISOString(),
+      };
+      return saved;
+    });
+    if (saved) await persistProfile(saved);
+  }, [user, persistProfile]);
 
   // Complete therapy onboarding
   const completeTherapyOnboarding = useCallback(async (profile: Partial<TherapyProfile>) => {
     if (!user) return;
-
-    const updatedProfile: TherapyProfile = {
-      ...DEFAULT_THERAPY_PROFILE,
-      ...profile,
-      onboardingCompleted: true,
-      createdAt: therapyProfile?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    setTherapyProfile(updatedProfile);
+    let saved: TherapyProfile | null = null;
+    setTherapyProfile(prev => {
+      saved = {
+        ...createDefaultTherapyProfile(),
+        ...profile,
+        onboardingCompleted: true,
+        createdAt: prev?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      return saved;
+    });
     setShowTherapyOnboarding(false);
-    localStorage.setItem(`${THERAPY_PROFILE_KEY}_${user.uid}`, JSON.stringify(updatedProfile));
-
-    if (isFirebaseConfigured && db) {
-      try {
-        await setDoc(doc(db, 'therapyProfiles', user.uid), updatedProfile, { merge: true });
-      } catch (e) {
-        console.error('Failed to save therapy onboarding:', e);
-      }
-    }
-  }, [user, therapyProfile]);
+    if (saved) await persistProfile(saved);
+  }, [user, persistProfile]);
 
   // Check if session is within 24 hours (for Session Debrief Mode)
   const isWithin24HoursOfSession = useCallback((): boolean => {

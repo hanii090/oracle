@@ -36,7 +36,7 @@ export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
   
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -58,8 +58,10 @@ export async function GET(req: Request) {
   let errors = 0;
 
   try {
-    // Get all users with sessions this week
-    const usersSnapshot = await db.collection('users').get();
+    // Get users with paid tiers who would have week summaries
+    const usersSnapshot = await db.collection('users')
+      .where('tier', 'in', ['philosopher', 'pro', 'practice'])
+      .get();
 
     for (const userDoc of usersSnapshot.docs) {
       const userId = userDoc.id;

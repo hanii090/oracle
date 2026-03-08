@@ -277,12 +277,12 @@ export function generateDischargeSummary(episode: TreatmentEpisode): string {
   
   if (episode.initialPHQ9 !== undefined && episode.finalPHQ9 !== undefined) {
     const phq9Change = episode.initialPHQ9 - episode.finalPHQ9;
-    lines.push(`PHQ-9: ${episode.initialPHQ9} → ${episode.finalPHQ9} (change: ${phq9Change >= 0 ? '+' : ''}${-phq9Change})`);
+    lines.push(`PHQ-9: ${episode.initialPHQ9} → ${episode.finalPHQ9} (change: ${-phq9Change > 0 ? '+' : ''}${-phq9Change})`);
   }
   
   if (episode.initialGAD7 !== undefined && episode.finalGAD7 !== undefined) {
     const gad7Change = episode.initialGAD7 - episode.finalGAD7;
-    lines.push(`GAD-7: ${episode.initialGAD7} → ${episode.finalGAD7} (change: ${gad7Change >= 0 ? '+' : ''}${-gad7Change})`);
+    lines.push(`GAD-7: ${episode.initialGAD7} → ${episode.finalGAD7} (change: ${-gad7Change > 0 ? '+' : ''}${-gad7Change})`);
   }
   
   lines.push(``);

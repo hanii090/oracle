@@ -72,7 +72,10 @@ export async function POST(req: Request) {
     const { userId } = authResult;
 
     // Verify Pro tier
-    if (isAdminConfigured()) {
+    if (!isAdminConfigured()) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
+    }
+    {
       const db = getAdminFirestore();
       const userDoc = await db.collection('users').doc(userId).get();
       const tier = userDoc.data()?.tier || 'free';

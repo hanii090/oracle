@@ -19,7 +19,8 @@ export async function DELETE(req: Request) {
 
     const db = getAdminFirestore();
     const auth = getAdminAuth();
-    const batch = db.batch();
+    const MAX_BATCH_SIZE = 500;
+    const pendingDeletes: FirebaseFirestore.DocumentReference[] = [];
 
     // Collections to delete
     const collectionsToDelete = [
@@ -32,8 +33,7 @@ export async function DELETE(req: Request) {
 
     // Delete main documents
     for (const collection of collectionsToDelete) {
-      const docRef = db.collection(collection).doc(userId);
-      batch.delete(docRef);
+      pendingDeletes.push(db.collection(collection).doc(userId));
     }
 
     // Delete subcollections
@@ -49,9 +49,9 @@ export async function DELETE(req: Request) {
       try {
         const subSnapshot = await db.collection(parent).doc(userId).collection(sub).get();
         for (const doc of subSnapshot.docs) {
-          batch.delete(doc.ref);
+          pendingDeletes.push(doc.ref);
         }
-        batch.delete(db.collection(parent).doc(userId));
+        pendingDeletes.push(db.collection(parent).doc(userId));
       } catch (e) {
         log.warn(`Subcollection ${parent}/${sub} deletion skipped`, { userId });
       }
@@ -61,7 +61,7 @@ export async function DELETE(req: Request) {
     try {
       const sessionsSnapshot = await db.collection('users').doc(userId).collection('sessions').get();
       for (const doc of sessionsSnapshot.docs) {
-        batch.delete(doc.ref);
+        pendingDeletes.push(doc.ref);
       }
     } catch (e) {
       log.warn('Sessions subcollection deletion skipped', { userId });
@@ -73,7 +73,7 @@ export async function DELETE(req: Request) {
         .where('patientId', '==', userId)
         .get();
       for (const doc of homeworkSnapshot.docs) {
-        batch.delete(doc.ref);
+        pendingDeletes.push(doc.ref);
       }
     } catch (e) {
       log.warn('Homework assignments deletion skipped', { userId });
@@ -85,14 +85,21 @@ export async function DELETE(req: Request) {
         .where('patientId', '==', userId)
         .get();
       for (const doc of consentSnapshot.docs) {
-        batch.delete(doc.ref);
+        pendingDeletes.push(doc.ref);
       }
     } catch (e) {
       log.warn('Consent records deletion skipped', { userId });
     }
 
-    // Commit all deletions
-    await batch.commit();
+    // Commit deletions in batches of 500 (Firestore limit)
+    for (let i = 0; i < pendingDeletes.length; i += MAX_BATCH_SIZE) {
+      const batch = db.batch();
+      const chunk = pendingDeletes.slice(i, i + MAX_BATCH_SIZE);
+      for (const ref of chunk) {
+        batch.delete(ref);
+      }
+      await batch.commit();
+    }
 
     // Delete Firebase Auth user
     try {

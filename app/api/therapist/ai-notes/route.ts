@@ -98,18 +98,20 @@ export async function POST(req: Request) {
     // so a single missing index doesn't fail the entire route
     const context: string[] = [];
 
-    // Recent sessions
+    // Recent sessions (sessions are stored as a subcollection under users)
     try {
       let sessionsSnap;
       try {
-        sessionsSnap = await db.collection('sessions')
-          .where('userId', '==', clientId)
+        sessionsSnap = await db.collection('users')
+          .doc(clientId)
+          .collection('sessions')
           .orderBy('createdAt', 'desc')
           .limit(3)
           .get();
       } catch {
-        sessionsSnap = await db.collection('sessions')
-          .where('userId', '==', clientId)
+        sessionsSnap = await db.collection('users')
+          .doc(clientId)
+          .collection('sessions')
           .limit(3)
           .get();
       }
