@@ -224,21 +224,37 @@ export async function POST(req: Request) {
       const profileDoc = await db.collection('waitingListProfiles').doc(userId).get();
       const profile = profileDoc.exists ? profileDoc.data() as WaitingListProfile : null;
 
-      const checkInsSnapshot = await db.collection('waitingListCheckIns')
-        .where('userId', '==', userId)
-        .orderBy('createdAt', 'asc')
-        .limit(52)
-        .get();
+      let checkIns: WaitingListCheckIn[] = [];
+      try {
+        const checkInsSnapshot = await db.collection('waitingListCheckIns')
+          .where('userId', '==', userId)
+          .orderBy('createdAt', 'asc')
+          .limit(52)
+          .get();
+        checkIns = checkInsSnapshot.docs.map(d => d.data() as WaitingListCheckIn);
+      } catch (queryError) {
+        log.warn('Composite query failed, falling back to simple query', {}, queryError);
+        const fallbackSnapshot = await db.collection('waitingListCheckIns')
+          .where('userId', '==', userId)
+          .limit(52)
+          .get();
+        checkIns = fallbackSnapshot.docs
+          .map(d => d.data() as WaitingListCheckIn)
+          .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      }
 
-      const checkIns = checkInsSnapshot.docs.map(d => d.data() as WaitingListCheckIn);
       const brief = generateReadinessBrief(checkIns, profile?.referralReason || 'other');
 
-      // Save brief to profile
+      // Save brief to profile (non-blocking)
       if (profileDoc.exists) {
-        await db.collection('waitingListProfiles').doc(userId).update({
-          readinessBrief: brief,
-          updatedAt: new Date().toISOString(),
-        });
+        try {
+          await db.collection('waitingListProfiles').doc(userId).update({
+            readinessBrief: brief,
+            updatedAt: new Date().toISOString(),
+          });
+        } catch (saveError) {
+          log.warn('Failed to save brief to profile', { userId }, saveError);
+        }
       }
 
       return NextResponse.json({ brief });
@@ -296,12 +312,28 @@ export async function POST(req: Request) {
   } catch (error) {
     log.error('Waiting list error', {}, error);
 
-    // Distinguish Firebase/Firestore errors from other failures
     const message = error instanceof Error ? error.message : String(error);
-    if (message.includes('Firebase') || message.includes('Firestore') || message.includes('FIREBASE')) {
+
+    // JSON parse failure — body was not valid JSON
+    if (message.includes('JSON') || message.includes('Unexpected token') || message.includes('body')) {
       return NextResponse.json(
-        { error: 'Database connection error. Please try again in a moment.' },
+        { error: 'Invalid request body. Expected valid JSON.' },
+        { status: 400 }
+      );
+    }
+
+    // Distinguish Firebase/Firestore transient errors from permanent failures
+    if (message.includes('UNAVAILABLE') || message.includes('DEADLINE_EXCEEDED') || message.includes('network')) {
+      return NextResponse.json(
+        { error: 'Database temporarily unavailable. Please try again in a moment.' },
         { status: 503 }
+      );
+    }
+
+    if (message.includes('Firebase') || message.includes('Firestore') || message.includes('FIREBASE') || message.includes('PERMISSION_DENIED')) {
+      return NextResponse.json(
+        { error: 'Database error. Please try again or contact support.' },
+        { status: 500 }
       );
     }
 
@@ -328,13 +360,24 @@ export async function GET(req: Request) {
     const profile = profileDoc.exists ? profileDoc.data() as WaitingListProfile : null;
 
     // Get check-ins
-    const checkInsSnapshot = await db.collection('waitingListCheckIns')
-      .where('userId', '==', userId)
-      .orderBy('createdAt', 'desc')
-      .limit(52)
-      .get();
-
-    const checkIns = checkInsSnapshot.docs.map(d => d.data() as WaitingListCheckIn);
+    let checkIns: WaitingListCheckIn[] = [];
+    try {
+      const checkInsSnapshot = await db.collection('waitingListCheckIns')
+        .where('userId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .limit(52)
+        .get();
+      checkIns = checkInsSnapshot.docs.map(d => d.data() as WaitingListCheckIn);
+    } catch (queryError) {
+      log.warn('Composite query failed in GET, falling back to simple query', {}, queryError);
+      const fallbackSnapshot = await db.collection('waitingListCheckIns')
+        .where('userId', '==', userId)
+        .limit(52)
+        .get();
+      checkIns = fallbackSnapshot.docs
+        .map(d => d.data() as WaitingListCheckIn)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    }
 
     // Get themes for their referral reason
     const themes = WEEKLY_THEMES[profile?.referralReason || 'other'] || WEEKLY_THEMES.other;

@@ -94,71 +94,123 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No active consent for this client' }, { status: 403 });
     }
 
-    // Gather client data for the draft
+    // Gather client data for the draft — each query is independently wrapped
+    // so a single missing index doesn't fail the entire route
     const context: string[] = [];
 
     // Recent sessions (sessions are stored as a subcollection under users)
-    const sessionsSnap = await db.collection('users')
-      .doc(clientId)
-      .collection('sessions')
-      .orderBy('createdAt', 'desc')
-      .limit(3)
-      .get();
-
-    if (!sessionsSnap.empty) {
-      const latestSession = sessionsSnap.docs[0].data();
-      context.push(`Latest session (${latestSession.createdAt}):`);
-      if (latestSession.messages) {
-        const msgs = latestSession.messages.slice(-10);
-        for (const m of msgs) {
-          context.push(`[${m.role}]: ${m.content}`);
-        }
+    try {
+      let sessionsSnap;
+      try {
+        sessionsSnap = await db.collection('users')
+          .doc(clientId)
+          .collection('sessions')
+          .orderBy('createdAt', 'desc')
+          .limit(3)
+          .get();
+      } catch {
+        sessionsSnap = await db.collection('users')
+          .doc(clientId)
+          .collection('sessions')
+          .limit(3)
+          .get();
       }
-      context.push(`Max depth reached: ${latestSession.maxDepth}`);
+
+      if (!sessionsSnap.empty) {
+        const latestSession = sessionsSnap.docs[0].data();
+        context.push(`Latest session (${latestSession.createdAt}):`);
+        if (latestSession.messages) {
+          const msgs = latestSession.messages.slice(-10);
+          for (const m of msgs) {
+            context.push(`[${m.role}]: ${m.content}`);
+          }
+        }
+        context.push(`Max depth reached: ${latestSession.maxDepth}`);
+      }
+    } catch (e) {
+      log.warn('Failed to fetch sessions for AI notes', { clientId }, e);
     }
 
     // Recent mood check-ins
-    const moodSnap = await db.collection('dailyMoodChecks')
-      .doc(clientId)
-      .collection('checks')
-      .orderBy('timestamp', 'desc')
-      .limit(7)
-      .get();
+    try {
+      let moodSnap;
+      try {
+        moodSnap = await db.collection('dailyMoodChecks')
+          .doc(clientId)
+          .collection('checks')
+          .orderBy('timestamp', 'desc')
+          .limit(7)
+          .get();
+      } catch {
+        moodSnap = await db.collection('dailyMoodChecks')
+          .doc(clientId)
+          .collection('checks')
+          .limit(7)
+          .get();
+      }
 
-    if (!moodSnap.empty) {
-      const scores = moodSnap.docs.map(d => d.data().score);
-      const avg = scores.reduce((a: number, b: number) => a + b, 0) / scores.length;
-      context.push(`\nMood check-ins (last 7 days): scores ${scores.join(', ')}, average ${avg.toFixed(1)}/10`);
+      if (!moodSnap.empty) {
+        const scores = moodSnap.docs.map(d => d.data().score);
+        const avg = scores.reduce((a: number, b: number) => a + b, 0) / scores.length;
+        context.push(`\nMood check-ins (last 7 days): scores ${scores.join(', ')}, average ${avg.toFixed(1)}/10`);
+      }
+    } catch (e) {
+      log.warn('Failed to fetch mood check-ins for AI notes', { clientId }, e);
     }
 
     // Recent outcome measures
-    const outcomesSnap = await db.collection('outcomeMeasures')
-      .where('userId', '==', clientId)
-      .orderBy('timestamp', 'desc')
-      .limit(4)
-      .get();
-
-    if (!outcomesSnap.empty) {
-      for (const doc of outcomesSnap.docs) {
-        const m = doc.data();
-        context.push(`${m.type} score: ${m.total} (${m.severity}) on ${m.timestamp}`);
+    try {
+      let outcomesSnap;
+      try {
+        outcomesSnap = await db.collection('outcomeMeasures')
+          .where('userId', '==', clientId)
+          .orderBy('timestamp', 'desc')
+          .limit(4)
+          .get();
+      } catch {
+        outcomesSnap = await db.collection('outcomeMeasures')
+          .where('userId', '==', clientId)
+          .limit(4)
+          .get();
       }
+
+      if (!outcomesSnap.empty) {
+        for (const d of outcomesSnap.docs) {
+          const m = d.data();
+          context.push(`${m.type} score: ${m.total} (${m.severity}) on ${m.timestamp}`);
+        }
+      }
+    } catch (e) {
+      log.warn('Failed to fetch outcome measures for AI notes', { clientId }, e);
     }
 
     // Recent pattern alerts
-    const alertsSnap = await db.collection('patternAlerts')
-      .where('therapistId', '==', therapistId)
-      .where('clientId', '==', clientId)
-      .orderBy('createdAt', 'desc')
-      .limit(5)
-      .get();
-
-    if (!alertsSnap.empty) {
-      context.push('\nRecent alerts:');
-      for (const doc of alertsSnap.docs) {
-        const a = doc.data();
-        context.push(`- [${a.severity}] ${a.message} (${a.createdAt})`);
+    try {
+      let alertsSnap;
+      try {
+        alertsSnap = await db.collection('patternAlerts')
+          .where('therapistId', '==', therapistId)
+          .where('clientId', '==', clientId)
+          .orderBy('createdAt', 'desc')
+          .limit(5)
+          .get();
+      } catch {
+        alertsSnap = await db.collection('patternAlerts')
+          .where('therapistId', '==', therapistId)
+          .where('clientId', '==', clientId)
+          .limit(5)
+          .get();
       }
+
+      if (!alertsSnap.empty) {
+        context.push('\nRecent alerts:');
+        for (const d of alertsSnap.docs) {
+          const a = d.data();
+          context.push(`- [${a.severity}] ${a.message} (${a.createdAt})`);
+        }
+      }
+    } catch (e) {
+      log.warn('Failed to fetch pattern alerts for AI notes', { clientId }, e);
     }
 
     if (context.length === 0) {
@@ -177,7 +229,7 @@ export async function POST(req: Request) {
     const prompt = `${NOTE_PROMPTS[format]}\n\nClient session data:\n${context.join('\n')}`;
 
     const result = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: { temperature: 0.3 },
     });
@@ -189,6 +241,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ draft, format });
   } catch (error) {
     log.error('AI notes draft error', {}, error);
-    return NextResponse.json({ error: 'Failed to generate notes draft' }, { status: 500 });
+
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes('PERMISSION_DENIED') || message.includes('not authorized')) {
+      return NextResponse.json({ error: 'Access denied. Please check your permissions.' }, { status: 403 });
+    }
+    if (message.includes('API key') || message.includes('GEMINI')) {
+      return NextResponse.json({ error: 'AI service temporarily unavailable. Please try again.' }, { status: 503 });
+    }
+
+    return NextResponse.json({ error: 'Failed to generate notes draft. Please try again.' }, { status: 500 });
   }
 }
