@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'motion/react';
 import { useAuth, SessionSummary } from '@/hooks/useAuth';
 import { useTherapy } from '@/hooks/useTherapy';
@@ -103,6 +103,12 @@ export function UserDashboard() {
   const [homework, setHomework] = useState<HomeworkAssignment[]>([]);
   const [anchors, setAnchors] = useState<CopingAnchor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [summaryTierGated, setSummaryTierGated] = useState(false);
+
+  // Stable ref for loadSessions — avoids loadData getting a new identity
+  // every time loadSessions changes (which caused an infinite re-render loop).
+  const loadSessionsRef = useRef(loadSessions);
+  loadSessionsRef.current = loadSessions;
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -112,11 +118,16 @@ export function UserDashboard() {
       const token = await getIdToken();
       const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
 
-      // Load week summaries
+      // Load week summaries — handle 403 (tier gate) gracefully
       const summaryRes = await fetch('/api/week-summary', { headers });
       if (summaryRes.ok) {
         const data = await summaryRes.json();
         setSummaries(data.summaries || []);
+        setSummaryTierGated(false);
+      } else if (summaryRes.status === 403) {
+        // User is on free tier — this is expected, not an error
+        setSummaries([]);
+        setSummaryTierGated(true);
       }
 
       // Load homework
@@ -133,14 +144,14 @@ export function UserDashboard() {
         setAnchors(data.anchors || []);
       }
 
-      // Load sessions
-      await loadSessions();
+      // Load sessions via stable ref
+      await loadSessionsRef.current();
     } catch (e) {
       console.error('Failed to load dashboard data:', e);
     } finally {
       setLoading(false);
     }
-  }, [user, getIdToken, loadSessions]);
+  }, [user, getIdToken]); // loadSessions removed — accessed via stable ref
 
   const loadHomework = useCallback(async () => {
     if (!user) return;

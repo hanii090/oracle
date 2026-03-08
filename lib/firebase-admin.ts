@@ -5,6 +5,7 @@ import { getAuth, type Auth } from 'firebase-admin/auth';
 let adminApp: App | null = null;
 let adminDb: Firestore | null = null;
 let adminInitError: string | null = null;
+let adminInitPermanent = false; // true if error is non-retryable (missing env, bad JSON)
 
 /**
  * Parse the service account key from env, handling every known way
@@ -69,7 +70,7 @@ function parseServiceAccountKey(raw: string): Record<string, unknown> {
  */
 function getAdminApp(): App {
   if (adminApp) return adminApp;
-  if (adminInitError) throw new Error(adminInitError);
+  if (adminInitError && adminInitPermanent) throw new Error(adminInitError);
 
   const existingApps = getApps();
   if (existingApps.length > 0) {
@@ -84,6 +85,7 @@ function getAdminApp(): App {
     adminInitError =
       'FIREBASE_SERVICE_ACCOUNT_KEY is not set. ' +
       'Add your Firebase service account JSON (or base64 of it) to Vercel Environment Variables.';
+    adminInitPermanent = true;
     throw new Error(adminInitError);
   }
 
@@ -104,6 +106,7 @@ function getAdminApp(): App {
       adminInitError =
         `FIREBASE_SERVICE_ACCOUNT_KEY is missing required fields: ${missing.join(', ')}. ` +
         'Download a fresh key from Firebase Console → Project Settings → Service Accounts → Generate New Private Key.';
+      adminInitPermanent = true;
       throw new Error(adminInitError);
     }
 
@@ -114,12 +117,14 @@ function getAdminApp(): App {
 
     console.log(`✅ Firebase Admin initialized for project: ${pid}`);
   } catch (e: unknown) {
-    if (adminInitError) throw new Error(adminInitError);
+    if (adminInitError && adminInitPermanent) throw new Error(adminInitError);
 
     const msg = e instanceof Error ? e.message : String(e);
+    // Transient error — allow retry on next call
     adminInitError =
       `Failed to initialize Firebase Admin: ${msg}. ` +
       'See the troubleshooting steps logged below.';
+    adminInitPermanent = false;
     console.error('❌ Firebase Admin init failed:', msg);
     console.error(
       '🔧 Troubleshooting:\n' +

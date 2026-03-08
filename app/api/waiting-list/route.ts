@@ -295,6 +295,16 @@ export async function POST(req: Request) {
     }
   } catch (error) {
     log.error('Waiting list error', {}, error);
+
+    // Distinguish Firebase/Firestore errors from other failures
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes('Firebase') || message.includes('Firestore') || message.includes('FIREBASE')) {
+      return NextResponse.json(
+        { error: 'Database connection error. Please try again in a moment.' },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json({ error: 'Failed to process waiting list request' }, { status: 500 });
   }
 }

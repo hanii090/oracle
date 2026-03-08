@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { auth, db } from "@/lib/firebase";
 import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc, collection, getDocs, addDoc, query, orderBy, limit, onSnapshot } from "firebase/firestore";
@@ -215,6 +215,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
+  // Ref to hold the current tier — prevents loadSessions from getting a new
+  // identity every time profile updates, which was causing an infinite
+  // re-render loop: profile change → new loadSessions → new loadData → useEffect fires → repeat.
+  const tierRef = useRef(profile?.tier);
+  tierRef.current = profile?.tier;
+
   const loadSessions = useCallback(async () => {
     if (!user) return;
     let loaded: SessionSummary[] = [];
@@ -252,7 +258,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Enforce 30-day limit for free tier — paid users get full history
-    const currentTier = profile?.tier || 'free';
+    const currentTier = tierRef.current || 'free';
     if (currentTier === 'free') {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -260,7 +266,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     setSessions(loaded);
-  }, [user, profile?.tier]);
+  }, [user]); // tierRef is stable — no longer causes re-render cascade
 
   useEffect(() => {
     if (user) {

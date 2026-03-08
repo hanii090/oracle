@@ -29,6 +29,20 @@
       ]
     },
     {
+      "collectionGroup": "therapistConsent",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "patientId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "clientInvites",
       "queryScope": "COLLECTION",
       "fields": [

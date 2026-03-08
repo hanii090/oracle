@@ -43,7 +43,23 @@ export async function POST(req: Request) {
     const { score, notes, activities } = parsed.data;
 
     if (!isAdminConfigured()) {
-      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+      // Graceful fallback — return mock success so the UI doesn't break
+      const fallbackCheckIn: MoodCheckIn = {
+        id: 'offline',
+        userId,
+        date: new Date().toISOString().split('T')[0],
+        score,
+        notes: notes ? sanitizeMessage(notes) : undefined,
+        activities,
+        timestamp: new Date().toISOString(),
+      };
+      return NextResponse.json({
+        checkIn: fallbackCheckIn,
+        alert: null,
+        suggestedContent: score <= 4 ? PSYCHOEDUCATION_CONTENT.grounding_techniques : null,
+        exercises: GROUNDING_EXERCISES,
+        offline: true,
+      });
     }
 
     const db = getAdminFirestore();
