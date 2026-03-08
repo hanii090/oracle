@@ -269,7 +269,7 @@ export function anonymiseRecord(record: Record<string, unknown>): Record<string,
     'nhsNumber', 'dateOfBirth', 'gpDetails',
   ];
 
-  const anonymised = { ...record };
+  const anonymised = structuredClone(record);
   
   for (const field of sensitiveFields) {
     if (field in anonymised) {

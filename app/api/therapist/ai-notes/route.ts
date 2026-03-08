@@ -97,9 +97,10 @@ export async function POST(req: Request) {
     // Gather client data for the draft
     const context: string[] = [];
 
-    // Recent sessions
-    const sessionsSnap = await db.collection('sessions')
-      .where('userId', '==', clientId)
+    // Recent sessions (sessions are stored as a subcollection under users)
+    const sessionsSnap = await db.collection('users')
+      .doc(clientId)
+      .collection('sessions')
       .orderBy('createdAt', 'desc')
       .limit(3)
       .get();

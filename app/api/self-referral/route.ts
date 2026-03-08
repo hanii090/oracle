@@ -305,15 +305,13 @@ export async function GET(req: Request) {
   const log = createLogger({ route: '/api/self-referral', correlationId: crypto.randomUUID() });
 
   try {
-    // This would need therapist auth - simplified for now
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { verifyTherapist } = await import('@/lib/auth-middleware');
+    const authResult = await verifyTherapist(req);
+    if (authResult instanceof NextResponse) return authResult;
 
     const url = new URL(req.url);
     const status = url.searchParams.get('status') || 'pending';
-    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100);
 
     if (!isAdminConfigured()) {
       return NextResponse.json({ referrals: [] });

@@ -116,8 +116,8 @@ export async function POST(req: Request) {
     log.info('Checkout session created', { userId, tier, sessionId: session.id });
 
     return NextResponse.json({ url: session.url });
-  } catch (err: any) {
+  } catch (err: unknown) {
     log.error('Stripe Checkout error', {}, err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Payment processing failed. Please try again.' }, { status: 500 });
   }
 }

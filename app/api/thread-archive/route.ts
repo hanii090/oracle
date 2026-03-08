@@ -105,11 +105,8 @@ export async function POST(req: Request) {
         // Non-critical
       }
 
-      // Generate a unique share token (URL-safe, non-guessable)
-      const token = Array.from(crypto.getRandomValues(new Uint8Array(24)))
-        .map(b => b.toString(36).padStart(2, '0'))
-        .join('')
-        .slice(0, 32);
+      // Generate a unique share token (URL-safe, high-entropy)
+      const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '').slice(0, 8);
 
       const archive = {
         userId,

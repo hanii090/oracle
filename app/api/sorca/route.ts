@@ -291,7 +291,19 @@ export async function POST(req: Request) {
       );
     }
 
-    const { message, conversationHistory, threadContext, depth, nightMode, tier, sessionStartTime, safeMode } = parsed.data;
+    const { message, conversationHistory, threadContext, depth, nightMode, sessionStartTime, safeMode } = parsed.data;
+
+    // ── Server-side tier verification ──────────────────────────
+    let tier: 'free' | 'philosopher' | 'pro' = 'free';
+    if (isAdminConfigured()) {
+      try {
+        const db = getAdminFirestore();
+        const userDoc = await db.collection('users').doc(userId).get();
+        tier = userDoc.data()?.tier || 'free';
+      } catch {
+        // Default to free tier if lookup fails
+      }
+    }
 
     // ── Safe mode check — limit depth and add grounding ─────────
     const SAFE_MODE_MAX_DEPTH = 3;
@@ -362,8 +374,8 @@ export async function POST(req: Request) {
     // ── Validate env ───────────────────────────────────────────
     const env = getServerEnv();
 
-    // Enforce depth limits for free tier
-    if (tier === 'free' && depth > 5) {
+    // Enforce depth limits for free tier (using server-verified tier)
+    if (tier === 'free' && effectiveDepth > 5) {
       return NextResponse.json(
         { error: 'Free tier is limited to depth 5. Upgrade to continue.' },
         { status: 403 }
@@ -428,7 +440,7 @@ export async function POST(req: Request) {
 
     const messageCount = conversationHistory.length;
     const systemPrompt = buildSystemPrompt(
-      depth, threadStr, nightMode, dnaProfile, semanticContradiction,
+      effectiveDepth, threadStr, nightMode, dnaProfile, semanticContradiction,
       messageCount, sanitizedMessage, undefined,
       parsed.data.therapyModality, parsed.data.timeMode
     );
