@@ -14,15 +14,12 @@ export function SorcaLogo({ size = 24, strokeWidth = 1.5, className, ...props }:
       className={className}
       {...props}
     >
-      {/* Outer circle representing wholeness/journey */}
-      <circle cx="12" cy="12" r="10" opacity="0.3" />
-      {/* Inner spiral representing depth/introspection */}
-      <path 
-        d="M12 2 C18 2 22 6 22 12 C22 18 18 22 12 22 C6 22 3 18 3 14 C3 10 6 7 10 7 C14 7 16 10 16 12 C16 14 14 16 12 16 C10 16 9 14 9 13 C9 12 10 11 12 11" 
-        opacity="0.8"
+      {/* Rounded container */}
+      <rect x="2" y="2" width="20" height="20" rx="5" opacity="0.2" />
+      {/* S lettermark */}
+      <path
+        d="M15 9.5C15 7.8 13.7 6.5 12 6.5C10 6.5 8.5 7.8 8.5 9.5C8.5 11.5 10 12.3 12 13C14 13.7 15.5 14.5 15.5 16.5C15.5 18.2 14 19.5 12 19.5C10 19.5 8.8 18.2 9 16.5"
       />
-      {/* Center dot representing self/core truth */}
-      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
     </svg>
   );
 }

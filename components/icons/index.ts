@@ -25,7 +25,6 @@ export { CandleIcon } from './CandleIcon';
 export { HelpIcon } from './HelpIcon';
 export { WarningIcon } from './WarningIcon';
 export { MusicIcon } from './MusicIcon';
-export { EyeIcon } from './EyeIcon';
 export { BoltIcon } from './BoltIcon';
 export { BookIcon } from './BookIcon';
 export { ChevronIcon } from './ChevronIcon';

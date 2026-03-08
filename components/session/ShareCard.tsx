@@ -81,16 +81,16 @@ export function ShareCard({ show, depth, messageCount, onClose }: ShareCardProps
     ctx.fillStyle = radGradient;
     ctx.fillRect(0, 0, 1200, 630);
 
-    // Eye symbol
-    ctx.strokeStyle = 'rgba(192, 57, 43, 0.5)';
-    ctx.lineWidth = 2;
+    // S monogram logo
     ctx.beginPath();
-    ctx.ellipse(600, 160, 50, 25, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(600, 160, 10, 0, Math.PI * 2);
+    ctx.arc(600, 160, 30, 0, Math.PI * 2);
     ctx.fillStyle = '#c0392b';
     ctx.fill();
+    ctx.fillStyle = '#f5f0e8';
+    ctx.font = 'bold 36px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('S', 600, 162);
 
     // "DEPTH" text
     ctx.fillStyle = '#c0392b';
@@ -150,13 +150,9 @@ export function ShareCard({ show, depth, messageCount, onClose }: ShareCardProps
             >
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192,57,43,0.04)_0%,transparent_60%)] pointer-events-none" />
               
-              {/* Eye */}
-              <div className="w-16 h-8 mx-auto mb-6 relative z-10" aria-hidden="true">
-                <svg viewBox="0 0 80 40" fill="none" className="w-full h-full">
-                  <path d="M4 20 C20 4 60 4 76 20 C60 36 20 36 4 20 Z" stroke="#c0392b" strokeWidth="1.5" fill="none" opacity="0.6"/>
-                  <circle cx="40" cy="20" r="8" stroke="#c0392b" strokeWidth="1.5" fill="none" opacity="0.8"/>
-                  <circle cx="40" cy="20" r="3" fill="#c0392b" opacity="0.9"/>
-                </svg>
+              {/* S monogram logo */}
+              <div className="w-12 h-12 mx-auto mb-6 relative z-10 rounded-full flex items-center justify-center bg-[#c0392b]" aria-hidden="true">
+                <span className="font-cinzel text-xl font-bold text-[#f5f0e8]">S</span>
               </div>
 
               <div className="font-cinzel text-[10px] tracking-[0.4em] text-gold/60 uppercase mb-3 relative z-10">Depth</div>
