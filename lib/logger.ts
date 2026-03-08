@@ -32,7 +32,10 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   error: 3,
 };
 
-const MIN_LEVEL = (process.env.LOG_LEVEL as LogLevel) || (process.env.NODE_ENV === 'production' ? 'info' : 'debug');
+const envLogLevel = process.env.LOG_LEVEL as string | undefined;
+const MIN_LEVEL: LogLevel = (envLogLevel && envLogLevel in LOG_LEVELS)
+  ? envLogLevel as LogLevel
+  : (process.env.NODE_ENV === 'production' ? 'info' : 'debug');
 
 function shouldLog(level: LogLevel): boolean {
   return LOG_LEVELS[level] >= LOG_LEVELS[MIN_LEVEL];

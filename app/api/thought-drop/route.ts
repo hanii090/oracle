@@ -163,7 +163,7 @@ export async function GET(req: Request) {
     const { userId } = authResult;
 
     const url = new URL(req.url);
-    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '20') || 20, 100);
     const clientId = url.searchParams.get('clientId');
 
     if (!isAdminConfigured()) {

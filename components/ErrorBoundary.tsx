@@ -1,6 +1,6 @@
 'use client';
 
-import { Component, type ReactNode, type ErrorInfo } from 'react';
+import { Component, Fragment, type ReactNode, type ErrorInfo } from 'react';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -10,21 +10,26 @@ interface ErrorBoundaryProps {
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
+  recoveryKey: number;
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, recoveryKey: 0 };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error('ErrorBoundary caught:', error, errorInfo);
   }
+
+  handleReset = () => {
+    this.setState(prev => ({ hasError: false, error: null, recoveryKey: prev.recoveryKey + 1 }));
+  };
 
   render() {
     if (this.state.hasError) {
@@ -46,7 +51,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             Sorca encountered an unexpected disturbance. Please refresh the page.
           </p>
           <button
-            onClick={() => this.setState({ hasError: false, error: null })}
+            onClick={this.handleReset}
             className="px-8 py-3 border border-gold/30 text-gold font-cinzel text-sm tracking-[0.2em] uppercase hover:border-gold hover:bg-gold/10 transition-all duration-300 rounded-lg"
           >
             Try Again
@@ -55,6 +60,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       );
     }
 
-    return this.props.children;
+    return <Fragment key={this.state.recoveryKey}>{this.props.children}</Fragment>;
   }
 }

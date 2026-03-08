@@ -236,7 +236,7 @@ export async function GET(req: Request) {
     const noteId = url.searchParams.get('noteId');
     const patientId = url.searchParams.get('patientId');
     const episodeId = url.searchParams.get('episodeId');
-    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '20') || 20, 100);
 
     if (!isAdminConfigured()) {
       return NextResponse.json({ notes: [] });
@@ -277,13 +277,19 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: 'No consent for this patient' }, { status: 403 });
       }
 
-      query = db.collection('sessionNotes')
-        .where('therapistId', '==', therapistId)
-        .where('patientId', '==', patientId)
-        .orderBy('createdAt', 'desc');
-    }
-
-    if (episodeId) {
+      if (episodeId) {
+        query = db.collection('sessionNotes')
+          .where('therapistId', '==', therapistId)
+          .where('patientId', '==', patientId)
+          .where('episodeId', '==', episodeId)
+          .orderBy('createdAt', 'desc');
+      } else {
+        query = db.collection('sessionNotes')
+          .where('therapistId', '==', therapistId)
+          .where('patientId', '==', patientId)
+          .orderBy('createdAt', 'desc');
+      }
+    } else if (episodeId) {
       query = db.collection('sessionNotes')
         .where('therapistId', '==', therapistId)
         .where('episodeId', '==', episodeId)

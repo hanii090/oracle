@@ -121,9 +121,10 @@ export async function POST(req: Request) {
       alertTypes = [...new Set(alertsSnapshot.docs.map(doc => doc.data().type))];
     }
 
-    // Get recent session count
-    const sessionsSnapshot = await db.collection('sessions')
-      .where('userId', '==', clientId)
+    // Get recent session count (sessions are stored as a subcollection under users)
+    const sessionsSnapshot = await db.collection('users')
+      .doc(clientId)
+      .collection('sessions')
       .where('createdAt', '>=', oneWeekAgo)
       .get();
     const sessionCount = sessionsSnapshot.size;

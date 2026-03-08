@@ -81,6 +81,8 @@ export function GDPRDashboard({ onClose }: GDPRDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'consents' | 'audit' | 'export' | 'delete'>('consents');
 
+  const [togglingConsent, setTogglingConsent] = useState(false);
+
   // Export state
   const [exporting, setExporting] = useState(false);
   const [exportData, setExportData] = useState<string | null>(null);
@@ -118,10 +120,11 @@ export function GDPRDashboard({ onClose }: GDPRDashboardProps) {
   }, [loadData]);
 
   const handleToggleConsent = async (consentType: keyof ConsentState) => {
-    if (consentType === 'cookies') return; // Essential, cannot disable
+    if (consentType === 'cookies' || togglingConsent) return;
     const newValue = !consents[consentType];
 
     setConsents(prev => ({ ...prev, [consentType]: newValue }));
+    setTogglingConsent(true);
 
     try {
       const token = await getIdToken();
@@ -141,13 +144,13 @@ export function GDPRDashboard({ onClose }: GDPRDashboardProps) {
       if (res.ok) {
         const data = await res.json();
         setConsents(data.consents);
-        await loadData();
       } else {
-        // Revert on failure
         setConsents(prev => ({ ...prev, [consentType]: !newValue }));
       }
     } catch {
       setConsents(prev => ({ ...prev, [consentType]: !newValue }));
+    } finally {
+      setTogglingConsent(false);
     }
   };
 
@@ -298,10 +301,10 @@ export function GDPRDashboard({ onClose }: GDPRDashboardProps) {
                 </div>
                 <button
                   onClick={() => handleToggleConsent(key as keyof ConsentState)}
-                  disabled={desc.essential}
+                  disabled={desc.essential || togglingConsent}
                   className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
                     consents[key as keyof ConsentState] ? 'bg-teal' : 'bg-border'
-                  } ${desc.essential ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                  } ${desc.essential || togglingConsent ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
                     className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all duration-200 ${

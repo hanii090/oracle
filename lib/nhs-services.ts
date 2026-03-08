@@ -188,7 +188,7 @@ export const NHS_SERVICES: NHSService[] = [
     name: 'Steps to Wellbeing (Dorset)',
     icbArea: 'Dorset ICB',
     region: 'South West',
-    phone: '01onal 304 950',
+    phone: '0800 484 0500',
     website: 'https://www.steps2wellbeing.co.uk',
     selfReferralUrl: 'https://www.steps2wellbeing.co.uk/self-referral',
     postcodeAreas: ['BH', 'DT', 'SP'],
@@ -283,7 +283,7 @@ export const NHS_SERVICES: NHSService[] = [
     name: 'Lancashire Talking Therapies',
     icbArea: 'Lancashire and South Cumbria ICB',
     region: 'North West',
-    phone: '01onal 954 000',
+    phone: '01772 695 300',
     website: 'https://www.lscft.nhs.uk/talking-therapies',
     selfReferralUrl: 'https://www.lscft.nhs.uk/talking-therapies/self-referral',
     postcodeAreas: ['BB', 'FY', 'LA', 'PR'],
@@ -365,7 +365,7 @@ export const NHS_SERVICES: NHSService[] = [
     name: 'Therapy For You (Essex)',
     icbArea: 'Mid and South Essex ICB',
     region: 'East of England',
-    phone: '01onal 987 7000',
+    phone: '01268 739 128',
     website: 'https://www.therapyforyou.co.uk',
     selfReferralUrl: 'https://www.therapyforyou.co.uk/self-referral',
     postcodeAreas: ['SS', 'CM', 'CO', 'RM'],
@@ -455,8 +455,9 @@ export function searchServicesByPostcode(postcode: string): {
   
   // Extract outward code (everything before the last 3 characters)
   // e.g., "SW1A 1AA" → "SW1A", "M1 1AA" → "M1", "LS1" → "LS1"
+  const isFullPostcode = clean.length >= 5;
   let outwardCode: string;
-  if (clean.length >= 5) {
+  if (isFullPostcode) {
     outwardCode = clean.slice(0, -3);
   } else {
     // Partial postcode — use as-is
@@ -473,10 +474,20 @@ export function searchServicesByPostcode(postcode: string): {
       continue;
     }
 
-    // Check if any postcode area prefix matches
+    // Check if any postcode area matches
     const matches = service.postcodeAreas.some(area => {
       const normArea = area.toUpperCase();
-      return outwardCode.startsWith(normArea) || normArea.startsWith(outwardCode);
+      const isAreaPrefix = /^[A-Z]+$/.test(normArea);
+
+      if (isAreaPrefix) {
+        // Area-level prefix (e.g., "B", "M", "CT") — match any outward code starting with it
+        return outwardCode.startsWith(normArea);
+      }
+      // Full outward code (e.g., "N1", "NW7", "SE15") — require exact match
+      if (outwardCode === normArea) return true;
+      // For partial input only, allow broader matching (e.g., input "N" matches area "N1")
+      if (!isFullPostcode && normArea.startsWith(outwardCode)) return true;
+      return false;
     });
 
     if (matches) {

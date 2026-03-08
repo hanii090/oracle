@@ -131,6 +131,10 @@ export async function POST(req: Request) {
       const docRef = snap.docs[0].ref;
       const data = snap.docs[0].data();
 
+      if (data.creatorId !== userId && data.partnerId !== userId) {
+        return NextResponse.json({ error: 'You are not a participant in this session' }, { status: 403 });
+      }
+
       const isCreator = data.creatorId === userId;
       const field = isCreator ? 'creatorAnswers' : 'partnerAnswers';
 

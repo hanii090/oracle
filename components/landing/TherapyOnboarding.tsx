@@ -28,15 +28,15 @@ export function TherapyOnboarding({ onComplete, onSkip }: TherapyOnboardingProps
   const [sessionTime, setSessionTime] = useState<string>('');
   const [therapistName, setTherapistName] = useState<string>('');
 
-  const handleComplete = async () => {
-    if (inTherapy === null) return;
+  const handleComplete = async (inTherapyOverride?: boolean) => {
+    const isInTherapy = inTherapyOverride ?? inTherapy;
+    if (isInTherapy === null) return;
 
-    // Calculate next session date based on day and time
     let nextSessionDate: string | null = null;
-    if (inTherapy && sessionDay) {
+    if (isInTherapy && sessionDay) {
       const today = new Date();
       const dayIndex = DAYS_OF_WEEK.findIndex(d => d.value === sessionDay);
-      const todayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1; // Adjust for Monday start
+      const todayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1;
       
       let daysUntilSession = dayIndex - todayIndex;
       if (daysUntilSession <= 0) daysUntilSession += 7;
@@ -53,10 +53,10 @@ export function TherapyOnboarding({ onComplete, onSkip }: TherapyOnboardingProps
     }
 
     await completeTherapyOnboarding({
-      inTherapy,
-      sessionDay: inTherapy ? sessionDay : null,
-      sessionTime: inTherapy ? sessionTime : null,
-      therapistName: inTherapy ? therapistName : null,
+      inTherapy: isInTherapy,
+      sessionDay: isInTherapy ? sessionDay : null,
+      sessionTime: isInTherapy ? sessionTime : null,
+      therapistName: isInTherapy ? therapistName : null,
       nextSessionDate,
     });
     
@@ -139,7 +139,7 @@ export function TherapyOnboarding({ onComplete, onSkip }: TherapyOnboardingProps
                 </button>
 
                 <button
-                  onClick={() => { setInTherapy(false); handleComplete(); }}
+                  onClick={() => { setInTherapy(false); handleComplete(false); }}
                   className="w-full py-4 px-6 border border-border rounded-lg text-left hover:bg-raised hover:border-gold/30 transition-all group"
                 >
                   <div className="font-cinzel text-sm text-text-main group-hover:text-gold transition-colors">
@@ -227,7 +227,7 @@ export function TherapyOnboarding({ onComplete, onSkip }: TherapyOnboardingProps
                   Back
                 </button>
                 <button
-                  onClick={handleComplete}
+                  onClick={() => handleComplete()}
                   disabled={!sessionDay}
                   className="flex-1 py-3 bg-gold/10 border border-gold text-gold font-cinzel text-xs tracking-widest uppercase rounded-lg hover:bg-gold hover:text-void transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >

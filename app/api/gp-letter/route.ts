@@ -82,7 +82,10 @@ export async function POST(req: Request) {
     const { userId } = authResult;
 
     // Tier gating: GP letter generation is a Pro+ feature (pro, practice)
-    if (isAdminConfigured()) {
+    if (!isAdminConfigured()) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
+    }
+    {
       const db = getAdminFirestore();
       const userDoc = await db.doc(`users/${userId}`).get();
       const tier = userDoc.exists ? userDoc.data()?.tier || 'free' : 'free';

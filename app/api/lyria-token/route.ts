@@ -16,7 +16,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Lyria not configured' }, { status: 503 });
   }
 
-  // Return the key — the client will use it for the Live API session.
-  // In a more advanced setup, you'd create a short-lived ephemeral token here.
-  return NextResponse.json({ apiKey });
+  const expiresAt = Date.now() + 30 * 60 * 1000; // 30-minute client-side validity hint
+
+  return NextResponse.json(
+    { apiKey, expiresAt },
+    {
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    }
+  );
 }

@@ -100,6 +100,8 @@ export function PreSessionPrimer({ onComplete, onDismiss }: PreSessionPrimerProp
       });
     } catch (e) {
       console.error('Primer skip error:', e);
+    } finally {
+      setIsLoading(false);
     }
     setStep('complete');
     setTimeout(onComplete, 2500);

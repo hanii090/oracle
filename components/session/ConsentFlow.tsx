@@ -360,29 +360,32 @@ export function ConsentFlow({ onClose }: ConsentFlowProps) {
                     What can they see?
                   </label>
                   <div className="space-y-3">
-                    {Object.entries(PERMISSION_LABELS).map(([key, label]) => (
-                      <label
-                        key={key}
-                        className="flex items-start gap-3 bg-surface border border-border rounded-lg p-4 cursor-pointer hover:border-blue-500/30 transition-colors"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={permissions[key as keyof typeof permissions]}
-                          onChange={(e) => setPermissions(prev => ({
-                            ...prev,
-                            [key]: e.target.checked,
-                          }))}
-                          className="mt-0.5 accent-blue-500"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <label.Icon size={16} className="text-teal-400" />
-                            <span className="font-cinzel text-sm text-text-main">{label.title}</span>
+                    {Object.entries(PERMISSION_LABELS).map(([key, permLabel]) => {
+                      const PermIcon = permLabel.Icon;
+                      return (
+                        <label
+                          key={key}
+                          className="flex items-start gap-3 bg-surface border border-border rounded-lg p-4 cursor-pointer hover:border-blue-500/30 transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={permissions[key as keyof typeof permissions]}
+                            onChange={(e) => setPermissions(prev => ({
+                              ...prev,
+                              [key]: e.target.checked,
+                            }))}
+                            className="mt-0.5 accent-blue-500"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <PermIcon size={16} className="text-teal-400" />
+                              <span className="font-cinzel text-sm text-text-main">{permLabel.title}</span>
+                            </div>
+                            <p className="text-xs text-text-muted mt-1">{permLabel.desc}</p>
                           </div>
-                          <p className="text-xs text-text-muted mt-1">{label.desc}</p>
-                        </div>
-                      </label>
-                    ))}
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
 

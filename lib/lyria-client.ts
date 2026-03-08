@@ -126,6 +126,7 @@ export class LyriaFoleyEngine {
       });
 
       this.session = await sessionPromise;
+      this.reconnectAttempts = 0;
     } catch (e) {
       console.error("Lyria connection failed", e);
     }
@@ -218,8 +219,14 @@ export class LyriaFoleyEngine {
     this.isPlaying = false;
     this.isCapturingBreakthrough = false;
     if (this.session) {
+      try {
+        this.session.close?.();
+      } catch {
+        // Ignore errors during cleanup
+      }
       this.session = null;
     }
     this.audioCtx?.close();
+    this.audioCtx = null;
   }
 }
