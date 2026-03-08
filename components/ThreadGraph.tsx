@@ -33,7 +33,9 @@ export function ThreadGraph({ onNodeClick }: ThreadGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const onNodeClickRef = useRef(onNodeClick);
-  onNodeClickRef.current = onNodeClick;
+  useEffect(() => {
+    onNodeClickRef.current = onNodeClick;
+  }, [onNodeClick]);
   const [data, setData] = useState<ThreadGraphData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -191,7 +193,7 @@ export function ThreadGraph({ onNodeClick }: ThreadGraphProps) {
     return () => {
       simulation.stop();
     };
-  }, [data, onNodeClick]);
+  }, [data]);
 
   if (loading) {
     return (

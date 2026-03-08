@@ -35,10 +35,11 @@ export default function AvoidedQuestionNotification({
 
   useEffect(() => {
     if (reminder) {
-      // Small delay so it doesn't pop in immediately
       const timer = setTimeout(() => setVisible(true), 2000);
       return () => clearTimeout(timer);
     }
+    const resetTimer = setTimeout(() => setVisible(false), 0);
+    return () => clearTimeout(resetTimer);
   }, [reminder]);
 
   const handleExplore = useCallback(() => {

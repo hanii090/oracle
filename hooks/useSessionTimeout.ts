@@ -18,7 +18,10 @@ export function useSessionTimeout() {
   const warningRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showWarning, setShowWarning] = useState(false);
   const showWarningRef = useRef(showWarning);
-  showWarningRef.current = showWarning;
+
+  useEffect(() => {
+    showWarningRef.current = showWarning;
+  }, [showWarning]);
 
   const clearTimers = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
