@@ -84,7 +84,7 @@ export const metadata: Metadata = {
     url: "/",
     images: [
       {
-        url: "/hero-image.png",
+        url: "/hero-image.png?v=2",
         width: 1200,
         height: 630,
         alt: "SORCA — The AI That Only Asks Questions",
@@ -97,7 +97,7 @@ export const metadata: Metadata = {
     description:
       "A Socratic AI for therapists, coaches, and anyone brave enough to face themselves. No answers — only the questions you've been avoiding.",
     creator: "@saboracle",
-    images: ["/hero-image.png"],
+    images: ["/hero-image.png?v=2"],
   },
   robots: {
     index: true,

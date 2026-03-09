@@ -6,11 +6,34 @@ import { z } from 'zod';
 import { sanitizeMessage } from '@/lib/safety';
 import { PSYCHOEDUCATION_CONTENT, GROUNDING_EXERCISES } from '@/lib/psychoeducation-content';
 
-const moodCheckInSchema = z.object({
-  score: z.number().min(1).max(10),
-  notes: z.string().max(500).optional(),
-  activities: z.array(z.string()).optional(),
-});
+// Accept both shapes:
+// MoodCheckIn component sends: { score, notes?, activities? }
+// DailyCheckin component sends: { type?, mood, note?, activities? }
+const moodCheckInSchema = z.union([
+  z.object({
+    score: z.number().min(1).max(10),
+    notes: z.string().max(500).optional(),
+    activities: z.array(z.string()).optional(),
+  }),
+  z.object({
+    type: z.string().optional(),
+    mood: z.number().min(1).max(10),
+    note: z.string().max(500).optional(),
+    activities: z.array(z.string()).optional(),
+  }),
+]);
+
+/** Normalise either shape → { score, notes?, activities? } */
+function normaliseMoodData(data: z.infer<typeof moodCheckInSchema>) {
+  if ('mood' in data) {
+    return {
+      score: data.mood,
+      notes: data.note,
+      activities: data.activities,
+    };
+  }
+  return { score: data.score, notes: data.notes, activities: data.activities };
+}
 
 export interface MoodCheckIn {
   id: string;
@@ -40,7 +63,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { score, notes, activities } = parsed.data;
+    const { score, notes, activities } = normaliseMoodData(parsed.data);
 
     if (!isAdminConfigured()) {
       // Graceful fallback — return mock success so the UI doesn't break

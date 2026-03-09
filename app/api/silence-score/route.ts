@@ -6,7 +6,7 @@ import { getAdminFirestore } from '@/lib/firebase-admin';
 import { z } from 'zod';
 
 const silenceSchema = z.object({
-  sessionId: z.string().min(1),
+  sessionId: z.string().min(1).optional(),
   totalSpeechMs: z.number().min(0),
   totalSilenceMs: z.number().min(0),
   pauses: z.array(z.object({
@@ -14,6 +14,8 @@ const silenceSchema = z.object({
     durationMs: z.number().min(0),
     afterQuestion: z.string().optional(),
   })).optional(),
+  messageCount: z.number().optional(),
+  depth: z.number().optional(),
 });
 
 /**
@@ -39,7 +41,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const { sessionId, totalSpeechMs, totalSilenceMs, pauses } = parsed.data;
+    const { totalSpeechMs, totalSilenceMs, pauses } = parsed.data;
+    const sessionId = parsed.data.sessionId || crypto.randomUUID();
 
     const totalMs = totalSpeechMs + totalSilenceMs;
     const silenceRatio = totalMs > 0 ? totalSilenceMs / totalMs : 0;

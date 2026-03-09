@@ -1,6 +1,20 @@
 {
   "indexes": [
     {
+      "collectionGroup": "voiceSessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "endedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "patternAlerts",
       "queryScope": "COLLECTION",
       "fields": [

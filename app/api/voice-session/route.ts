@@ -133,23 +133,56 @@ export async function GET(req: Request) {
     const offsetParam = parseInt(url.searchParams.get('offset') || '0');
 
     const db = getAdminFirestore();
-    const snapshot = await db.collection('voiceSessions')
-      .where('userId', '==', userId)
-      .orderBy('endedAt', 'desc')
-      .limit(limitParam)
-      .offset(offsetParam)
-      .get();
 
-    const sessions = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      // Don't send full transcripts in list view
-      transcript: doc.data().transcript?.map((t: any) => ({
-        role: t.role,
-        content: t.content.slice(0, 150) + (t.content.length > 150 ? '...' : ''),
-        timestamp: t.timestamp,
-      })),
-    }));
+    // Query voice sessions — the compound query (userId + orderBy endedAt)
+    // requires a Firestore composite index. If it doesn't exist yet, fall
+    // back to a simpler query so the UI still works while the index builds.
+    let sessions: Record<string, unknown>[] = [];
+    let total = 0;
+
+    try {
+      const snapshot = await db.collection('voiceSessions')
+        .where('userId', '==', userId)
+        .orderBy('endedAt', 'desc')
+        .limit(limitParam)
+        .offset(offsetParam)
+        .get();
+
+      sessions = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        // Don't send full transcripts in list view
+        transcript: doc.data().transcript?.map((t: any) => ({
+          role: t.role,
+          content: t.content.slice(0, 150) + (t.content.length > 150 ? '...' : ''),
+          timestamp: t.timestamp,
+        })),
+      }));
+      total = snapshot.size;
+    } catch (queryErr: unknown) {
+      // Missing composite index — fall back to unordered query
+      log.warn('voiceSessions query failed (likely missing index), falling back', {}, queryErr);
+      try {
+        const fallback = await db.collection('voiceSessions')
+          .where('userId', '==', userId)
+          .limit(limitParam)
+          .get();
+
+        sessions = fallback.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          transcript: doc.data().transcript?.map((t: any) => ({
+            role: t.role,
+            content: t.content.slice(0, 150) + (t.content.length > 150 ? '...' : ''),
+            timestamp: t.timestamp,
+          })),
+        }));
+        total = fallback.size;
+      } catch {
+        // Even the fallback failed — return empty
+        log.error('voiceSessions fallback query also failed', {});
+      }
+    }
 
     // Get monthly usage
     const now = new Date();
@@ -160,7 +193,7 @@ export async function GET(req: Request) {
     return NextResponse.json({
       sessions,
       usage,
-      total: snapshot.size,
+      total,
     });
 
   } catch (err: unknown) {
