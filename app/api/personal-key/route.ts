@@ -23,7 +23,7 @@ const MUSICAL_KEYS = [
   { key: 'F#', emotion: 'yearning', color: '#c42847' },
   { key: 'G', emotion: 'simplicity', color: '#d4a017' },
   { key: 'Ab', emotion: 'mystery', color: '#4a3f6b' },
-  { key: 'A', emotion: 'warmth', color: '#c0392b' },
+  { key: 'A', emotion: 'warmth', color: '#0f766e' },
   { key: 'Bb', emotion: 'contemplation', color: '#7a7060' },
   { key: 'B', emotion: 'unresolved', color: '#3d3830' },
 ];

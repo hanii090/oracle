@@ -96,7 +96,7 @@ function findConnections(sessions: SessionSummary[], themes: Map<string, string[
 // Color based on session depth
 function depthColor(depth: number): string {
   if (depth >= 10) return '#8b1a2f'; // crimson
-  if (depth >= 7) return '#c0392b'; // accent red
+  if (depth >= 7) return '#0f766e'; // teal
   if (depth >= 5) return '#e74c3c'; // warm red
   if (depth >= 3) return '#b8860b'; // editorial gold
   return '#2a6b6b'; // teal
@@ -439,7 +439,7 @@ export function EvolutionMap({ sessions, onViewSession, beliefs }: EvolutionMapP
                   <span className="font-courier text-[8px] text-text-muted">5-6</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#c0392b' }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#0f766e' }} />
                   <span className="font-courier text-[8px] text-text-muted">7-9</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -460,7 +460,7 @@ export function EvolutionMap({ sessions, onViewSession, beliefs }: EvolutionMapP
                     const statusColors: Record<string, string> = {
                       active: '#2a6b6b',
                       evolved: '#b8860b',
-                      deepened: '#c0392b',
+                      deepened: '#0f766e',
                       contradicted: '#e74c3c',
                       abandoned: '#7a7060',
                     };

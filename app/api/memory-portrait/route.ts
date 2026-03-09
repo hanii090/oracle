@@ -105,7 +105,7 @@ export async function POST(req: Request) {
       legacyWish: '',
       keyQuotes: [] as string[],
       toThoseLeft: '',
-      palette: ['#0e0c09', '#c0392b', '#f5f0e8'],
+      palette: ['#0e0c09', '#0f766e', '#f5f0e8'],
       visualPrompt: '',
     };
 

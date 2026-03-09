@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       config: { responseMimeType: 'application/json' },
     });
 
-    let portraitData = { prompt: '', colors: ['#0e0c09', '#c0392b', '#f5f0e8'], title: 'Untitled Session' };
+    let portraitData = { prompt: '', colors: ['#0e0c09', '#0f766e', '#f5f0e8'], title: 'Untitled Session' };
     try {
       portraitData = JSON.parse(descResult.text || '{}');
     } catch {

@@ -99,7 +99,7 @@ export function ThreadGraph({ onNodeClick }: ThreadGraphProps) {
     // Color scale based on node type
     const colorScale = (type: string) => {
       switch (type) {
-        case 'question': return '#c0392b'; // gold/crimson
+        case 'question': return '#0f766e'; // teal
         case 'answer': return '#5dade2'; // blue
         case 'theme': return '#27ae60'; // green
         default: return '#7f8c8d';
@@ -242,7 +242,7 @@ export function ThreadGraph({ onNodeClick }: ThreadGraphProps) {
       {/* Legend */}
       <div className="absolute top-3 left-3 bg-void/80 backdrop-blur-sm rounded px-3 py-2 text-[9px] space-y-1">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-[#c0392b]" />
+          <div className="w-3 h-3 rounded-full bg-[#0f766e]" />
           <span className="text-text-muted">Questions</span>
         </div>
         <div className="flex items-center gap-2">

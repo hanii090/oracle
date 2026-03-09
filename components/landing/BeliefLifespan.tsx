@@ -21,7 +21,7 @@ interface BeliefEntry {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  identity: '#c0392b',
+  identity: '#0f766e',
   world: '#5b4a8a',
   relationship: '#2a6b6b',
   capability: '#b8860b',
