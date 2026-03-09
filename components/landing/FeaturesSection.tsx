@@ -22,17 +22,17 @@ const FEATURES = [
   },
   { 
     Icon: MusicIcon, 
-    title: 'Lyria Foley Engine', 
-    desc: 'Real-time ambient audio generation powered by Gemini. The music swells, shifts, and reacts to the emotional subtext of your confessions.',
-    emotional: 'Your emotions, scored',
+    title: 'Ambient Sound Therapy', 
+    desc: 'Real-time ambient audio that adapts to your emotional state. Calming soundscapes powered by AI that help you relax, focus, and process difficult feelings during sessions.',
+    emotional: 'Therapeutic soundscapes',
     color: 'crimson-bright',
     isNew: false,
   },
   { 
     Icon: VisionIcon, 
-    title: 'Visual Breakthroughs', 
-    desc: 'When you reach a psychological breakthrough, the engine generates a massive, abstract visual metaphor of your realization in real-time.',
-    emotional: 'See your truth',
+    title: 'Guided Visualisation', 
+    desc: 'When you reach a meaningful insight, the engine creates a visual metaphor of your realisation — helping you anchor breakthroughs and revisit them later.',
+    emotional: 'Anchor your insights',
     color: 'violet-bright',
     isNew: false,
   },
@@ -46,17 +46,17 @@ const FEATURES = [
   },
   { 
     Icon: BoltIcon, 
-    title: 'The Confrontation', 
-    desc: "Sorca occasionally surfaces a direct contradiction from your own past — a belief you held that collides with something you believe now.",
-    emotional: 'Face your contradictions',
+    title: 'Thought Challenges', 
+    desc: "Sorca surfaces patterns from your past sessions — beliefs that have shifted, contradictions you haven't noticed. Gentle prompts that help you see your own growth.",
+    emotional: 'Recognise your patterns',
     color: 'text-mid',
     isNew: false,
   },
   { 
     Icon: NightIcon, 
-    title: 'Night Sorca', 
-    desc: 'A stripped-back, 3am-safe mode. Dark UI, no navigation, just a single question glowing on screen. Auto-activates between midnight and 5am.',
-    emotional: 'For sleepless souls',
+    title: 'Night Mode', 
+    desc: 'A stripped-back, 3am-safe mode. Dark UI, no distractions, just a calm presence when sleep won\'t come. Auto-activates between midnight and 5am with grounding exercises.',
+    emotional: 'Support when you need it most',
     color: 'gold',
     isNew: false,
   },
@@ -117,7 +117,7 @@ export function FeaturesSection() {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="list" aria-label="Sorca features">
         {FEATURES.map((feature, i) => (
-          <div key={i} role="listitem" className="bg-surface p-10 relative overflow-hidden group hover:bg-raised hover:-translate-y-1 transition-all duration-300 border border-border hover:border-gold/30 rounded-lg hover:shadow-[0_8px_30px_rgba(192,57,43,0.05)]">
+          <div key={i} role="listitem" className="bg-surface p-10 relative overflow-hidden group hover:bg-raised hover:-translate-y-1 transition-all duration-300 border border-border hover:border-gold/30 rounded-lg hover:shadow-[0_8px_30px_rgba(15,118,110,0.05)]">
             <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: `var(--color-${feature.color})` }} aria-hidden="true" />
             {feature.isNew && (
               <div className="absolute top-4 right-4 bg-gold/15 text-gold text-[9px] font-cinzel tracking-widest px-2 py-0.5 rounded">

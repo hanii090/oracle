@@ -52,7 +52,7 @@ export function ComingSoonSection() {
         Coming <em className="font-cormorant italic font-light text-gold">Soon</em>
       </h2>
       <p className="font-cormorant text-lg text-text-muted mb-16 max-w-2xl">
-        Features in development that will deepen what Sorca can do. Some are months away. Some are years. All are inevitable.
+        Features in development that will deepen Sorca&apos;s clinical capabilities. Designed for NHS integration and evidence-based care.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

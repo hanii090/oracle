@@ -88,7 +88,7 @@ export function voiceAllowanceLabel(tier: Tier): string {
 
 // ── Trial configuration ────────────────────────────────────────────
 
-export const TRIAL_DAYS = 7;
+export const TRIAL_DAYS = 14;
 
 // ── Patient plans ──────────────────────────────────────────────────
 

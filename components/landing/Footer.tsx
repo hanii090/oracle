@@ -13,7 +13,7 @@ export function Footer() {
       className="w-full py-20 text-center relative max-w-6xl mx-auto border-t border-border"
       role="contentinfo"
     >
-      <div className="font-cinzel text-4xl font-black tracking-[0.3em] text-transparent mb-6" style={{ WebkitTextStroke: '1px rgba(192,57,43,0.3)' }} aria-hidden="true">
+      <div className="font-cinzel text-4xl font-black tracking-[0.3em] text-transparent mb-6" style={{ WebkitTextStroke: '1px rgba(15,118,110,0.3)' }} aria-hidden="true">
         SORCA
       </div>
       <p className="font-cormorant italic text-sm text-text-muted mb-6 max-w-md mx-auto">

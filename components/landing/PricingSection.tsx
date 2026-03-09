@@ -28,8 +28,8 @@ function PatientPlanCard({
     <div
       className={`p-6 sm:p-12 border relative rounded-lg transition-all duration-300 flex flex-col ${
         isPopular
-          ? 'bg-raised border-gold/30 hover:border-gold hover:shadow-[0_8px_30px_rgba(192,57,43,0.12)] transform hover:-translate-y-1'
-          : 'bg-surface border-border hover:border-gold/30 hover:shadow-[0_8px_30px_rgba(192,57,43,0.05)]'
+          ? 'bg-raised border-gold/30 hover:border-gold hover:shadow-[0_8px_30px_rgba(15,118,110,0.12)] transform hover:-translate-y-1'
+          : 'bg-surface border-border hover:border-gold/30 hover:shadow-[0_8px_30px_rgba(15,118,110,0.05)]'
       }`}
       role="article"
       aria-label={`${plan.label} plan${isPopular ? ' - most popular' : ''}`}

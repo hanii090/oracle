@@ -10,11 +10,11 @@
   --color-border: #c5bba8;
   --color-border-bright: #8a7f6e;
 
-  /* Primary accent — editorial red */
-  --color-gold: #c0392b;
-  --color-gold-dim: rgba(192, 57, 43, 0.06);
-  --color-gold-glow: rgba(192, 57, 43, 0.12);
-  --color-gold-bright: #e74c3c;
+  /* Primary accent — calming teal (high contrast on light backgrounds) */
+  --color-gold: #0f766e;
+  --color-gold-dim: rgba(15, 118, 110, 0.06);
+  --color-gold-glow: rgba(15, 118, 110, 0.12);
+  --color-gold-bright: #0d9488;
 
   /* Text — ink palette */
   --color-text-main: #0e0c09;
@@ -34,8 +34,8 @@
   --color-ink-light: #1a1810;
   --color-paper-dark: #d9d1c0;
   --color-ink-faint: #b5aa98;
-  --color-editorial-gold: #b8860b;
-  --color-editorial-gold-light: #d4a017;
+  --color-editorial-gold: #115e59;
+  --color-editorial-gold-light: #0f766e;
 
   /* Fonts — editorial typefaces (mapped to existing class names) */
   --font-cinzel: var(--font-cinzel);

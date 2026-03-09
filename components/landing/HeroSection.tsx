@@ -52,7 +52,7 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
 
       {/* HERO */}
       <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 sm:px-6 max-w-4xl mx-auto py-16 sm:py-20 relative" aria-labelledby="hero-title">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192,57,43,0.04)_0%,transparent_60%)] pointer-events-none" aria-hidden="true" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(15,118,110,0.04)_0%,transparent_60%)] pointer-events-none" aria-hidden="true" />
         
         <div className="font-cinzel text-[11px] tracking-[0.4em] uppercase text-gold mb-6 relative z-10">
           Voice-First AI Therapy Support · UK Based
@@ -63,11 +63,11 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
         </h1>
 
         <p className="font-cormorant text-lg md:text-xl text-gold/80 mb-8 relative z-10">
-          &ldquo;Between sessions, I talk to Sorca. Voice sessions at 2am saved me more than worksheets ever could.&rdquo;
+          &ldquo;Between sessions, I talk to Sorca. Voice sessions at 2am helped me process more than worksheets ever could.&rdquo;
         </p>
         
         <p className="font-cormorant italic text-xl md:text-2xl text-text-mid max-w-2xl mb-6 leading-relaxed">
-          The voice-first AI companion for people in therapy. Talk to Sorca like a warm, present listener — complete homework through conversation, track your mood, and arrive at your next appointment ready to go deeper.
+          The voice-first AI therapy companion for between-session support. Talk to Sorca like a warm, present listener — complete CBT homework through conversation, track your mood, and arrive at your next appointment ready to go deeper.
         </p>
 
         <p className="font-courier text-[10px] tracking-[0.2em] uppercase text-text-muted mb-8 max-w-lg">
@@ -84,7 +84,7 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
                 alt=""
                 width={40}
                 height={40}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gold/30 object-cover shadow-[0_0_15px_rgba(192,57,43,0.15)] hover:shadow-[0_0_20px_rgba(192,57,43,0.3)] transition-shadow"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gold/30 object-cover shadow-[0_0_15px_rgba(15,118,110,0.15)] hover:shadow-[0_0_20px_rgba(15,118,110,0.3)] transition-shadow"
                 style={{ animationDelay: `${i * 0.1}s` }}
               />
             ))}
@@ -97,7 +97,7 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
 
         <button
           onClick={!user ? onSignIn : onStart}
-          className="group relative px-8 py-4 font-cinzel text-sm tracking-[0.2em] text-gold uppercase overflow-hidden border border-gold/30 hover:border-gold transition-all duration-500 rounded-lg hover:shadow-[0_0_30px_rgba(192,57,43,0.2)] z-10"
+          className="group relative px-8 py-4 font-cinzel text-sm tracking-[0.2em] text-gold uppercase overflow-hidden border border-gold/30 hover:border-gold transition-all duration-500 rounded-lg hover:shadow-[0_0_30px_rgba(15,118,110,0.2)] z-10"
           aria-label={!user ? 'Begin free - sign in to start' : hasKey === false ? 'Connect API key' : 'Begin Sorca session'}
         >
           <div className="absolute inset-0 bg-gold/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" aria-hidden="true" />
@@ -127,7 +127,7 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
             NHS-Aligned Measures
           </span>
           <span className="text-[10px] font-courier text-text-muted tracking-wider uppercase border border-border px-3 py-1.5 rounded">
-            7-Day Free Trial
+            14-Day Free Trial
           </span>
         </div>
 

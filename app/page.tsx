@@ -282,7 +282,7 @@ function HomeContent() {
         ) : (
           <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center" role="status">
-              <div className="font-cinzel text-gold tracking-widest animate-pulse">Entering the void...</div>
+              <div className="font-cinzel text-gold tracking-widest animate-pulse">Preparing your session...</div>
             </div>
           }>
             <SorcaSession
@@ -344,7 +344,7 @@ function HomeContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-void flex items-center justify-center text-gold font-cinzel tracking-widest">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-void flex items-center justify-center text-gold font-cinzel tracking-widest">Loading Sorca...</div>}>
       <HomeContent />
     </Suspense>
   );

@@ -1,20 +1,110 @@
 /**
  * Sorca Service Worker
- * Handles push notifications for homework reminders, session prompts, etc.
+ * Handles push notifications, offline caching, and PWA support.
  */
 
-const CACHE_NAME = 'sorca-v1';
+const CACHE_NAME = 'sorca-v2';
+const STATIC_CACHE = 'sorca-static-v2';
+const DYNAMIC_CACHE = 'sorca-dynamic-v2';
 
-// Install event
+// Static assets to precache
+const PRECACHE_URLS = [
+  '/',
+  '/manifest.json',
+  '/icon-192',
+  '/icon-512',
+];
+
+// Install event — precache static assets
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing...');
+  event.waitUntil(
+    caches.open(STATIC_CACHE).then((cache) => {
+      return cache.addAll(PRECACHE_URLS).catch((err) => {
+        console.warn('Precache failed for some resources:', err);
+      });
+    })
+  );
   self.skipWaiting();
 });
 
-// Activate event
+// Activate event — clean up old caches
 self.addEventListener('activate', (event) => {
   console.log('Service Worker activated');
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames
+          .filter((name) => name !== STATIC_CACHE && name !== DYNAMIC_CACHE && name !== CACHE_NAME)
+          .map((name) => caches.delete(name))
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+// Fetch event — network-first for pages/API, cache-first for static assets
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Skip non-GET requests and chrome-extension URLs
+  if (request.method !== 'GET' || !url.protocol.startsWith('http')) return;
+
+  // API requests — network only (don't cache API responses)
+  if (url.pathname.startsWith('/api/')) return;
+
+  // Static assets (JS, CSS, images, fonts) — cache-first
+  if (
+    url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|ico)$/) ||
+    url.pathname.startsWith('/_next/static/')
+  ) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request).then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        }).catch(() => cached);
+      })
+    );
+    return;
+  }
+
+  // HTML pages — network-first with offline fallback
+  if (request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(DYNAMIC_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request).then((cached) => {
+            return cached || caches.match('/');
+          });
+        })
+    );
+    return;
+  }
+
+  // Everything else — network-first
+  event.respondWith(
+    fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(DYNAMIC_CACHE).then((cache) => cache.put(request, clone));
+        }
+        return response;
+      })
+      .catch(() => caches.match(request))
+  );
 });
 
 // Push notification event

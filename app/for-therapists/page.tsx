@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     title: 'Sorca for Therapists — Clinical Practice Tools',
     description: 'The context you wish you had. Week summaries, homework tracking, pattern alerts — all before your client walks in.',
     url: '/for-therapists',
-    images: [{ url: '/hero-image.png', width: 1200, height: 630, alt: 'SORCA — The AI That Only Asks Questions' }],
+    images: [{ url: '/hero-image.png', width: 1200, height: 630, alt: 'SORCA — AI Therapy Companion for Clinical Practices' }],
   },
   twitter: {
     card: 'summary_large_image',

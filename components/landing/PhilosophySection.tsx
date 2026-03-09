@@ -13,30 +13,30 @@ export function PhilosophySection() {
       aria-labelledby="philosophy-heading"
     >
       <div className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-gold mb-5 flex items-center gap-4">
-        I · Philosophy
+        I · Our Approach
         <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" aria-hidden="true" />
       </div>
       <h2 id="philosophy-heading" className="font-cinzel font-semibold text-3xl md:text-5xl mb-16 text-text-main">
-        Why <em className="font-cormorant italic font-light text-gold">Questions</em> Beat Answers
+        Evidence-Based <em className="font-cormorant italic font-light text-gold">Therapy</em> Support
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start">
         <div className="space-y-6 font-cormorant text-xl text-text-mid leading-relaxed">
-          <p>Every AI product today does the same thing: <strong className="text-text-main font-semibold">it tells you what to think.</strong> It answers, explains, summarises, recommends. Faster and faster, louder and louder.</p>
-          <p>Sorca does the opposite. It believes — as Socrates did — that <strong className="text-text-main font-semibold">the truth is already inside you</strong>. It has never left. It&apos;s just buried under noise, fear, habit, and other people&apos;s opinions.</p>
-          <p>Now imagine that same precision, but <strong className="text-text-main font-semibold">spoken aloud in a warm, calm voice at 2am</strong>. Sorca&apos;s voice sessions don&apos;t type at you — they talk with you. Real-time, natural conversation. Every word transcribed and saved. A companion that listens as deeply as it questions.</p>
+          <p>Therapy works. But it&apos;s one hour per week. <strong className="text-text-main font-semibold">The other 167 hours are where the real change happens</strong> — or doesn&apos;t. Most people leave sessions with powerful insights that fade by Tuesday.</p>
+          <p>Sorca bridges that gap. Using <strong className="text-text-main font-semibold">CBT, ACT, motivational interviewing, and Socratic dialogue</strong>, it guides you through reflective conversations that deepen your therapeutic work — between appointments.</p>
+          <p>And when you need it most — <strong className="text-text-main font-semibold">at 2am, during a panic, after a hard day</strong> — Sorca is there with voice sessions that feel like talking to a warm, present listener. Every word transcribed, every insight saved for your next session.</p>
           <div className="bg-gold-dim border border-gold/15 border-l-2 border-l-gold p-6 mt-8 rounded-lg" role="blockquote">
-            <p className="italic text-base">&quot;I know that I know nothing.&quot; — The only wisdom is knowing you don&apos;t have the answer yet. Sorca helps you find it — through voice or text — without giving it to you. That distinction is everything.</p>
+            <p className="italic text-base">&quot;75% of clients using AI companions complete their therapy homework, compared to 20-30% with traditional worksheets.&quot; — Habicht et al., Journal of Medical Internet Research, 2025</p>
           </div>
         </div>
         
         <div className="flex flex-col gap-4" role="list" aria-label="Sorca's five pillars">
           {[
-            { num: 'I', title: 'Never Answer, Only Ask', desc: 'Every response is a question — not comfort, not advice, not reassurance. Just the question you\'ve been avoiding. The one that makes your chest tighten. The one that, once asked, cannot be unheard.' },
-            { num: 'II', title: 'Voice-First Presence', desc: 'Talk to Sorca like you would a warm, present listener. Voice sessions feel natural — no typing, no screens, just your voice and a companion who hears every word. Transcripts auto-saved, always private.' },
-            { num: 'III', title: 'Memory as Mirror', desc: "Sorca remembers everything you've said across all sessions — voice and text. It surfaces patterns you can't see yourself: the stories you tell, the words you repeat, the truths you circle but never land on." },
-            { num: 'IV', title: 'Progressive Depth', desc: "Questions start surface-level and spiral deeper. By question 7, you're in territory you've never examined. By question 10, you're meeting parts of yourself you forgot existed." },
-            { num: 'V', title: 'The Evolution Map', desc: 'Your thinking is tracked over time. Sorca shows you how your beliefs, fears, and values have shifted — proof that you are not stuck, that change is happening, even when it feels invisible.' }
+            { num: 'I', title: 'Between-Session Support', desc: 'Therapy is one hour a week. Sorca fills the other 167 hours with structured reflection, mood tracking, and guided exercises — keeping your therapeutic progress alive between appointments.' },
+            { num: 'II', title: 'Voice-First Therapy', desc: 'Talk to Sorca like a warm, present listener. Voice sessions feel natural — no typing, no screens, just your voice and a companion who hears every word. Available 24/7, transcripts auto-saved.' },
+            { num: 'III', title: 'Homework That Works', desc: 'Traditional worksheets have a 20-30% completion rate. Sorca turns therapy homework into daily conversational check-ins, achieving 75% completion. Your therapist sees your progress.' },
+            { num: 'IV', title: 'Clinical Outcome Tracking', desc: 'PHQ-9, GAD-7, and other validated measures track your progress over weeks and months. See real evidence that therapy is working — and share trends with your therapist.' },
+            { num: 'V', title: 'Therapist-Supervised Care', desc: 'Your therapist gets mood trends, pattern alerts, and session prep briefs. Everything consent-gated, GDPR compliant, and designed to make your therapy sessions more productive.' }
           ].map((pillar) => (
             <div key={pillar.num} role="listitem" className="bg-surface border border-border border-l-2 border-l-gold p-8 relative overflow-hidden group hover:bg-raised hover:border-gold transition-colors rounded-lg">
               <div className="absolute right-6 top-1/2 -translate-y-1/2 font-cinzel text-5xl font-black text-border group-hover:text-gold/10 transition-colors" aria-hidden="true">

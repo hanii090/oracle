@@ -110,7 +110,7 @@ export function ReviewsSection() {
         What They <em className="font-cormorant italic font-light text-gold">Discovered</em>
       </h2>
       <p className="font-cormorant text-lg text-text-muted mb-4 max-w-2xl">
-        Every person who enters Sorca leaves knowing something they didn&apos;t know they knew. These stories represent the kinds of experiences people have with Sorca.
+        Every person who enters Sorca leaves knowing something they didn&apos;t know they knew. These stories represent the kinds of breakthroughs people experience with therapy support.
       </p>
       <p className="text-[10px] text-text-muted/70 font-courier tracking-wider uppercase mb-16">
         Illustrative scenarios — names and details are fictional

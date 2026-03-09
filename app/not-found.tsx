@@ -5,9 +5,9 @@ export default function NotFound() {
     <main className="min-h-screen bg-void flex flex-col items-center justify-center text-center px-6">
       <div className="w-16 h-8 mx-auto mb-8 opacity-40">
         <svg viewBox="0 0 60 30" fill="none">
-          <path d="M3 15 C15 3 45 3 57 15 C45 27 15 27 3 15 Z" stroke="#c0392b" strokeWidth="0.8" fill="none"/>
-          <circle cx="30" cy="15" r="6" stroke="#c0392b" strokeWidth="0.8" fill="none"/>
-          <circle cx="30" cy="15" r="2.5" fill="#c0392b"/>
+          <path d="M3 15 C15 3 45 3 57 15 C45 27 15 27 3 15 Z" stroke="#0f766e" strokeWidth="0.8" fill="none"/>
+          <circle cx="30" cy="15" r="6" stroke="#0f766e" strokeWidth="0.8" fill="none"/>
+          <circle cx="30" cy="15" r="2.5" fill="#0f766e"/>
         </svg>
       </div>
 
@@ -16,11 +16,11 @@ export default function NotFound() {
       </h1>
 
       <p className="font-cormorant italic text-xl text-text-mid max-w-md mb-2">
-        The path you seek does not exist in this realm.
+        This page doesn&apos;t exist yet.
       </p>
 
       <p className="font-courier text-xs text-text-muted mb-12 tracking-widest uppercase">
-        Perhaps the question was wrong
+        Let&apos;s get you back on track
       </p>
 
       <Link

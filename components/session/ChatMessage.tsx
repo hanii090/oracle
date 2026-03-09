@@ -102,7 +102,7 @@ export function ChatMessage({ message, nightMode, isLast, index, showEmotionPuls
                 : 'bg-raised border border-border text-text-mid font-cormorant italic text-lg md:text-xl leading-relaxed rounded-tr-none'
           }
         `}
-        style={nightMode && message.role === 'assistant' ? { textShadow: '0 0 40px rgba(192,57,43,0.3), 0 0 80px rgba(192,57,43,0.1)' } : undefined}
+        style={nightMode && message.role === 'assistant' ? { textShadow: '0 0 40px rgba(15,118,110,0.3), 0 0 80px rgba(15,118,110,0.1)' } : undefined}
       >
         {message.content}
         {message.role === 'assistant' && message.modalityId && !nightMode && (
@@ -208,8 +208,8 @@ export function LoadingIndicator({ depth, nightMode }: LoadingIndicatorProps) {
             transition={{ duration: Math.max(0.5, 2 - (depth * 0.1)), repeat: Infinity, ease: 'easeInOut', delay: idx * 0.2 }}
             className="w-3 h-3 rounded-full"
             style={{
-              backgroundColor: depth > 7 ? '#8b1a2f' : '#c0392b',
-              boxShadow: `0 0 ${10 + depth * 2}px ${depth > 7 ? 'rgba(139,26,47,0.6)' : 'rgba(192,57,43,0.6)'}`,
+              backgroundColor: depth > 7 ? '#8b1a2f' : '#0f766e',
+              boxShadow: `0 0 ${10 + depth * 2}px ${depth > 7 ? 'rgba(139,26,47,0.6)' : 'rgba(15,118,110,0.6)'}`,
             }}
           />
         ))}

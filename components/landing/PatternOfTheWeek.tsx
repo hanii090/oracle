@@ -84,7 +84,7 @@ export function PatternOfTheWeek() {
         className="w-full max-w-2xl mx-auto mb-12"
       >
         <div className="bg-surface border border-gold/20 rounded-xl p-8 relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(192,57,43,0.03)_0%,transparent_60%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(15,118,110,0.03)_0%,transparent_60%)] pointer-events-none" />
           
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">

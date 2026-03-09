@@ -114,7 +114,7 @@ export function QuestionDNA() {
                             transition={{ duration: 0.8, delay: 0.1 }}
                             className="h-full rounded-full"
                             style={{
-                              background: `linear-gradient(to right, rgba(192,57,43,${0.3 + item.avgHonesty * 0.7}), rgba(192,57,43,${item.avgHonesty}))`,
+                              background: `linear-gradient(to right, rgba(15,118,110,${0.3 + item.avgHonesty * 0.7}), rgba(15,118,110,${item.avgHonesty}))`,  
                             }}
                           />
                         </div>

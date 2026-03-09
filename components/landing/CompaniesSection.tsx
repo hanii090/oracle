@@ -60,7 +60,7 @@ export function CompaniesSection() {
         id="companies-heading"
         className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-gold mb-8 flex items-center gap-4"
       >
-        Featured In
+        Built With
         <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" aria-hidden="true" />
       </div>
 
@@ -68,7 +68,7 @@ export function CompaniesSection() {
       <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
         <div
           className="flex animate-[marquee_40s_linear_infinite] gap-16 items-center"
-          aria-label="Featured companies"
+          aria-label="Technology partners"
         >
           {[...LOGOS, ...LOGOS].map((logo, i) => (
             <div

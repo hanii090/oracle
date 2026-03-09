@@ -1,27 +1,22 @@
 import { ImageResponse } from 'next/og';
 
-/**
- * Apple Touch Icon — 180×180 PNG for iOS home screen bookmarks.
- * Next.js auto-discovers this and serves it as /apple-icon.png.
- */
-
-export const size = { width: 180, height: 180 };
+export const size = { width: 192, height: 192 };
 export const contentType = 'image/png';
 
-export default function AppleIcon() {
+export default function Icon192() {
   return new ImageResponse(
     (
       <div
         style={{
-          width: 180,
-          height: 180,
+          width: 192,
+          height: 192,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: '#0f766e',
-          borderRadius: 40,
+          borderRadius: 38,
           fontFamily: 'serif',
-          fontSize: 110,
+          fontSize: 120,
           fontWeight: 700,
           color: '#f5f0e8',
           letterSpacing: '-0.02em',

@@ -24,7 +24,7 @@ function DepthRing({ depth, maxDepth, tier }: { depth: number; maxDepth: number;
   const strokeDashoffset = circumference * (1 - progress);
 
   // Color shifts based on depth
-  let strokeColor = '#c0392b'; // accent red
+  let strokeColor = '#0f766e'; // accent red
   if (depth >= confrontationThreshold) strokeColor = '#8b1a2f'; // crimson
   else if (depth >= freeLimit) strokeColor = '#e74c3c'; // accent warm
 

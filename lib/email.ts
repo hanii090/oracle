@@ -98,7 +98,7 @@ export async function sendExcavationReportEmail(
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 20px; text-align: center; border-bottom: 1px solid #222;">
-              <h1 style="margin: 0; color: #c0392b; font-size: 28px; letter-spacing: 0.2em; font-weight: normal;">SORCA</h1>
+              <h1 style="margin: 0; color: #0f766e; font-size: 28px; letter-spacing: 0.2em; font-weight: normal;">SORCA</h1>
               <p style="margin: 10px 0 0; color: #666; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;">Monthly Excavation Report</p>
               <p style="margin: 5px 0 0; color: #888; font-size: 14px;">${escapeHtml(reportMonth)}</p>
             </td>
@@ -122,15 +122,15 @@ export async function sendExcavationReportEmail(
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td width="25%" style="text-align: center; padding: 15px;">
-                    <div style="color: #c0392b; font-size: 28px; font-weight: bold;">${reportData.stats.totalSessions}</div>
+                    <div style="color: #0f766e; font-size: 28px; font-weight: bold;">${reportData.stats.totalSessions}</div>
                     <div style="color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 5px;">Sessions</div>
                   </td>
                   <td width="25%" style="text-align: center; padding: 15px;">
-                    <div style="color: #c0392b; font-size: 28px; font-weight: bold;">${reportData.stats.avgDepth}</div>
+                    <div style="color: #0f766e; font-size: 28px; font-weight: bold;">${reportData.stats.avgDepth}</div>
                     <div style="color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 5px;">Avg Depth</div>
                   </td>
                   <td width="25%" style="text-align: center; padding: 15px;">
-                    <div style="color: #c0392b; font-size: 28px; font-weight: bold;">${reportData.stats.maxDepth}</div>
+                    <div style="color: #0f766e; font-size: 28px; font-weight: bold;">${reportData.stats.maxDepth}</div>
                     <div style="color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 5px;">Max Depth</div>
                   </td>
                   <td width="25%" style="text-align: center; padding: 15px;">
@@ -145,7 +145,7 @@ export async function sendExcavationReportEmail(
           <!-- Narrative -->
           <tr>
             <td style="padding: 20px 40px;">
-              <div style="background-color: #0a0a0a; border-left: 3px solid #c0392b; padding: 20px; border-radius: 4px;">
+              <div style="background-color: #0a0a0a; border-left: 3px solid #0f766e; padding: 20px; border-radius: 4px;">
                 <p style="margin: 0; color: #bbb; font-size: 15px; line-height: 1.8; font-style: italic;">
                   ${escapeHtml(reportData.narrative)}
                 </p>
@@ -157,7 +157,7 @@ export async function sendExcavationReportEmail(
           <tr>
             <td style="padding: 30px 40px; text-align: center;">
               <p style="margin: 0 0 15px; color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 0.2em;">Question of the Month</p>
-              <p style="margin: 0; color: #c0392b; font-size: 18px; line-height: 1.6; font-style: italic;">
+              <p style="margin: 0; color: #0f766e; font-size: 18px; line-height: 1.6; font-style: italic;">
                 "${escapeHtml(reportData.questionOfTheMonth)}"
               </p>
             </td>
@@ -166,7 +166,7 @@ export async function sendExcavationReportEmail(
           <!-- CTA -->
           <tr>
             <td style="padding: 30px 40px; text-align: center;">
-              <a href="https://sorca.life" style="display: inline-block; padding: 14px 32px; background-color: transparent; border: 1px solid #c0392b; color: #c0392b; text-decoration: none; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; border-radius: 4px;">
+              <a href="https://sorca.life" style="display: inline-block; padding: 14px 32px; background-color: transparent; border: 1px solid #0f766e; color: #0f766e; text-decoration: none; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; border-radius: 4px;">
                 Continue Your Journey
               </a>
             </td>
@@ -255,7 +255,7 @@ export async function sendPatternAlertEmail(
         <table width="500" cellpadding="0" cellspacing="0" style="background-color: #111; border: 1px solid #222; border-radius: 8px;">
           <tr>
             <td style="padding: 30px; border-bottom: 1px solid #222;">
-              <h1 style="margin: 0; color: #c0392b; font-size: 18px; letter-spacing: 0.15em;">SORCA</h1>
+              <h1 style="margin: 0; color: #0f766e; font-size: 18px; letter-spacing: 0.15em;">SORCA</h1>
               <p style="margin: 5px 0 0; color: #666; font-size: 11px; text-transform: uppercase;">Pattern Alert</p>
             </td>
           </tr>
@@ -274,7 +274,7 @@ export async function sendPatternAlertEmail(
                 </p>
               </div>
               <p style="margin: 20px 0 0; text-align: center;">
-                <a href="https://sorca.life/dashboard" style="display: inline-block; padding: 12px 24px; background-color: transparent; border: 1px solid #c0392b; color: #c0392b; text-decoration: none; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 4px;">
+                <a href="https://sorca.life/dashboard" style="display: inline-block; padding: 12px 24px; background-color: transparent; border: 1px solid #0f766e; color: #0f766e; text-decoration: none; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 4px;">
                   View Dashboard
                 </a>
               </p>

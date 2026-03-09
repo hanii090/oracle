@@ -239,12 +239,12 @@ export function SessionExport({ messages, depth, allSessions, userId, userTier, 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;700;900&display=swap');
     body { font-family: 'Cormorant', Georgia, serif; background: #f5f0e8; color: #0e0c09; max-width: 800px; margin: 0 auto; padding: 40px 24px; line-height: 1.8; }
-    h1 { font-family: 'Cinzel', serif; font-size: 2em; color: #c0392b; border-bottom: 2px solid #c0392b20; padding-bottom: 16px; }
-    h2 { font-family: 'Cinzel', serif; font-size: 1.3em; color: #3d3830; margin-top: 40px; border-left: 3px solid #c0392b; padding-left: 16px; }
-    blockquote { background: #ede7d8; border-left: 3px solid #c0392b40; padding: 12px 16px; margin: 8px 0; border-radius: 4px; }
+    h1 { font-family: 'Cinzel', serif; font-size: 2em; color: #0f766e; border-bottom: 2px solid #0f766e20; padding-bottom: 16px; }
+    h2 { font-family: 'Cinzel', serif; font-size: 1.3em; color: #3d3830; margin-top: 40px; border-left: 3px solid #0f766e; padding-left: 16px; }
+    blockquote { background: #ede7d8; border-left: 3px solid #0f766e40; padding: 12px 16px; margin: 8px 0; border-radius: 4px; }
     hr { border: none; border-top: 1px solid #c5bba8; margin: 24px 0; }
     em { color: #7a7060; font-size: 0.85em; }
-    strong { color: #c0392b; }
+    strong { color: #0f766e; }
     .meta { font-size: 0.85em; color: #7a7060; }
   </style>
 </head>

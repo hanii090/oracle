@@ -84,7 +84,7 @@ export function ShareCard({ show, depth, messageCount, onClose }: ShareCardProps
     // S monogram logo
     ctx.beginPath();
     ctx.arc(600, 160, 30, 0, Math.PI * 2);
-    ctx.fillStyle = '#c0392b';
+    ctx.fillStyle = '#0f766e';
     ctx.fill();
     ctx.fillStyle = '#f5f0e8';
     ctx.font = 'bold 36px serif';
@@ -93,7 +93,7 @@ export function ShareCard({ show, depth, messageCount, onClose }: ShareCardProps
     ctx.fillText('S', 600, 162);
 
     // "DEPTH" text
-    ctx.fillStyle = '#c0392b';
+    ctx.fillStyle = '#0f766e';
     ctx.font = '600 14px serif';
     ctx.textAlign = 'center';
     ctx.letterSpacing = '8px';
@@ -148,15 +148,15 @@ export function ShareCard({ show, depth, messageCount, onClose }: ShareCardProps
               ref={cardRef}
               className="bg-gradient-to-b from-deep via-surface to-deep border border-gold/20 rounded-xl p-10 text-center mb-6 relative overflow-hidden"
             >
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192,57,43,0.04)_0%,transparent_60%)] pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(15,118,110,0.04)_0%,transparent_60%)] pointer-events-none" />
               
               {/* S monogram logo */}
-              <div className="w-12 h-12 mx-auto mb-6 relative z-10 rounded-full flex items-center justify-center bg-[#c0392b]" aria-hidden="true">
+              <div className="w-12 h-12 mx-auto mb-6 relative z-10 rounded-full flex items-center justify-center bg-[#0f766e]" aria-hidden="true">
                 <span className="font-cinzel text-xl font-bold text-[#f5f0e8]">S</span>
               </div>
 
               <div className="font-cinzel text-[10px] tracking-[0.4em] text-gold/60 uppercase mb-3 relative z-10">Depth</div>
-              <div className="font-cinzel text-7xl md:text-8xl text-gold-bright mb-3 relative z-10" style={{ textShadow: '0 0 60px rgba(192,57,43,0.2)' }}>
+              <div className="font-cinzel text-7xl md:text-8xl text-gold-bright mb-3 relative z-10" style={{ textShadow: '0 0 60px rgba(15,118,110,0.2)' }}>
                 {depth}
               </div>
               <div className="font-cormorant italic text-text-mid text-lg mb-6 relative z-10">

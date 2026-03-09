@@ -81,7 +81,7 @@ export function WelcomeModal({ show, onDismiss }: WelcomeModalProps) {
             className="bg-surface border border-gold/20 rounded-xl p-10 max-w-lg w-[90vw] text-center shadow-2xl shadow-gold/5 relative overflow-hidden"
           >
             {/* Background glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192,57,43,0.03)_0%,transparent_70%)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(15,118,110,0.03)_0%,transparent_70%)] pointer-events-none" />
 
             {/* Progress dots */}
             <div className="flex justify-center gap-2 mb-8 relative z-10">

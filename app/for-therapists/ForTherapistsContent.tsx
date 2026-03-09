@@ -68,7 +68,7 @@ const PRICING = {
 };
 
 export function ForTherapistsContent() {
-  const { user, profile, loading, signIn, logOut, getIdToken, isTherapist } = useAuth();
+  const { user, profile, loading, profileLoaded, signIn, logOut, getIdToken, isTherapist } = useAuth();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [showCredentialModal, setShowCredentialModal] = useState(false);
   const [credentials, setCredentials] = useState({
@@ -77,6 +77,9 @@ export function ForTherapistsContent() {
     practiceName: '',
   });
   const [credentialError, setCredentialError] = useState<string | null>(null);
+
+  // Check if user is already on Practice tier
+  const isPracticeTier = profile?.tier === 'practice';
 
   const REGISTRATION_BODIES = [
     { value: 'HCPC', label: 'HCPC (Health and Care Professions Council)' },
@@ -169,13 +172,26 @@ export function ForTherapistsContent() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <button
-              onClick={handleStartTrial}
-              disabled={checkoutLoading}
-              className="px-8 py-4 bg-teal text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors disabled:opacity-50"
-            >
-              {checkoutLoading ? 'Loading...' : user ? 'Start 14-Day Free Trial' : 'Sign In to Start Trial'}
-            </button>
+            {loading || (user && !profileLoaded) ? (
+              <div className="px-8 py-4 bg-teal/30 text-teal font-cinzel text-sm tracking-widest uppercase rounded-lg animate-pulse">
+                Loading...
+              </div>
+            ) : isPracticeTier ? (
+              <a
+                href="/dashboard"
+                className="px-8 py-4 bg-teal text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors"
+              >
+                Go to Dashboard
+              </a>
+            ) : (
+              <button
+                onClick={handleStartTrial}
+                disabled={checkoutLoading}
+                className="px-8 py-4 bg-teal text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors disabled:opacity-50"
+              >
+                {checkoutLoading ? 'Loading...' : user ? 'Start 14-Day Free Trial' : 'Sign In to Start Trial'}
+              </button>
+            )}
             <a
               href="#features"
               className="px-8 py-4 border border-teal/50 text-teal font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal/10 transition-colors"
@@ -352,16 +368,29 @@ export function ForTherapistsContent() {
             ))}
           </ul>
 
-          <button
-            onClick={handleStartTrial}
-            disabled={checkoutLoading}
-            className="w-full py-4 bg-teal text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors disabled:opacity-50"
-          >
-            {checkoutLoading ? 'Loading...' : user ? 'Start 14-Day Free Trial' : 'Sign In to Start Trial'}
-          </button>
+          {loading || (user && !profileLoaded) ? (
+            <div className="w-full py-4 bg-teal/30 text-teal font-cinzel text-sm tracking-widest uppercase rounded-lg animate-pulse text-center">
+              Loading...
+            </div>
+          ) : isPracticeTier ? (
+            <a
+              href="/dashboard"
+              className="block w-full py-4 bg-teal text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors text-center"
+            >
+              Go to Dashboard
+            </a>
+          ) : (
+            <button
+              onClick={handleStartTrial}
+              disabled={checkoutLoading}
+              className="w-full py-4 bg-teal text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors disabled:opacity-50"
+            >
+              {checkoutLoading ? 'Loading...' : user ? 'Start 14-Day Free Trial' : 'Sign In to Start Trial'}
+            </button>
+          )}
 
           <p className="text-xs text-text-muted mt-4">
-            No credit card required. Full access to all features.
+            {isPracticeTier ? 'You\'re on the Practice tier. Full access enabled.' : 'No credit card required. Full access to all features.'}
           </p>
         </motion.div>
       </section>
@@ -379,13 +408,26 @@ export function ForTherapistsContent() {
           <p className="text-lg text-text-mid mb-8">
             You already know. Sorca told you.
           </p>
-          <button
-            onClick={handleStartTrial}
-            disabled={checkoutLoading}
-            className="px-10 py-4 bg-teal text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors disabled:opacity-50"
-          >
-            {checkoutLoading ? 'Loading...' : 'Get Started Free'}
-          </button>
+          {loading || (user && !profileLoaded) ? (
+            <div className="px-10 py-4 bg-teal/30 text-teal font-cinzel text-sm tracking-widest uppercase rounded-lg animate-pulse inline-block">
+              Loading...
+            </div>
+          ) : isPracticeTier ? (
+            <a
+              href="/dashboard"
+              className="px-10 py-4 bg-teal text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors inline-block"
+            >
+              Go to Dashboard
+            </a>
+          ) : (
+            <button
+              onClick={handleStartTrial}
+              disabled={checkoutLoading}
+              className="px-10 py-4 bg-teal text-void font-cinzel text-sm tracking-widest uppercase rounded-lg hover:bg-teal-bright transition-colors disabled:opacity-50"
+            >
+              {checkoutLoading ? 'Loading...' : 'Get Started Free'}
+            </button>
+          )}
         </motion.div>
       </section>
 

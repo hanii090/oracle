@@ -1,5 +1,5 @@
 {
-  "name": "Sorca",
-  "description": "The question that changes everything. An AI that only speaks in questions, guiding you to self-discovery.",
+  "name": "Sorca — AI Therapy Companion",
+  "description": "AI-powered therapy companion for between-session mental health support. Voice therapy sessions, CBT homework tracking, mood monitoring, and therapist-supervised care. GDPR compliant.",
   "requestFramePermissions": []
 }
