@@ -4,6 +4,7 @@ import { checkoutRateLimit } from '@/lib/rate-limit';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { getStripeEnv } from '@/lib/env';
 import { createLogger } from '@/lib/logger';
+import { STRIPE_PRICE_ENV_KEYS, TRIAL_DAYS, getPlan } from '@/lib/pricing-config';
 import { z } from 'zod';
 
 const checkoutSchema = z.object({
@@ -69,24 +70,22 @@ export async function POST(req: Request) {
       }
     }
 
-    let priceId = '';
-    if (tier === 'philosopher') {
-      priceId = stripeEnv.STRIPE_PRICE_ID_PHILOSOPHER;
-    } else if (tier === 'pro') {
-      priceId = stripeEnv.STRIPE_PRICE_ID_PRO;
-    } else if (tier === 'practice') {
-      priceId = stripeEnv.STRIPE_PRICE_ID_PRACTICE || '';
-    } else {
+    // Resolve Stripe price ID from pricing config (single source of truth)
+    const envKey = STRIPE_PRICE_ENV_KEYS[tier];
+    if (!envKey) {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 });
     }
 
+    const priceId = (stripeEnv as Record<string, string | undefined>)[envKey] || '';
+    const plan = getPlan(tier as 'philosopher' | 'pro' | 'practice');
+
     if (!priceId) {
-      log.warn('Price ID not configured', { tier });
-      return NextResponse.json({ 
-        error: tier === 'practice' 
+      log.warn('Price ID not configured', { tier, envKey });
+      return NextResponse.json({
+        error: tier === 'practice'
           ? 'Clinical Practice subscriptions are coming soon. Please contact hello@sorca.life to join the waitlist.'
           : 'This subscription tier is not yet available. Please try again later or contact support.',
-        waitlist: tier === 'practice'
+        waitlist: tier === 'practice',
       }, { status: 503 });
     }
 
@@ -103,6 +102,10 @@ export async function POST(req: Request) {
         },
       ],
       mode: 'subscription',
+      // Free trial from pricing config (single source of truth)
+      subscription_data: {
+        trial_period_days: plan?.trialDays || TRIAL_DAYS,
+      },
       success_url: `${origin}/?success=true`,
       cancel_url: `${origin}/?canceled=true`,
       client_reference_id: userId,

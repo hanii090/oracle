@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import { Tier, type SessionSummary } from '@/hooks/useAuth';
 
 interface HeroSectionProps {
@@ -54,7 +55,7 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192,57,43,0.04)_0%,transparent_60%)] pointer-events-none" aria-hidden="true" />
         
         <div className="font-cinzel text-[11px] tracking-[0.4em] uppercase text-gold mb-6 relative z-10">
-          AI-Powered Therapy Support · UK Based
+          Voice-First AI Therapy Support · UK Based
         </div>
         
         <h1 id="hero-title" className="font-cinzel font-black text-4xl sm:text-6xl md:text-8xl lg:text-9xl tracking-[0.1em] sm:tracking-[0.15em] leading-none text-transparent bg-clip-text bg-gradient-to-b from-gold-bright via-gold to-gold/40 mb-6">
@@ -62,25 +63,27 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
         </h1>
 
         <p className="font-cormorant text-lg md:text-xl text-gold/80 mb-8 relative z-10">
-          &ldquo;Between my weekly sessions, Sorca helped me actually do my homework. My therapist noticed the difference.&rdquo;
+          &ldquo;Between sessions, I talk to Sorca. Voice sessions at 2am saved me more than worksheets ever could.&rdquo;
         </p>
         
         <p className="font-cormorant italic text-xl md:text-2xl text-text-mid max-w-2xl mb-6 leading-relaxed">
-          The AI companion for people in therapy. Sorca fills the gap between sessions — helping you complete homework, track your mood, and arrive at your next appointment ready to go deeper.
+          The voice-first AI companion for people in therapy. Talk to Sorca like a warm, present listener — complete homework through conversation, track your mood, and arrive at your next appointment ready to go deeper.
         </p>
 
         <p className="font-courier text-[10px] tracking-[0.2em] uppercase text-text-muted mb-8 max-w-lg">
-          NHS-aligned outcome measures · GDPR compliant · UK data hosting · Used by therapists across the UK
+          Voice sessions · Daily check-ins · NHS-aligned measures · GDPR compliant · UK data hosting
         </p>
 
         {/* Social Proof */}
         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mb-12 relative z-10">
           <div className="flex -space-x-3">
             {['/avatars/1.webp', '/avatars/2.webp', '/avatars/3.webp', '/avatars/4.webp', '/avatars/5.webp'].map((src, i) => (
-              <img 
+              <Image 
                 key={i}
                 src={src}
                 alt=""
+                width={40}
+                height={40}
                 className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gold/30 object-cover shadow-[0_0_15px_rgba(192,57,43,0.15)] hover:shadow-[0_0_20px_rgba(192,57,43,0.3)] transition-shadow"
                 style={{ animationDelay: `${i * 0.1}s` }}
               />
@@ -111,6 +114,9 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
 
         {/* Trust badges */}
         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mt-8 relative z-10">
+          <span className="text-[10px] font-courier text-gold/70 tracking-wider uppercase border border-gold/20 bg-gold/5 px-3 py-1.5 rounded">
+            ✦ Voice Sessions
+          </span>
           <span className="text-[10px] font-courier text-text-muted tracking-wider uppercase border border-border px-3 py-1.5 rounded">
             GDPR Compliant
           </span>
@@ -119,6 +125,9 @@ export function HeroSection({ user, profile, loading, hasKey, onStart, onSignIn,
           </span>
           <span className="text-[10px] font-courier text-text-muted tracking-wider uppercase border border-border px-3 py-1.5 rounded">
             NHS-Aligned Measures
+          </span>
+          <span className="text-[10px] font-courier text-text-muted tracking-wider uppercase border border-border px-3 py-1.5 rounded">
+            7-Day Free Trial
           </span>
         </div>
 

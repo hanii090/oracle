@@ -26,12 +26,23 @@ const serverSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   TOGETHER_API_KEY: z.string().optional(),
 
+  // ElevenLabs Voice AI
+  ELEVENLABS_API_KEY: z.string().optional(),
+  ELEVENLABS_AGENT_ID: z.string().optional(),
+
   // Rate limiting (optional — falls back to in-memory)
   UPSTASH_REDIS_REST_URL: z.string().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 
+  // Push Notifications (VAPID)
+  VAPID_PRIVATE_KEY: z.string().optional(),
+
+  // Cron
+  CRON_SECRET: z.string().optional(),
+
   // App
   NEXT_PUBLIC_APP_URL: z.string().optional(),
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string().optional(),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).optional(),
 });
 

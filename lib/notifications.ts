@@ -109,6 +109,8 @@ export const NOTIFICATION_TYPES = {
   CRISIS_ALERT: 'crisis_alert',
   WEEK_SUMMARY: 'week_summary',
   TIME_CAPSULE: 'time_capsule',
+  DAILY_CHECKIN: 'daily_checkin',
+  VOICE_SESSION_SUMMARY: 'voice_session_summary',
 } as const;
 
 export type NotificationType = typeof NOTIFICATION_TYPES[keyof typeof NOTIFICATION_TYPES];
@@ -121,6 +123,9 @@ export interface NotificationSettings {
   sessionPrompts: boolean;
   weekSummaryAlerts: boolean;
   timeCapsuleAlerts: boolean;
+  dailyCheckin: boolean;
+  dailyCheckinTime: string; // HH:MM format
+  voiceSessionSummaries: boolean;
 }
 
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
@@ -130,4 +135,7 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   sessionPrompts: true,
   weekSummaryAlerts: true,
   timeCapsuleAlerts: true,
+  dailyCheckin: true,
+  dailyCheckinTime: '09:00',
+  voiceSessionSummaries: true,
 };

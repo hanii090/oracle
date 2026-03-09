@@ -8,16 +8,20 @@ interface VoiceSorcaProps {
   enabled: boolean;
   onSilenceDetected?: () => void;
   onSilenceData?: (data: { totalSpeechMs: number; totalSilenceMs: number; pauses: { durationMs: number; timestamp: number }[] }) => void;
+  /** Open the full-screen ElevenLabs Voice Coach */
+  onOpenVoiceCoach?: () => void;
 }
 
 /**
- * Voice Sorca — Web Speech API for voice input and SpeechSynthesis for TTS output.
+ * Voice Sorca — Dual-mode voice input.
+ * 
+ * - Quick mic button: Web Speech API for inline voice-to-text (same as before)
+ * - Voice Coach button: Opens the full-screen ElevenLabs conversational AI experience
+ * 
  * Progressive: only shows if browser supports the APIs.
- *
  * Features 03 & 10: Silence Detection + Silence Score tracking.
- * Uses AudioContext AnalyserNode to detect pauses ≥4 seconds mid-answer.
  */
-export function VoiceSorca({ onTranscript, sorcaText, enabled, onSilenceDetected, onSilenceData }: VoiceSorcaProps) {
+export function VoiceSorca({ onTranscript, sorcaText, enabled, onSilenceDetected, onSilenceData, onOpenVoiceCoach }: VoiceSorcaProps) {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [silenceMessage, setSilenceMessage] = useState(false);
@@ -256,6 +260,7 @@ export function VoiceSorca({ onTranscript, sorcaText, enabled, onSilenceDetected
 
   return (
     <div className="flex items-center gap-2">
+      {/* Quick voice-to-text input */}
       <button
         onClick={toggleListening}
         className={`w-8 h-8 flex items-center justify-center rounded-lg border transition-all duration-300 ${
@@ -269,6 +274,20 @@ export function VoiceSorca({ onTranscript, sorcaText, enabled, onSilenceDetected
       >
         🎙️
       </button>
+
+      {/* Full Voice Coach session button */}
+      {onOpenVoiceCoach && (
+        <button
+          onClick={onOpenVoiceCoach}
+          className="h-8 px-3 flex items-center gap-1.5 rounded-lg border border-amber-500/30 text-amber-400 hover:bg-amber-500/10 transition-all duration-300 text-[10px] font-medium tracking-wide uppercase"
+          aria-label="Open Voice Coach — full conversational session"
+          title="Voice Coach — ElevenLabs AI session"
+        >
+          <span className="text-xs">✦</span>
+          Voice
+        </button>
+      )}
+
       {isSpeaking && (
         <span className="text-[8px] font-courier text-gold/50 tracking-widest uppercase animate-pulse" aria-live="polite">
           Speaking...

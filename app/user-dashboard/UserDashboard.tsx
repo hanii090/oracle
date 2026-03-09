@@ -28,6 +28,10 @@ import { BeliefMap } from '@/components/dashboard/BeliefMap';
 import { ProgressTimeline } from '@/components/dashboard/ProgressTimeline';
 import { SteppedCareCard } from '@/components/dashboard/SteppedCareCard';
 import { RelapsePrevention } from '@/components/patient/RelapsePrevention';
+import { VoiceCoach } from '@/components/VoiceCoach';
+import { DailyCheckin } from '@/components/DailyCheckin';
+import { VoiceSessionHistory } from '@/components/dashboard/VoiceSessionHistory';
+import { hasVoiceAccess, PATIENT_PLANS, voiceAllowanceLabel } from '@/lib/pricing-config';
 
 interface WeekSummary {
   id: string;
@@ -81,7 +85,7 @@ export function UserDashboard() {
   const { therapyProfile, isInTherapy } = useTherapy();
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<'sessions' | 'summaries' | 'homework' | 'anchors' | 'consent' | 'mood' | 'outcomes' | 'insights'>('sessions');
+  const [activeTab, setActiveTab] = useState<'sessions' | 'voice' | 'summaries' | 'homework' | 'anchors' | 'consent' | 'mood' | 'outcomes' | 'insights'>('sessions');
   const [showRelapsePlan, setShowRelapsePlan] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showCapsuleModal, setShowCapsuleModal] = useState(false);
@@ -92,6 +96,8 @@ export function UserDashboard() {
   const [showTherapyProfile, setShowTherapyProfile] = useState(false);
   const [showProgressReport, setShowProgressReport] = useState(false);
   const [showGDPR, setShowGDPR] = useState(false);
+  const [showVoiceCoach, setShowVoiceCoach] = useState(false);
+  const [showDailyCheckin, setShowDailyCheckin] = useState(false);
   const [companionHomeworkId, setCompanionHomeworkId] = useState<string | null>(null);
   const [companionHomeworkTitle, setCompanionHomeworkTitle] = useState<string>('');
   const [newAnchorName, setNewAnchorName] = useState('');
@@ -257,6 +263,7 @@ export function UserDashboard() {
 
   const tabs = [
     { id: 'sessions', label: 'Sessions', Icon: SessionIcon, count: sessions?.length || 0 },
+    { id: 'voice', label: '✦ Voice', Icon: SessionIcon, count: null },
     { id: 'mood', label: 'Mood', Icon: ChartIcon, count: null },
     { id: 'outcomes', label: 'Outcomes', Icon: ChartIcon, count: null },
     { id: 'insights', label: 'Insights', Icon: BookIcon, count: null },
@@ -408,6 +415,51 @@ export function UserDashboard() {
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'voice' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="font-cinzel text-sm text-text-main tracking-widest uppercase">
+                    ✦ Voice Coach
+                  </h2>
+                  <p className="text-xs text-text-muted mt-1">
+                    Talk to Sorca in real-time voice sessions powered by ElevenLabs AI
+                  </p>
+                </div>
+                {hasVoiceAccess(profile?.tier || 'free') && (
+                  <button
+                    onClick={() => setShowVoiceCoach(true)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-900/30 to-orange-900/20 border border-amber-500/30 text-amber-300 font-cinzel text-xs tracking-widest rounded-xl hover:border-amber-400/50 hover:from-amber-900/40 transition-all"
+                  >
+                    <span>🎙️</span> Start Voice Session
+                  </button>
+                )}
+              </div>
+
+              {!hasVoiceAccess(profile?.tier || 'free') ? (
+                <div className="text-center py-12 space-y-4">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-amber-900/20 flex items-center justify-center">
+                    <span className="text-2xl">🎙️</span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-text-muted">Voice sessions are available on paid plans</p>
+                    <p className="text-xs text-text-muted/60 mt-1">
+                      {PATIENT_PLANS.filter(p => p.voiceMinutes > 0).map(p => `${p.label} (${p.currency}${p.price}/mo) includes ${voiceAllowanceLabel(p.tier).replace(' / month', '')}`).join(' • ')}
+                    </p>
+                  </div>
+                  <Link
+                    href="/?upgrade=true"
+                    className="inline-block px-6 py-2 border border-gold text-gold font-cinzel text-xs tracking-widest rounded-lg hover:bg-gold/10"
+                  >
+                    Upgrade
+                  </Link>
+                </div>
+              ) : (
+                <VoiceSessionHistory getIdToken={getIdToken} tier={profile?.tier || 'free'} />
               )}
             </div>
           )}
@@ -1003,6 +1055,51 @@ export function UserDashboard() {
           </motion.div>
         </div>
       )}
+
+      {/* Voice Coach Full-Screen Modal */}
+      <VoiceCoach
+        isOpen={showVoiceCoach}
+        onClose={() => setShowVoiceCoach(false)}
+        getIdToken={getIdToken}
+        userId={user?.uid || ''}
+        userName={user?.displayName?.split(' ')[0]}
+        tier={profile?.tier || 'free'}
+        returningUser={(sessions?.length || 0) > 0}
+        onSessionComplete={() => {
+          // Refresh data after voice session
+          loadData();
+        }}
+      />
+
+      {/* Daily Check-In Modal */}
+      <DailyCheckin
+        isOpen={showDailyCheckin}
+        onClose={() => setShowDailyCheckin(false)}
+        onComplete={async (data) => {
+          try {
+            const token = await getIdToken();
+            if (token) {
+              await fetch('/api/between-sessions', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  type: 'mood',
+                  mood: data.mood,
+                  activities: data.activities,
+                  note: data.note,
+                }),
+              });
+            }
+          } catch (err) {
+            console.error('Failed to save check-in:', err);
+          }
+        }}
+        onStartVoiceSession={hasVoiceAccess(profile?.tier || 'free') ? () => {
+          setShowDailyCheckin(false);
+          setShowVoiceCoach(true);
+        } : undefined}
+        userName={user?.displayName?.split(' ')[0]}
+      />
     </main>
   );
 }

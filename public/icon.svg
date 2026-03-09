@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <!-- Sorca "S" monogram — crimson rounded square with parchment S lettermark -->
-  <rect width="32" height="32" rx="7" fill="#c0392b"/>
-  <path d="M20 11.5C20 9 18.2 7 16 7C13.2 7 11.2 8.8 11.2 11C11.2 13.4 13 14.4 16 15.4C19 16.4 20.8 17.8 20.8 20.5C20.8 23 18.5 25 16 25C13.5 25 11.8 23.2 12 21" stroke="#f5f0e8" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-</svg>

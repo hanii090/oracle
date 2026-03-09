@@ -47,6 +47,7 @@ self.addEventListener('push', (event) => {
     data: data.data,
     vibrate: [100, 50, 100],
     requireInteraction: data.data?.urgent || false,
+    actions: data.actions || [],
   };
   
   event.waitUntil(
@@ -79,8 +80,21 @@ self.addEventListener('notificationclick', (event) => {
     case 'time_capsule':
       url = '/user-dashboard?tab=capsule';
       break;
+    case 'daily_checkin':
+      url = '/user-dashboard?tab=mood';
+      break;
+    case 'voice_session_summary':
+      url = '/user-dashboard?tab=voice';
+      break;
     default:
       url = data.url || '/';
+  }
+
+  // Handle notification actions (buttons)
+  if (event.action === 'checkin') {
+    url = '/user-dashboard?tab=mood';
+  } else if (event.action === 'voice') {
+    url = '/user-dashboard?tab=voice&start=true';
   }
   
   event.waitUntil(
