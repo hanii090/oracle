@@ -152,6 +152,21 @@ export async function POST(req: Request) {
   const log = createLogger({ route: '/api/waiting-list', correlationId: crypto.randomUUID() });
 
   try {
+    // Check Admin SDK BEFORE auth to avoid 500 when Firebase is misconfigured
+    if (!isAdminConfigured()) {
+      log.warn('Firebase Admin not configured — returning offline fallback');
+      let body: Record<string, unknown> = {};
+      try { body = await req.json(); } catch { /* empty body is fine */ }
+      const action = new URL(req.url).searchParams.get('action') || body.action;
+      if (action === 'checkin') {
+        return NextResponse.json({ checkIn: { id: 'offline', weekNumber: body.weekNumber || 1, responses: [], moodScore: null, createdAt: new Date().toISOString() }, offline: true });
+      }
+      if (action === 'readiness-brief') {
+        return NextResponse.json({ brief: 'Service is starting up. Please try again in a moment.', offline: true });
+      }
+      return NextResponse.json({ profile: { userId: 'offline', referralReason: body.referralReason || 'other', totalCheckIns: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, offline: true });
+    }
+
     const authResult = await verifyAuth(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
@@ -159,17 +174,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const url = new URL(req.url);
     const action = url.searchParams.get('action') || body.action;
-
-    if (!isAdminConfigured()) {
-      // Graceful fallback — return mock success so the UI doesn't break
-      if (action === 'checkin') {
-        return NextResponse.json({ checkIn: { id: 'offline', weekNumber: body.weekNumber || 1, responses: [], moodScore: null, createdAt: new Date().toISOString() } });
-      }
-      if (action === 'readiness-brief') {
-        return NextResponse.json({ brief: 'Database is not configured. Please check your Firebase Admin setup.' });
-      }
-      return NextResponse.json({ profile: { userId, referralReason: body.referralReason || 'other', totalCheckIns: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } });
-    }
 
     const db = getAdminFirestore();
 
@@ -345,13 +349,15 @@ export async function GET(req: Request) {
   const log = createLogger({ route: '/api/waiting-list', correlationId: crypto.randomUUID() });
 
   try {
+    // Check Admin SDK BEFORE auth to avoid 500 when Firebase is misconfigured
+    if (!isAdminConfigured()) {
+      log.warn('Firebase Admin not configured — returning offline fallback (GET)');
+      return NextResponse.json({ profile: null, checkIns: [], themes: WEEKLY_THEMES.other, offline: true });
+    }
+
     const authResult = await verifyAuth(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
-
-    if (!isAdminConfigured()) {
-      return NextResponse.json({ profile: null, checkIns: [], themes: WEEKLY_THEMES.other });
-    }
 
     const db = getAdminFirestore();
 

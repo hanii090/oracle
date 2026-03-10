@@ -49,6 +49,31 @@ export async function POST(req: Request) {
   const log = createLogger({ route: '/api/between-sessions', correlationId: crypto.randomUUID() });
 
   try {
+    // Check Admin SDK BEFORE auth to avoid 500 when Firebase is misconfigured
+    if (!isAdminConfigured()) {
+      log.warn('Firebase Admin not configured — returning offline fallback');
+      let body: Record<string, unknown> = {};
+      try { body = await req.json(); } catch { /* empty body is fine */ }
+      const parsed = moodCheckInSchema.safeParse(body);
+      const data = parsed.success ? normaliseMoodData(parsed.data) : { score: 5, notes: undefined, activities: undefined };
+      const fallback: MoodCheckIn = {
+        id: 'offline',
+        userId: 'offline',
+        date: new Date().toISOString().split('T')[0],
+        score: data.score,
+        notes: data.notes ? sanitizeMessage(data.notes as string) : undefined,
+        activities: data.activities,
+        timestamp: new Date().toISOString(),
+      };
+      return NextResponse.json({
+        checkIn: fallback,
+        alert: null,
+        suggestedContent: data.score <= 4 ? PSYCHOEDUCATION_CONTENT.grounding_techniques : null,
+        exercises: GROUNDING_EXERCISES,
+        offline: true,
+      });
+    }
+
     const authResult = await verifyAuth(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
@@ -64,26 +89,6 @@ export async function POST(req: Request) {
     }
 
     const { score, notes, activities } = normaliseMoodData(parsed.data);
-
-    if (!isAdminConfigured()) {
-      // Graceful fallback — return mock success so the UI doesn't break
-      const fallbackCheckIn: MoodCheckIn = {
-        id: 'offline',
-        userId,
-        date: new Date().toISOString().split('T')[0],
-        score,
-        notes: notes ? sanitizeMessage(notes) : undefined,
-        activities,
-        timestamp: new Date().toISOString(),
-      };
-      return NextResponse.json({
-        checkIn: fallbackCheckIn,
-        alert: null,
-        suggestedContent: score <= 4 ? PSYCHOEDUCATION_CONTENT.grounding_techniques : null,
-        exercises: GROUNDING_EXERCISES,
-        offline: true,
-      });
-    }
 
     const db = getAdminFirestore();
     const now = new Date();
@@ -165,6 +170,33 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     log.error('Mood check-in error', {}, error);
+
+    const message = error instanceof Error ? error.message : String(error);
+
+    // JSON parse failure
+    if (message.includes('JSON') || message.includes('Unexpected token') || message.includes('body')) {
+      return NextResponse.json(
+        { error: 'Invalid request body. Expected valid JSON.' },
+        { status: 400 }
+      );
+    }
+
+    // Transient Firestore errors
+    if (message.includes('UNAVAILABLE') || message.includes('DEADLINE_EXCEEDED') || message.includes('network')) {
+      return NextResponse.json(
+        { error: 'Database temporarily unavailable. Please try again in a moment.' },
+        { status: 503 }
+      );
+    }
+
+    // Firebase/Firestore permission or config errors
+    if (message.includes('Firebase') || message.includes('Firestore') || message.includes('FIREBASE') || message.includes('PERMISSION_DENIED')) {
+      return NextResponse.json(
+        { error: 'Database error. Please try again or contact support.' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({ error: 'Failed to record check-in' }, { status: 500 });
   }
 }
@@ -173,6 +205,12 @@ export async function GET(req: Request) {
   const log = createLogger({ route: '/api/between-sessions', correlationId: crypto.randomUUID() });
 
   try {
+    // Check Admin SDK BEFORE auth to avoid 500 when Firebase is misconfigured
+    if (!isAdminConfigured()) {
+      log.warn('Firebase Admin not configured — returning offline fallback (GET)');
+      return NextResponse.json({ checkIns: [], trend: null, offline: true });
+    }
+
     const authResult = await verifyAuth(req);
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;

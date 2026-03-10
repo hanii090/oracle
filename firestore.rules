@@ -226,6 +226,19 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Waiting list profiles — managed by Admin SDK, but allow owner reads
+    match /waitingListProfiles/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Server-side only via Admin SDK
+    }
+
+    // Waiting list check-ins — managed by Admin SDK, but allow owner reads
+    match /waitingListCheckIns/{checkInId} {
+      allow read: if request.auth != null 
+                  && resource.data.userId == request.auth.uid;
+      allow write: if false; // Server-side only via Admin SDK
+    }
+
     // Daily mood check-ins
     match /dailyMoodChecks/{userId}/checks/{dateId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
