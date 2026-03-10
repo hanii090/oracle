@@ -183,7 +183,7 @@ export function ThoughtDrop({ variant = 'inline', onClose }: ThoughtDropProps) {
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-cinzel text-sm text-gold tracking-wider">Thought Drop</h3>
             {onClose && (
-              <button onClick={onClose} className="text-text-muted hover:text-text-main text-sm">✕</button>
+              <button onClick={onClose} aria-label="Close" className="text-text-muted hover:text-text-main text-sm">✕</button>
             )}
           </div>
           {content}
