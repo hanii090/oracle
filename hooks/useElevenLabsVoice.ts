@@ -218,6 +218,33 @@ export function useElevenLabsVoice(options: UseElevenLabsVoiceOptions = {}) {
     }
   }, []);
 
+  // Check microphone permission before starting
+  const checkMicrophoneAccess = useCallback(async (): Promise<boolean> => {
+    try {
+      // Check if the browser supports getUserMedia
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        onErrorRef.current?.('Your browser does not support voice sessions. Please use Chrome, Safari, or Edge.');
+        return false;
+      }
+
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Immediately stop the stream — we just needed the permission
+      stream.getTracks().forEach(track => track.stop());
+      return true;
+    } catch (err: unknown) {
+      const name = err instanceof DOMException ? err.name : '';
+      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        onErrorRef.current?.('Microphone access denied. Please allow microphone in your browser settings and try again.');
+      } else if (name === 'NotFoundError') {
+        onErrorRef.current?.('No microphone found. Please connect a microphone and try again.');
+      } else {
+        onErrorRef.current?.('Could not access microphone. Please check your device settings.');
+      }
+      return false;
+    }
+  }, []);
+
   // Start a voice session
   const startSession = useCallback(async (getIdToken: () => Promise<string | null>, overrides?: {
     systemPrompt?: string;
@@ -232,6 +259,13 @@ export function useElevenLabsVoice(options: UseElevenLabsVoiceOptions = {}) {
       transcriptRef.current = [];
       setTranscript([]);
       setSessionDuration(0);
+
+      // Pre-check microphone permission
+      const hasMic = await checkMicrophoneAccess();
+      if (!hasMic) {
+        updateStatus('error');
+        return false;
+      }
 
       const tokenData = await getSignedUrl();
       if (!tokenData) {
@@ -257,11 +291,18 @@ export function useElevenLabsVoice(options: UseElevenLabsVoiceOptions = {}) {
       return true;
     } catch (err) {
       console.error('Failed to start voice session:', err);
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       updateStatus('error');
-      onErrorRef.current?.('Failed to start voice session. Please try again.');
+      onErrorRef.current?.(
+        msg.includes('Permission') || msg.includes('microphone')
+          ? 'Microphone access is required for voice sessions. Please enable it in your browser settings.'
+          : msg.includes('WebSocket') || msg.includes('connect')
+          ? 'Could not connect to voice server. Please check your internet connection and try again.'
+          : `Voice session failed: ${msg}`
+      );
       return false;
     }
-  }, [conversation, getSignedUrl, updateStatus]);
+  }, [conversation, getSignedUrl, updateStatus, checkMicrophoneAccess]);
 
   // Toggle mute
   const toggleMute = useCallback(() => {

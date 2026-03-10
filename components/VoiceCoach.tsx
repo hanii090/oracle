@@ -237,6 +237,7 @@ export function VoiceCoach({
   const [moodAfter, setMoodAfter] = useState<number | null>(null);
   const [showTranscript, setShowTranscript] = useState(false);
   const [sessionSummary, setSessionSummary] = useState<VoiceSessionData | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const timeOfDay = (() => {
     const h = new Date().getHours();
@@ -270,6 +271,7 @@ export function VoiceCoach({
     },
     onError: (err) => {
       console.error('Voice error:', err);
+      setErrorMessage(err);
     },
   });
 
@@ -501,8 +503,18 @@ export function VoiceCoach({
                   {status === 'speaking' && 'Sorca is speaking...'}
                   {status === 'listening' && 'Listening to you...'}
                   {status === 'connected' && 'Ready — start talking'}
-                  {status === 'error' && 'Connection lost. Try again.'}
+                  {status === 'error' && (errorMessage || 'Connection failed. Tap the phone to retry.')}
                 </motion.p>
+
+                {/* Retry hint for error state */}
+                {status === 'error' && (
+                  <button
+                    onClick={() => { setErrorMessage(null); handleSkipMood(); }}
+                    className="px-5 py-2.5 rounded-xl bg-emerald-600/80 hover:bg-emerald-500 text-white text-sm font-medium transition-colors shadow-lg shadow-emerald-900/30"
+                  >
+                    Retry Connection
+                  </button>
+                )}
 
                 {/* Last transcript message (live caption) */}
                 {transcript.length > 0 && (
