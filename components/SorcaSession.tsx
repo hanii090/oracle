@@ -866,8 +866,7 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
       {showSessionDebrief && authUser && (
         <SessionDebriefMode 
           onClose={() => setShowSessionDebrief(false)} 
-          onComplete={(keyInsight) => {
-            console.log('Session debrief completed:', keyInsight);
+          onComplete={() => {
             setShowSessionDebrief(false);
           }}
         />
