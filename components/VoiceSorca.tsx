@@ -44,7 +44,15 @@ export function VoiceSorca({ onTranscript, sorcaText, enabled, onSilenceDetected
   // Check support synchronously via lazy initializer (avoids setState in effect)
   const isSupported = useRef(false);
   const voicesLoadedRef = useRef(false);
-  const [voicesReady, setVoicesReady] = useState(false);
+
+  const [voicesReady, setVoicesReady] = useState(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      if (window.speechSynthesis.getVoices().length > 0) {
+        return true;
+      }
+    }
+    return false;
+  });
 
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -54,23 +62,28 @@ export function VoiceSorca({ onTranscript, sorcaText, enabled, onSilenceDetected
     if ('speechSynthesis' in window) {
       const loadVoices = () => {
         const voices = speechSynthesis.getVoices();
-        if (voices.length > 0) {
-          voicesLoadedRef.current = true;
-          setVoicesReady(true);
+        if (voices.length > 0 && !voicesReady) {
+          // Add a small delay to ensure the OS audio engine has fully populated the voices
+          setTimeout(() => {
+            voicesLoadedRef.current = true;
+            setVoicesReady(true);
+          }, 50);
         }
       };
 
-      // Try to load voices immediately
-      loadVoices();
-
-      // Also listen for voiceschanged event (required for some browsers)
-      speechSynthesis.onvoiceschanged = loadVoices;
+      if (speechSynthesis.getVoices().length > 0) {
+        voicesLoadedRef.current = true;
+        // setVoicesReady is already done initially if voices were ready
+      } else {
+        // Also listen for voiceschanged event (required for some browsers)
+        speechSynthesis.onvoiceschanged = loadVoices;
+      }
 
       return () => {
         speechSynthesis.onvoiceschanged = null;
       };
     }
-  }, []);
+  }, [voicesReady]);
 
   // Speak Sorca's questions - fixed to wait for voices and handle AudioContext properly
   useEffect(() => {
