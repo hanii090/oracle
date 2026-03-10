@@ -116,19 +116,30 @@ export async function POST(req: Request) {
         .where('status', '==', 'active')
         .get();
 
-      for (const consent of consents.docs) {
-        const consentData = consent.data();
-        if (consentData.permissions?.sharePatternAlerts) {
-          await db.collection('patternAlerts').add({
-            therapistId: consentData.therapistId,
-            clientId: userId,
-            clientName: 'Client', // Will be populated by therapist dashboard
-            type: 'distress',
-            message: `PHQ-9 Q9 score of ${scores[8]} - thoughts of self-harm reported`,
-            severity: riskAlert.level,
-            createdAt: new Date().toISOString(),
-            acknowledged: false,
-          });
+      if (!consents.empty) {
+        const batch = db.batch();
+        let hasAlerts = false;
+
+        for (const consent of consents.docs) {
+          const consentData = consent.data();
+          if (consentData.permissions?.sharePatternAlerts) {
+            const alertRef = db.collection('patternAlerts').doc();
+            batch.set(alertRef, {
+              therapistId: consentData.therapistId,
+              clientId: userId,
+              clientName: 'Client', // Will be populated by therapist dashboard
+              type: 'distress',
+              message: `PHQ-9 Q9 score of ${scores[8]} - thoughts of self-harm reported`,
+              severity: riskAlert.level,
+              createdAt: new Date().toISOString(),
+              acknowledged: false,
+            });
+            hasAlerts = true;
+          }
+        }
+
+        if (hasAlerts) {
+          await batch.commit();
         }
       }
     }
