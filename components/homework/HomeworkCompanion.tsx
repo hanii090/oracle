@@ -153,7 +153,7 @@ export function HomeworkCompanion({ homeworkId, homeworkTitle, exerciseType: def
           {homeworkTitle && <p className="text-xs text-text-muted">{homeworkTitle}</p>}
         </div>
         {onClose && (
-          <button onClick={onClose} className="text-text-muted hover:text-text-main text-sm">✕</button>
+          <button onClick={onClose} aria-label="Close" className="text-text-muted hover:text-text-main text-sm">✕</button>
         )}
       </div>
 

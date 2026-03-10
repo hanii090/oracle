@@ -238,7 +238,7 @@ export function TherapyProfile({ onClose }: TherapyProfileProps) {
           <p className="text-xs text-text-muted">Portable, user-owned. Share with new therapists.</p>
         </div>
         {onClose && (
-          <button onClick={onClose} className="text-text-muted hover:text-text-main text-sm">✕</button>
+          <button onClick={onClose} aria-label="Close" className="text-text-muted hover:text-text-main text-sm">✕</button>
         )}
       </div>
 
@@ -271,7 +271,7 @@ export function TherapyProfile({ onClose }: TherapyProfileProps) {
             {goals.map((goal, i) => (
               <div key={i} className="flex items-center gap-2 bg-surface border border-border rounded-lg px-4 py-2.5">
                 <span className="text-sm text-text-main flex-1">{goal}</span>
-                <button onClick={() => handleRemoveGoal(i)} className="text-text-muted hover:text-red-400 text-xs">✕</button>
+                <button onClick={() => handleRemoveGoal(i)} aria-label="Remove goal" className="text-text-muted hover:text-red-400 text-xs">✕</button>
               </div>
             ))}
             <div className="flex gap-2">
@@ -319,7 +319,7 @@ export function TherapyProfile({ onClose }: TherapyProfileProps) {
               {themes.map((theme, i) => (
                 <span key={i} className="px-3 py-1.5 bg-gold/10 text-gold text-xs rounded-full border border-gold/20 flex items-center gap-1.5">
                   {theme}
-                  <button onClick={() => handleRemoveTheme(i)} className="hover:text-red-400 text-[9px]">✕</button>
+                  <button onClick={() => handleRemoveTheme(i)} aria-label="Remove theme" className="hover:text-red-400 text-[9px]">✕</button>
                 </span>
               ))}
             </div>
@@ -412,7 +412,7 @@ export function TherapyProfile({ onClose }: TherapyProfileProps) {
                 {triggerWarnings.map((tw, i) => (
                   <span key={i} className="px-2.5 py-1 bg-amber-900/20 text-amber-400 text-xs rounded-full border border-amber-500/20 flex items-center gap-1.5">
                     {tw}
-                    <button onClick={() => handleRemoveTrigger(i)} className="hover:text-red-400 text-[9px]">✕</button>
+                    <button onClick={() => handleRemoveTrigger(i)} aria-label="Remove trigger" className="hover:text-red-400 text-[9px]">✕</button>
                   </span>
                 ))}
               </div>
