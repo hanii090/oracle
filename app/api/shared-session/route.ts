@@ -68,7 +68,7 @@ export async function POST(req: Request) {
         "What do you need from them that you've never asked for?",
       ];
 
-      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const code = crypto.randomUUID().replace(/-/g, '').slice(0, 6).toUpperCase();
 
       const session = {
         id: crypto.randomUUID(),

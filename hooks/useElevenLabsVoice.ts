@@ -254,7 +254,7 @@ export function useElevenLabsVoice(options: UseElevenLabsVoiceOptions = {}) {
       getTokenRef.current = getIdToken;
       updateStatus('connecting');
       
-      sessionIdRef.current = `voice_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      sessionIdRef.current = `voice_${Date.now()}_${crypto.randomUUID()}`;
       sessionStartRef.current = Date.now();
       transcriptRef.current = [];
       setTranscript([]);
