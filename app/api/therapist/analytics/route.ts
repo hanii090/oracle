@@ -87,101 +87,103 @@ export async function GET(req: Request) {
     let clientsInSafeMode = 0;
     let activeClients = 0;
     const weeklySessionCounts = [0, 0, 0, 0];
-    const clientMetrics: ClientMetrics[] = [];
+    // Process each client concurrently
+    const clientMetrics: ClientMetrics[] = await Promise.all(
+      consentsSnapshot.docs.map(async (consent) => {
+        const consentData = consent.data();
+        const clientId = consentData.patientId;
 
-    // Process each client
-    for (const consent of consentsSnapshot.docs) {
-      const consentData = consent.data();
-      const clientId = consentData.patientId;
+        // Fetch data concurrently for the client
+        const [
+          clientDoc,
+          sessionsSnapshot,
+          homeworkSnapshot,
+          alertsSnapshot
+        ] = await Promise.all([
+          db.collection('users').doc(clientId).get(),
+          db.collection('users')
+            .doc(clientId)
+            .collection('sessions')
+            .orderBy('createdAt', 'desc')
+            .limit(100)
+            .get(),
+          db.collection('homeworkAssignments')
+            .where('patientId', '==', clientId)
+            .where('therapistId', '==', therapistId)
+            .get(),
+          db.collection('patternAlerts')
+            .where('clientId', '==', clientId)
+            .where('therapistId', '==', therapistId)
+            .get()
+        ]);
 
-      // Get client info
-      const clientDoc = await db.collection('users').doc(clientId).get();
-      const clientName = clientDoc.exists ? clientDoc.data()?.displayName || 'Client' : 'Client';
+        const clientName = clientDoc.exists ? clientDoc.data()?.displayName || 'Client' : 'Client';
 
-      // Check safe mode
-      if (consentData.safeMode) {
-        clientsInSafeMode++;
-      }
-
-      // Get session count
-      const sessionsSnapshot = await db.collection('users')
-        .doc(clientId)
-        .collection('sessions')
-        .orderBy('createdAt', 'desc')
-        .limit(100)
-        .get();
-
-      const clientSessionCount = sessionsSnapshot.size;
-      totalSessions += clientSessionCount;
-
-      // Check if active (session in last 7 days)
-      const lastSession = sessionsSnapshot.docs[0]?.data();
-      const lastSessionDate = lastSession?.createdAt || null;
-      if (lastSessionDate && new Date(lastSessionDate) >= oneWeekAgo) {
-        activeClients++;
-      }
-
-      // Count sessions per week for trend
-      for (const sessionDoc of sessionsSnapshot.docs) {
-        const sessionDate = new Date(sessionDoc.data().createdAt);
-        if (sessionDate >= oneWeekAgo) {
-          weeklySessionCounts[0]++;
-        } else if (sessionDate >= twoWeeksAgo) {
-          weeklySessionCounts[1]++;
-        } else if (sessionDate >= threeWeeksAgo) {
-          weeklySessionCounts[2]++;
-        } else if (sessionDate >= fourWeeksAgo) {
-          weeklySessionCounts[3]++;
+        // Check safe mode
+        if (consentData.safeMode) {
+          clientsInSafeMode++;
         }
-      }
 
-      // Get homework stats
-      const homeworkSnapshot = await db.collection('homeworkAssignments')
-        .where('patientId', '==', clientId)
-        .where('therapistId', '==', therapistId)
-        .get();
+        const clientSessionCount = sessionsSnapshot.size;
+        totalSessions += clientSessionCount;
 
-      let clientHomeworkTotal = 0;
-      let clientHomeworkCompleted = 0;
-
-      for (const hwDoc of homeworkSnapshot.docs) {
-        const hw = hwDoc.data();
-        totalHomeworkAssigned++;
-        clientHomeworkTotal += hw.durationDays || 7;
-        clientHomeworkCompleted += hw.completedDays || 0;
-        totalHomeworkCompleted += hw.completedDays || 0;
-      }
-
-      const homeworkCompletionRate = clientHomeworkTotal > 0
-        ? Math.round((clientHomeworkCompleted / clientHomeworkTotal) * 100)
-        : 0;
-
-      // Get alerts
-      const alertsSnapshot = await db.collection('patternAlerts')
-        .where('clientId', '==', clientId)
-        .where('therapistId', '==', therapistId)
-        .get();
-
-      const clientAlertCount = alertsSnapshot.size;
-      totalAlerts += clientAlertCount;
-
-      for (const alertDoc of alertsSnapshot.docs) {
-        if (!alertDoc.data().acknowledged) {
-          unacknowledgedAlerts++;
+        // Check if active (session in last 7 days)
+        const lastSession = sessionsSnapshot.docs[0]?.data();
+        const lastSessionDate = lastSession?.createdAt || null;
+        if (lastSessionDate && new Date(lastSessionDate) >= oneWeekAgo) {
+          activeClients++;
         }
-      }
 
-      clientMetrics.push({
-        clientId,
-        clientName,
-        sessionCount: clientSessionCount,
-        lastSessionDate,
-        homeworkCompletionRate,
-        alertCount: clientAlertCount,
-        safeMode: consentData.safeMode || false,
-        consentedAt: consentData.grantedAt,
-      });
-    }
+        // Count sessions per week for trend
+        for (const sessionDoc of sessionsSnapshot.docs) {
+          const sessionDate = new Date(sessionDoc.data().createdAt);
+          if (sessionDate >= oneWeekAgo) {
+            weeklySessionCounts[0]++;
+          } else if (sessionDate >= twoWeeksAgo) {
+            weeklySessionCounts[1]++;
+          } else if (sessionDate >= threeWeeksAgo) {
+            weeklySessionCounts[2]++;
+          } else if (sessionDate >= fourWeeksAgo) {
+            weeklySessionCounts[3]++;
+          }
+        }
+
+        let clientHomeworkTotal = 0;
+        let clientHomeworkCompleted = 0;
+
+        for (const hwDoc of homeworkSnapshot.docs) {
+          const hw = hwDoc.data();
+          totalHomeworkAssigned++;
+          clientHomeworkTotal += hw.durationDays || 7;
+          clientHomeworkCompleted += hw.completedDays || 0;
+          totalHomeworkCompleted += hw.completedDays || 0;
+        }
+
+        const homeworkCompletionRate = clientHomeworkTotal > 0
+          ? Math.round((clientHomeworkCompleted / clientHomeworkTotal) * 100)
+          : 0;
+
+        const clientAlertCount = alertsSnapshot.size;
+        totalAlerts += clientAlertCount;
+
+        for (const alertDoc of alertsSnapshot.docs) {
+          if (!alertDoc.data().acknowledged) {
+            unacknowledgedAlerts++;
+          }
+        }
+
+        return {
+          clientId,
+          clientName,
+          sessionCount: clientSessionCount,
+          lastSessionDate,
+          homeworkCompletionRate,
+          alertCount: clientAlertCount,
+          safeMode: consentData.safeMode || false,
+          consentedAt: consentData.grantedAt,
+        };
+      })
+    );
 
     // Calculate average homework completion
     const totalHomeworkDays = totalHomeworkAssigned * 7; // Approximate
