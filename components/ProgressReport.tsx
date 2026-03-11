@@ -140,7 +140,7 @@ export function ProgressReport({ onClose }: ProgressReportProps) {
       <div className="max-w-lg mx-auto text-center">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-cinzel text-lg text-text-main">My Therapy Journey</h2>
-          {onClose && <button onClick={onClose} className="text-text-muted hover:text-text-main text-sm">✕</button>}
+          {onClose && <button onClick={onClose} aria-label="Close" className="text-text-muted hover:text-text-main text-sm">✕</button>}
         </div>
 
         <p className="text-sm text-text-muted mb-6">
@@ -200,7 +200,7 @@ export function ProgressReport({ onClose }: ProgressReportProps) {
         </div>
         <div className="flex gap-2">
           <button onClick={handlePrint} className="px-4 py-2 bg-gold/10 text-gold border border-gold/30 rounded-lg text-[10px] font-cinzel tracking-widest">Print / PDF</button>
-          {onClose && <button onClick={onClose} className="text-text-muted hover:text-text-main text-sm">✕</button>}
+          {onClose && <button onClick={onClose} aria-label="Close" className="text-text-muted hover:text-text-main text-sm">✕</button>}
         </div>
       </div>
 

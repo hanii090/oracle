@@ -553,7 +553,7 @@ async function createPatternAlert(
     const clientName = userDoc.exists ? userDoc.data()?.displayName || 'Client' : 'Client';
 
     // Create alerts for each consented therapist
-    for (const therapistId of therapistsToAlert) {
+    const alertPromises = therapistsToAlert.map(async (therapistId) => {
       const alert = {
         id: crypto.randomUUID(),
         clientId: userId,
@@ -568,8 +568,10 @@ async function createPatternAlert(
         createdAt: new Date().toISOString(),
       };
 
-      await db.collection('patternAlerts').doc(alert.id).set(alert);
-    }
+      return db.collection('patternAlerts').doc(alert.id).set(alert);
+    });
+
+    await Promise.all(alertPromises);
 
     log.info('Pattern alerts created', { userId, type: pattern.type, count: therapistsToAlert.length });
   } catch (error) {
@@ -615,7 +617,7 @@ async function createCrisisAlert(
     const clientName = userDoc.exists ? userDoc.data()?.displayName || 'Client' : 'Client';
 
     // Create URGENT crisis alerts for each consented therapist
-    for (const therapistId of therapistsToAlert) {
+    const alertPromises = therapistsToAlert.flatMap((therapistId) => {
       const alert = {
         id: crypto.randomUUID(),
         clientId: userId,
@@ -632,14 +634,16 @@ async function createCrisisAlert(
         urgent: true,
       };
 
-      await db.collection('patternAlerts').doc(alert.id).set(alert);
-      
-      // Also add to a separate urgent alerts collection for faster querying
-      await db.collection('urgentAlerts').doc(alert.id).set({
-        ...alert,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hour expiry
-      });
-    }
+      return [
+        db.collection('patternAlerts').doc(alert.id).set(alert),
+        db.collection('urgentAlerts').doc(alert.id).set({
+          ...alert,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hour expiry
+        })
+      ];
+    });
+
+    await Promise.all(alertPromises);
 
     log.warn('Crisis alerts created for therapists', { 
       userId, 

@@ -811,7 +811,7 @@ export function TherapistDashboard() {
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-cinzel text-lg text-teal">Invite Client</h2>
-              <button onClick={closeInviteModal} className="text-text-muted hover:text-gold">✕</button>
+              <button onClick={closeInviteModal} aria-label="Close invite modal" className="text-text-muted hover:text-gold">✕</button>
             </div>
 
             {inviteLink ? (
@@ -888,7 +888,7 @@ export function TherapistDashboard() {
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-cinzel text-lg text-gold">Insurer Report — {selectedClient.displayName}</h2>
-              <button onClick={() => setShowInsurerReport(false)} className="text-text-muted hover:text-gold">✕</button>
+              <button onClick={() => setShowInsurerReport(false)} aria-label="Close insurer report" className="text-text-muted hover:text-gold">✕</button>
             </div>
             <InsurerReportForm
               clientId={selectedClient.id}
@@ -910,7 +910,7 @@ export function TherapistDashboard() {
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-cinzel text-lg text-teal">Referral Letter — {selectedClient.displayName}</h2>
-              <button onClick={() => setShowReferralLetter(false)} className="text-text-muted hover:text-teal">✕</button>
+              <button onClick={() => setShowReferralLetter(false)} aria-label="Close referral letter" className="text-text-muted hover:text-teal">✕</button>
             </div>
             <ReferralLetterForm
               clientId={selectedClient.id}
