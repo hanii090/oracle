@@ -1,0 +1,3 @@
+## 2024-05-18 - [Add React.memo() to ChatMessage component]
+**Learning:** In highly dynamic React applications like the SorcaSession component, where there is a large amount of state and the message array grows over time, re-renders are frequent.
+**Action:** Adding React.memo to the `ChatMessage` component is a great way to avoid unnecessary re-renders when the state of the parent `SorcaSession` component updates (which happens very frequently during a chat session, such as when `input` updates during typing, etc). I'll implement `React.memo` around `ChatMessage` in `components/session/ChatMessage.tsx`.
