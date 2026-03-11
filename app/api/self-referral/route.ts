@@ -3,7 +3,7 @@ import { getAdminFirestore } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { isAdminConfigured } from '@/lib/firebase-admin';
 import { z } from 'zod';
-import { sanitizeMessage } from '@/lib/safety';
+import { sanitizeMessage, sanitizeIp } from '@/lib/safety';
 import { validateNHSNumber } from '@/lib/gp-integration';
 import { recommendInitialStep } from '@/lib/stepped-care';
 import { getPHQ9Severity, getGAD7Severity, PROBLEM_DESCRIPTORS } from '@/lib/iapt-dataset';
@@ -123,7 +123,7 @@ export async function POST(req: Request) {
   const log = createLogger({ route: '/api/self-referral', correlationId: crypto.randomUUID() });
 
   // Rate limit: 3 submissions per hour per IP
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const ip = sanitizeIp(req.headers.get('x-forwarded-for')?.split(',')[0]);
   const rl = selfReferralRateLimit(ip);
   if (!rl.success) {
     return NextResponse.json(
