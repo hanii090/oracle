@@ -1,0 +1,3 @@
+## 2024-05-24 - [React Memoization on Chat Messages]
+**Learning:** In highly dynamic chat interfaces like `SorcaSession`, `messages` array updates happen frequently. Passing aggregate metadata (like `totalMessages` derived from array length) as props to individual list items completely invalidates React's reconciliation optimization and prevents `React.memo` from working, causing O(n) re-renders on every keystroke/message instead of O(1).
+**Action:** Remove aggregate/changing metadata props (like array length) from list item components. Use `React.memo` aggressively on list components (like `ChatMessage` and `LoadingIndicator`) receiving stable data to ensure only the newly added items and the newly updated "last item" undergo rendering.

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { motion } from 'motion/react';
 
 export interface EmotionData {
@@ -28,7 +28,6 @@ interface ChatMessageProps {
   nightMode: boolean;
   isLast: boolean;
   index: number;
-  totalMessages: number;
   showEmotionPulse?: boolean;
 }
 
@@ -66,7 +65,7 @@ const MODALITY_CONTEXT: Record<string, string> = {
   schema: 'Schema mode — exploring early beliefs that drive present reactions',
 };
 
-export function ChatMessage({ message, nightMode, isLast, index, showEmotionPulse }: ChatMessageProps) {
+export const ChatMessage = memo(function ChatMessage({ message, nightMode, isLast, index, showEmotionPulse }: ChatMessageProps) {
   const [emotionExpanded, setEmotionExpanded] = useState(false);
   const [showWhyTooltip, setShowWhyTooltip] = useState(false);
   return (
@@ -179,14 +178,14 @@ export function ChatMessage({ message, nightMode, isLast, index, showEmotionPuls
       )}
     </motion.div>
   );
-}
+});
 
 interface LoadingIndicatorProps {
   depth: number;
   nightMode: boolean;
 }
 
-export function LoadingIndicator({ depth, nightMode }: LoadingIndicatorProps) {
+export const LoadingIndicator = memo(function LoadingIndicator({ depth, nightMode }: LoadingIndicatorProps) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -216,4 +215,4 @@ export function LoadingIndicator({ depth, nightMode }: LoadingIndicatorProps) {
       </div>
     </motion.div>
   );
-}
+});
