@@ -1,0 +1,4 @@
+## 2024-05-18 - [Fix IP spoofing and log injection vulnerability]
+**Vulnerability:** Client IPs extracted from `x-forwarded-for` headers were insecurely fetching the first IP address, which allows for IP spoofing by clients prepending fake IPs. They were also un-sanitized, leading to potential log injection.
+**Learning:** For apps behind trusted proxies, the `x-forwarded-for` header list is appended to by each proxy. The right-most (last) IP in the comma-separated list is the actual client IP as seen by the trusted proxy, mitigating IP spoofing. Input must also always be sanitized before logging or using in rate limiters to prevent malicious characters.
+**Prevention:** Always use the last IP address from the `x-forwarded-for` header and run it through a sanitization function (`sanitizeIp`) to strip any non-IP characters before utilizing it.
