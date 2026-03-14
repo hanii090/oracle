@@ -180,7 +180,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const incrementSession = async (): Promise<boolean> => {
     if (!user || !profile) return false;
-    
+
+    // #10 FIX: Validate session server-side first
+    try {
+      const token = await getIdToken();
+      const res = await fetch('/api/validate-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.profile) {
+          setProfile(data.profile);
+          localStorage.setItem(`sorca_profile_${user.uid}`, JSON.stringify(data.profile));
+        }
+        return !!data.canStart;
+      }
+    } catch (e) {
+      console.warn("Server session validation failed, falling back to client-side", e);
+    }
+
+    // Fallback: Client-side logic for offline/server-down scenarios
     const now = new Date();
     const lastDate = profile.lastSessionDate ? new Date(profile.lastSessionDate) : null;
     const isNewMonth = !lastDate || lastDate.getMonth() !== now.getMonth() || lastDate.getFullYear() !== now.getFullYear();

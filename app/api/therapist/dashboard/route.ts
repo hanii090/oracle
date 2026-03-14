@@ -3,6 +3,7 @@ import { verifyTherapist, getAdminFirestore } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { isAdminConfigured } from '@/lib/firebase-admin';
 import { logTherapistAccess } from '@/lib/audit-log';
+import { sanitizeIp } from '@/lib/safety';
 
 export async function GET(req: Request) {
   const log = createLogger({ route: '/api/therapist/dashboard', correlationId: crypto.randomUUID() });
@@ -13,8 +14,8 @@ export async function GET(req: Request) {
     const { userId } = authResult;
 
     // Audit log: therapist viewed dashboard
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-    logTherapistAccess({ therapistId: userId, action: 'dashboard_view', ip: ip || undefined });
+    const ip = sanitizeIp(req.headers.get('x-forwarded-for')?.split(',')[0]);
+    logTherapistAccess({ therapistId: userId, action: 'dashboard_view', ip: ip === 'unknown' ? undefined : ip });
 
     if (!isAdminConfigured()) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
