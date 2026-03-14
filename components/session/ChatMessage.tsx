@@ -27,8 +27,6 @@ interface ChatMessageProps {
   message: Message;
   nightMode: boolean;
   isLast: boolean;
-  index: number;
-  totalMessages: number;
   showEmotionPulse?: boolean;
 }
 
