@@ -28,7 +28,6 @@ interface ChatMessageProps {
   nightMode: boolean;
   isLast: boolean;
   index: number;
-  totalMessages: number;
   showEmotionPulse?: boolean;
 }
 
@@ -191,9 +190,12 @@ interface LoadingIndicatorProps {
   nightMode: boolean;
 }
 
+<<<<<<< HEAD
+=======
 // ⚡ Bolt Optimization:
 // Memoized LoadingIndicator to prevent unnecessary re-renders during parent state changes (like user typing).
 // Expected Impact: Stops constant re-rendering of the loading pulse animation on each keystroke when loading.
+>>>>>>> main
 export const LoadingIndicator = memo(function LoadingIndicator({ depth, nightMode }: LoadingIndicatorProps) {
   return (
     <motion.div

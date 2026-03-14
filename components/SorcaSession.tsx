@@ -747,7 +747,6 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
               nightMode={nightMode}
               isLast={i === displayMessages.length - 1}
               index={i}
-              totalMessages={displayMessages.length}
               showEmotionPulse={profile?.tier !== 'free'}
             />
           ))}
