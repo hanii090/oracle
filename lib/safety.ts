@@ -107,6 +107,17 @@ export function detectCrisis(message: string, eolMode?: boolean): CrisisDetectio
  * Sanitize user message to prevent prompt injection.
  * Strips or escapes patterns that could manipulate the AI's behavior.
  */
+
+/**
+ * Sanitize an IP address to prevent log injection and spoofing.
+ */
+export function sanitizeIp(ip: string): string {
+  if (!ip) return 'unknown';
+  // Allow only valid IPv4/IPv6 characters
+  const sanitized = ip.replace(/[^a-fA-F0-9.:]/g, '');
+  return sanitized || 'unknown';
+}
+
 export function sanitizeMessage(message: string): string {
   let sanitized = message;
 
@@ -382,4 +393,25 @@ function estimateDistressFromText(text: string): number {
   });
   
   return Math.max(0, Math.min(1, score));
+}
+
+/**
+ * Sanitize an IP address to prevent log injection and spoofing.
+ * Validates against basic IPv4 and IPv6 formats.
+ * Returns 'unknown' if the IP is invalid.
+ */
+export function sanitizeIp(ip: string | undefined | null): string {
+  if (!ip || typeof ip !== 'string') return 'unknown';
+
+  const trimmed = ip.trim();
+
+  // Basic IPv4 validation
+  const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  if (ipv4Regex.test(trimmed)) return trimmed;
+
+  // Basic IPv6 validation (allows standard and compressed forms)
+  const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+  if (ipv6Regex.test(trimmed)) return trimmed;
+
+  return 'unknown';
 }

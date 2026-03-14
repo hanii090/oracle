@@ -3,6 +3,7 @@ import { verifyTherapist, getAdminFirestore } from '@/lib/auth-middleware';
 import { createLogger } from '@/lib/logger';
 import { isAdminConfigured } from '@/lib/firebase-admin';
 import { logTherapistAccess } from '@/lib/audit-log';
+import { sanitizeIp } from '@/lib/safety';
 
 export async function GET(req: Request) {
   const log = createLogger({ route: '/api/therapist/dashboard', correlationId: crypto.randomUUID() });
@@ -13,7 +14,10 @@ export async function GET(req: Request) {
     const { userId } = authResult;
 
     // Audit log: therapist viewed dashboard
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+    const xForwardedFor = req.headers.get('x-forwarded-for');
+    const ipList = xForwardedFor ? xForwardedFor.split(',') : [];
+    const rawIp = ipList.length > 0 ? ipList[ipList.length - 1].trim() : 'unknown';
+    const ip = sanitizeIp(rawIp);
     logTherapistAccess({ therapistId: userId, action: 'dashboard_view', ip: ip || undefined });
 
     if (!isAdminConfigured()) {
