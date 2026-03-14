@@ -47,7 +47,10 @@ export async function POST(req: Request) {
     const { userId } = authResult;
 
     // Rate limiting (#5)
-    const ip = sanitizeIp(req.headers.get('x-forwarded-for')?.split(',')[0]);
+    const xForwardedFor = req.headers.get('x-forwarded-for');
+    const ipList = xForwardedFor ? xForwardedFor.split(',') : [];
+    const rawIp = ipList.length > 0 ? ipList[ipList.length - 1].trim() : 'unknown';
+    const ip = sanitizeIp(rawIp);
     const rateCheck = checkoutRateLimit(ip);
     if (!rateCheck.success) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });

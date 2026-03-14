@@ -14,8 +14,11 @@ export async function GET(req: Request) {
     const { userId } = authResult;
 
     // Audit log: therapist viewed dashboard
-    const ip = sanitizeIp(req.headers.get('x-forwarded-for')?.split(',')[0]);
-    logTherapistAccess({ therapistId: userId, action: 'dashboard_view', ip: ip === 'unknown' ? undefined : ip });
+    const xForwardedFor = req.headers.get('x-forwarded-for');
+    const ipList = xForwardedFor ? xForwardedFor.split(',') : [];
+    const rawIp = ipList.length > 0 ? ipList[ipList.length - 1].trim() : 'unknown';
+    const ip = sanitizeIp(rawIp);
+    logTherapistAccess({ therapistId: userId, action: 'dashboard_view', ip: ip || undefined });
 
     if (!isAdminConfigured()) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 500 });

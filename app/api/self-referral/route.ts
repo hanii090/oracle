@@ -123,7 +123,10 @@ export async function POST(req: Request) {
   const log = createLogger({ route: '/api/self-referral', correlationId: crypto.randomUUID() });
 
   // Rate limit: 3 submissions per hour per IP
-  const ip = sanitizeIp(req.headers.get('x-forwarded-for')?.split(',')[0]);
+  const xForwardedFor = req.headers.get('x-forwarded-for');
+  const ipList = xForwardedFor ? xForwardedFor.split(',') : [];
+  const rawIp = ipList.length > 0 ? ipList[ipList.length - 1].trim() : 'unknown';
+  const ip = sanitizeIp(rawIp);
   const rl = selfReferralRateLimit(ip);
   if (!rl.success) {
     return NextResponse.json(
