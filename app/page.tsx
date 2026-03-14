@@ -120,29 +120,8 @@ function HomeContent() {
       return;
     }
 
-    // #10 FIX: Validate session server-side, with client-side fallback
-    let sessionAllowed = false;
-    try {
-      const token = await getIdToken();
-      const res = await fetch('/api/validate-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        sessionAllowed = !!data.canStart;
-      } else {
-        // Server returned an error — fall back to client-side check
-        sessionAllowed = await incrementSession();
-      }
-    } catch {
-      // Network error — fall back to client-side check
-      sessionAllowed = await incrementSession();
-    }
+    // #10 FIX: Validate session (server-side prioritized in hook)
+    const sessionAllowed = await incrementSession();
 
     if (!sessionAllowed) {
       setShowLimitModal(true);
