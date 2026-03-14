@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { Tooltip } from '@/components/ui/Tooltip';
 
 interface SessionHeaderProps {
@@ -60,7 +61,10 @@ function DepthRing({ depth, maxDepth, tier }: { depth: number; maxDepth: number;
   );
 }
 
-export function SessionHeader({
+// ⚡ Bolt Optimization:
+// Wrapped SessionHeader in React.memo to prevent unnecessary re-renders when parent state (like chat input) updates.
+// Expected Impact: Reduces unnecessary component reconciliation and DOM checks during high-frequency typing.
+export const SessionHeader = memo(function SessionHeader({
   depth,
   nightMode,
   isViewingPast,
@@ -144,4 +148,4 @@ export function SessionHeader({
       </div>
     </div>
   );
-}
+});
