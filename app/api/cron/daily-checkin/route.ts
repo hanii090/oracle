@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { isAdminConfigured, getAdminError } from '@/lib/firebase-admin';
 import { getAdminFirestore } from '@/lib/auth-middleware';
@@ -23,7 +24,17 @@ export async function GET(req: Request) {
     const authHeader = req.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
     
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    let isAuthorized = false;
+    if (cronSecret && authHeader) {
+      const expectedAuth = `Bearer ${cronSecret}`;
+      const authBuffer = Buffer.from(authHeader);
+      const expectedBuffer = Buffer.from(expectedAuth);
+      if (authBuffer.byteLength === expectedBuffer.byteLength) {
+        isAuthorized = crypto.timingSafeEqual(authBuffer, expectedBuffer);
+      }
+    }
+
+    if (!isAuthorized) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

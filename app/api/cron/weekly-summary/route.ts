@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { createLogger } from '@/lib/logger';
@@ -35,8 +36,18 @@ export async function GET(req: Request) {
   // Verify cron secret
   const authHeader = req.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
-  
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+
+    let isAuthorized = false;
+    if (cronSecret && authHeader) {
+      const expectedAuth = `Bearer ${cronSecret}`;
+      const authBuffer = Buffer.from(authHeader);
+      const expectedBuffer = Buffer.from(expectedAuth);
+      if (authBuffer.byteLength === expectedBuffer.byteLength) {
+        isAuthorized = crypto.timingSafeEqual(authBuffer, expectedBuffer);
+      }
+    }
+
+    if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
