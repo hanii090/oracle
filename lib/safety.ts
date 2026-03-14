@@ -134,6 +134,27 @@ export function sanitizeMessage(message: string): string {
   return sanitized.trim();
 }
 
+/**
+ * Sanitize an IP address extracted from a header to prevent spoofing
+ * and log injection attacks.
+ */
+export function sanitizeIp(ipString: string | null | undefined): string {
+  if (!ipString) return 'unknown';
+
+  // Get the last IP in the comma-separated list as the most trusted proxy appends it
+  const parts = ipString.split(',');
+  const ip = parts[parts.length - 1]?.trim() || '';
+
+  // Clean off non-IP characters to prevent log injection (keep alphanumeric, colon, dot)
+  const sanitized = ip.replace(/[^a-zA-Z0-9.:]/g, '');
+
+  if (!sanitized) {
+    return 'unknown';
+  }
+
+  return sanitized;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // SAFE MESSAGING MODE — Therapy Edition Feature
 // ═══════════════════════════════════════════════════════════════════════════

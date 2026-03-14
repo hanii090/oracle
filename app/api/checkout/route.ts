@@ -4,6 +4,7 @@ import { checkoutRateLimit } from '@/lib/rate-limit';
 import { verifyAuth } from '@/lib/auth-middleware';
 import { getStripeEnv } from '@/lib/env';
 import { createLogger } from '@/lib/logger';
+import { sanitizeIp } from '@/lib/safety';
 import { STRIPE_PRICE_ENV_KEYS, TRIAL_DAYS, getPlan } from '@/lib/pricing-config';
 import { z } from 'zod';
 import { sanitizeIp } from '@/lib/safety';
