@@ -7,6 +7,7 @@ import { createLogger } from '@/lib/logger';
 import { sanitizeIp } from '@/lib/safety';
 import { STRIPE_PRICE_ENV_KEYS, TRIAL_DAYS, getPlan } from '@/lib/pricing-config';
 import { z } from 'zod';
+import { sanitizeIp } from '@/lib/safety';
 
 const checkoutSchema = z.object({
   tier: z.enum(['philosopher', 'pro', 'practice']),
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
     const { userId } = authResult;
 
     // Rate limiting (#5)
-    const ip = sanitizeIp(req.headers.get('x-forwarded-for'));
+    const ip = sanitizeIp(req.headers.get('x-forwarded-for')?.split(',')[0]);
     const rateCheck = checkoutRateLimit(ip);
     if (!rateCheck.success) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });

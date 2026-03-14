@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     const { userId } = authResult;
 
     // Audit log: therapist viewed dashboard
-    const ip = sanitizeIp(req.headers.get('x-forwarded-for'));
+    const ip = sanitizeIp(req.headers.get('x-forwarded-for')?.split(',')[0]);
     logTherapistAccess({ therapistId: userId, action: 'dashboard_view', ip: ip === 'unknown' ? undefined : ip });
 
     if (!isAdminConfigured()) {

@@ -1,0 +1,3 @@
+## 2024-05-18 - Unnecessary re-renders on keystroke in Chat Input
+**Learning:** Found a major performance bottleneck where standard React controlled inputs (like `chatInput` in `components/SorcaSession.tsx`) trigger a full re-render of all previously rendered chat messages with every keystroke. This causes heavy main thread blocking during typing, especially as the message list grows long.
+**Action:** When adding chat or long-list interfaces where the input state is hoisted to the same level as the list (or higher), always ensure list item components are wrapped in `React.memo` (e.g., `ChatMessage` and `LoadingIndicator`). This restricts the re-render exclusively to the input itself, significantly improving input latency.
