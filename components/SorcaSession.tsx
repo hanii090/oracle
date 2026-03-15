@@ -641,12 +641,14 @@ export function SorcaSession({ onExit, viewSession }: { onExit: () => void; view
           viewSessionDate={viewSession?.createdAt}
           streak={streak.currentStreak}
           tier={profile?.tier || 'free'}
-          onToggleNight={() => {
+          onToggleNight={useCallback(() => {
             if (profile?.tier === 'free') return; // Night Sorca is paid-only
-            setNightMode(!nightMode);
-            if (!nightMode) showNightExplanation();
-          }}
-          onRestart={() => setShowResetConfirm(true)}
+            setNightMode((prev) => {
+              if (!prev) showNightExplanation();
+              return !prev;
+            });
+          }, [profile?.tier, showNightExplanation])}
+          onRestart={useCallback(() => setShowResetConfirm(true), [])}
           onExit={viewSession ? onExit : handleExit}
           onHelp={toggleHelp}
         />

@@ -1,0 +1,3 @@
+## 2024-03-15 - [Memoize static session components to reduce re-renders]
+**Learning:** In highly interactive components like `SorcaSession` where state updates frequently (e.g., on every keystroke when typing a chat message), child components that receive static or rarely changing props (like `FeatureStatus`, `SessionHeader`, and `DepthRing`) will unnecessarily re-render on every keystroke, causing performance overhead from redundant DOM diffing.
+**Action:** Use `React.memo()` on these static/presentational components to prevent them from re-rendering unless their props change. This significantly reduces main thread blocking during rapid state updates like typing in long chat sessions.

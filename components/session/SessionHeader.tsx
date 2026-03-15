@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { Tooltip } from '@/components/ui/Tooltip';
 
 interface SessionHeaderProps {
@@ -15,7 +16,9 @@ interface SessionHeaderProps {
   onHelp?: () => void;
 }
 
-function DepthRing({ depth, maxDepth, tier }: { depth: number; maxDepth: number; tier: string }) {
+// ⚡ Bolt Optimization:
+// Memoized DepthRing to prevent unnecessary re-renders during parent state changes.
+const DepthRing = memo(function DepthRing({ depth, maxDepth, tier }: { depth: number; maxDepth: number; tier: string }) {
   const freeLimit = 5;
   const confrontationThreshold = 7;
   const displayMax = tier === 'free' ? freeLimit : maxDepth;
@@ -58,9 +61,12 @@ function DepthRing({ depth, maxDepth, tier }: { depth: number; maxDepth: number;
       </div>
     </Tooltip>
   );
-}
+});
 
-export function SessionHeader({
+// ⚡ Bolt Optimization:
+// Memoized SessionHeader to prevent unnecessary re-renders when parent state (like chat input) updates.
+// Expected Impact: Stops constant re-rendering of the session header and ring animation on each keystroke.
+export const SessionHeader = memo(function SessionHeader({
   depth,
   nightMode,
   isViewingPast,
@@ -144,4 +150,4 @@ export function SessionHeader({
       </div>
     </div>
   );
-}
+});
