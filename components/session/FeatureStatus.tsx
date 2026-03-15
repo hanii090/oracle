@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { ThreadIcon, MusicIcon, BoltIcon, VisionIcon, ConsentIcon } from '@/components/icons';
 
@@ -10,7 +11,10 @@ interface FeatureStatusProps {
   tier?: string;
 }
 
-export function FeatureStatus({ pastThreadLength, depth, isBreakthrough, tier = 'free' }: FeatureStatusProps) {
+// ⚡ Bolt Optimization:
+// Memoized FeatureStatus to prevent unnecessary re-renders when parent state (like chat input) updates.
+// Expected Impact: Stops constant re-rendering of static feature status elements on each keystroke.
+export const FeatureStatus = memo(function FeatureStatus({ pastThreadLength, depth, isBreakthrough, tier = 'free' }: FeatureStatusProps) {
   return (
     <div className="flex gap-2 mb-4 flex-wrap" role="status" aria-label="Active features">
       <Tooltip content="The Thread — Sorca remembers your past sessions and patterns" side="bottom">
@@ -53,4 +57,4 @@ export function FeatureStatus({ pastThreadLength, depth, isBreakthrough, tier = 
       </Tooltip>
     </div>
   );
-}
+});
