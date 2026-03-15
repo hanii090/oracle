@@ -108,15 +108,6 @@ export function detectCrisis(message: string, eolMode?: boolean): CrisisDetectio
  * Strips or escapes patterns that could manipulate the AI's behavior.
  */
 
-/**
- * Sanitize an IP address to prevent log injection and spoofing.
- */
-export function sanitizeIp(ip: string): string {
-  if (!ip) return 'unknown';
-  // Allow only valid IPv4/IPv6 characters
-  const sanitized = ip.replace(/[^a-fA-F0-9.:]/g, '');
-  return sanitized || 'unknown';
-}
 
 export function sanitizeMessage(message: string): string {
   let sanitized = message;
